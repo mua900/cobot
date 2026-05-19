@@ -421,7 +421,7 @@ struct PanelTab {
     Color color = {};
 
     PanelTab() {}
-    PanelTab(Icon tab, Color color) : tabIcon(tab), color(color) {}
+    PanelTab(Icon tab, DArray<Icon> icons, Color color) : tabIcon(tab), icons(icons), color(color) {}
 };
 
 struct Panel {

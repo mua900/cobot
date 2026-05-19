@@ -118,7 +118,7 @@ struct Expr_Call : Expr {
     DArray<Expr*> arguments;
     int fn_id = 0;
 
-    Expr_Call(String f_name, DArray<Expr*> args, int func_id) : function_name(f_name), arguments(args), fn_id(func_id)
+    Expr_Call(String f_name, DArray<Expr*>& args, int func_id) : function_name(f_name), arguments(args), fn_id(func_id)
 	{
         type = ExprKind::Call;
         for (const auto arg : args)
@@ -157,7 +157,7 @@ struct Expr_Ternary : Expr {
 struct Expr_Tuple : Expr {
 	DArray<Expr*> expressions;
 
-	Expr_Tuple(DArray<Expr*> exprs)
+	Expr_Tuple(DArray<Expr*>& exprs)
 		: expressions(exprs)
 	{
 		type = ExprKind::Tuple;

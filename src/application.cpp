@@ -285,7 +285,8 @@ bool Application::keyboard_input(SDL_KeyboardEvent keyboard)
                     field->delete_at_cursor();
 
                     Font font = m_catalog.get_font(m_editor_font);
-                    field->update_text(m_render.renderer, m_catalog.get_font(field->fontId), true);                }
+                    field->update_text(m_render.renderer, m_catalog.get_font(field->fontId), true);
+                }
             }
             return true;
         }
@@ -744,24 +745,24 @@ bool Application::init_editor_ui() {
     AssetId tireIconId = get_asset(String("tireTabIcon"), m_catalog);
     if (!tireIconId.is_valid()) return false;
     Icon tireIcon = Icon(m_catalog.get_image(tireIconId), tabIconColor);
-    PanelTab tireTab(tireIcon, panel_color);
-    if (!load_tire_icons(tireTab.icons, iconColor, m_catalog)) return false;
+    DArray <Icon> tireTabIcons;
+    if (!load_tire_icons(tireTabIcons, iconColor, m_catalog)) return false;
 
     AssetId chasisIconId = get_asset(String("chasisTabIcon"), m_catalog);
     if (!chasisIconId.is_valid()) return false;
     Icon chasisIcon = Icon(m_catalog.get_image(chasisIconId), tabIconColor);
-    PanelTab chasisTab(chasisIcon, panel_color);
-    if (!load_chasis_icons(chasisTab.icons, iconColor, m_catalog)) return false;
+    DArray<Icon> chasisTabIcons;
+    if (!load_chasis_icons(chasisTabIcons, iconColor, m_catalog)) return false;
 
     AssetId controllerIconId = get_asset(String("controllerTabIcon"), m_catalog);
     if (!controllerIconId.is_valid()) return false;
     Icon controllerIcon = Icon(m_catalog.get_image(controllerIconId), tabIconColor);
-    PanelTab controllerTab(controllerIcon, panel_color);
-    if (!load_controller_icons(controllerTab.icons, iconColor, m_catalog)) return false;
+    DArray<Icon> controllerTabIcons;
+    if (!load_controller_icons(controllerTabIcons, iconColor, m_catalog)) return false;
 
-    partsPanel.tabs.add(tireTab);
-    partsPanel.tabs.add(chasisTab);
-    partsPanel.tabs.add(controllerTab);
+    partsPanel.tabs.add(PanelTab(tireIcon, tireTabIcons, panel_color));
+    partsPanel.tabs.add(PanelTab(chasisIcon, chasisTabIcons, panel_color));
+    partsPanel.tabs.add(PanelTab(controllerIcon, controllerTabIcons, panel_color));
 
     ui.panels.add(partsPanel);
 

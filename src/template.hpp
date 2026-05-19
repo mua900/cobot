@@ -19,10 +19,6 @@ public:
 		m_cap = cap;
 	}
 
-	~DArray() {
-		reset();
-	}
-
 	void discard_data() {
 		m_size = 0;
 	}
@@ -139,25 +135,13 @@ public:
 	}
 
 	int add_unique(T elem) {
-		Find_Result find_result = find(elem);
+		Find_Result find_result = find_in_array(*this, elem);
 		if (find_result.found)
 		{
 			return find_result.index;
 		}
 
 		return add(elem);
-	}
-
-	Find_Result find(T& elem) const {
-		for (int i = 0; i < m_size; i++)
-		{
-			if (m_data[i] == elem)
-			{
-				return Find_Result {i, true};
-			}
-		}
-
-		return Find_Result {0, false};
 	}
 
 	bool is_empty()	const {
@@ -231,6 +215,19 @@ private:
 		m_cap = ncap;
 	}
 };
+
+template<typename T>
+Find_Result find_in_array(DArray<T>& array, T& elem) {
+	for (int i = 0; i < array.size(); i++)
+	{
+		if (array[i] == elem)
+		{
+			return Find_Result{ i, true };
+		}
+	}
+
+	return Find_Result{ 0, false };
+}
 
 template<typename T>
 struct BucketList {
