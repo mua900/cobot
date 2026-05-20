@@ -11,6 +11,7 @@
 
 enum ApplicationMode {
     ModeMenu,
+    ModeEditor,
     ModeGame,
 
     ModeCount,
@@ -21,7 +22,7 @@ enum MenuName {
     MenuSettings,
 };
 
-enum UiStates {
+enum UiId {
     UiMainMenu,
     UiSettings,
     UiEditor,
@@ -34,7 +35,9 @@ struct Event_Timeout {
     bool active = false;
 };
 
-#define NS_PER_SECONDS 1'000'000'000
+#define NANOSECONDS_PER_SECOND  1'000'000'000
+#define MICROSECONDS_PER_SECOND 1'000'000
+#define MILLISECONDS_PER_SECOND 1'000
 
 // about 11 and a half days
 #define EVENT_TIMEOUT_LONG 1000000.0
@@ -160,6 +163,9 @@ private:
 
     void switch_modes(ApplicationMode mode);
     void switch_menu(MenuName menu);
+
+    void add_button(UiId ui, UiElementId id, Label button);
+    void add_label(UiId ui, UiElementId id, Label label);
 
     bool is_fullscreen() const;
     vec2 get_window_size() const;

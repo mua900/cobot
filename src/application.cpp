@@ -462,7 +462,7 @@ bool Application::mouse_input_game()
                 }
                 else {
                     log_info("Not okay program");
-                    display_message(editor.get_title_area().get_position() + vec2(0, 100), vec2(100, 100), "Invalid program", 1, Color(0xAA, 0x44, 0x55), Color(0x44, 0x99, 0x55));
+                    display_message(editor.get_title_area().get_position() + vec2(0, 100), vec2(100, 100), "Invalid program", 2, Color(0xAA, 0x44, 0x55), Color(0x44, 0x77, 0x55));
                 }
 
                 return true;
@@ -587,7 +587,7 @@ void Application::update()
 {
     // update time
     SDL_Time time = SDL_GetTicks();
-    double time_sec = (double)time / NS_PER_SECONDS;
+    double time_sec = (double)time / MILLISECONDS_PER_SECOND;
     m_time.deltaTime = time - m_time.time;
     m_time.deltaTimeSeconds = time_sec - m_time.timeSeconds;
     m_time.time = time;
@@ -667,7 +667,7 @@ void Application::on_mouse_up(int button)
 
 void Application::set_event_active(int event_index, double timeout_seconds)
 {
-    s64 timeout = (s64)(timeout_seconds * NS_PER_SECONDS);
+    s64 timeout = (s64)(timeout_seconds * MILLISECONDS_PER_SECOND);
     m_events[event_index].active = true;
     m_events[event_index].event = m_time.time + timeout;
 }
@@ -694,6 +694,17 @@ void Application::cleanup()
     SDL_Quit();
 }
 
+void Application::add_button(UiId ui, UiElementId id, Label button) {
+    button.id = id;
+    m_ui[ui].button.add(button);
+}
+
+void Application::add_label(UiId ui, UiElementId id, Label label) {
+    label.id = id;
+    m_ui[ui].label.add(label);
+}
+
+
 bool Application::init_ui()
 {
     vec2 ws = get_window_size();
@@ -706,21 +717,13 @@ bool Application::init_ui()
     Color button_color = Color(0x77, 0x55, 0x55);
     Color background = Color(0x33, 0x55, 0x66);
 
-    Label play = Label(create_text(m_render.renderer, String("Play"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.2), button_scale, background);
-    play.id = PlayButton;
-    Label settings = Label(create_text(m_render.renderer, String("Settings"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.5), button_scale, background);
-    settings.id = SettingsButton;
-    Label quit = Label(create_text(m_render.renderer, String("Quit"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.8), button_scale, background);
-    quit.id = QuitButton;
+    // main menu
+    add_button(UiMainMenu, PlayButton, Label(create_text(m_render.renderer, String("Play"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.2), button_scale, background));
+    add_button(UiMainMenu, SettingsButton, Label(create_text(m_render.renderer, String("Settings"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.5), button_scale, background));
+    add_button(UiMainMenu, QuitButton, Label(create_text(m_render.renderer, String("Quit"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.8), button_scale, background));
 
-    Label back = Label(create_text(m_render.renderer, String("Back"), font, button_color), ws * 0.1, ws * 0.1, background);
-    back.id = BackButton;
-
-    m_ui[UiMainMenu].button.add(play);
-    m_ui[UiMainMenu].button.add(settings);
-    m_ui[UiMainMenu].button.add(quit);
-
-    m_ui[UiSettings].button.add(back);
+    // settings
+    add_button(UiSettings, BackButton, Label(create_text(m_render.renderer, String("Back"), font, button_color), ws * 0.1, ws * 0.1, background));
 
     if (!init_game_ui()) return false;
     if (!init_editor_ui()) return false;
@@ -734,8 +737,7 @@ bool Application::init_game_ui() {
     Color button_color = Color(0x77, 0x55, 0x55);
     Color background = Color(0x33, 0x55, 0x66);
 
-    Label backToMenu = Label(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background);
-    backToMenu.id = BackButton;
+    add_button(UiGame, BackButton, Label(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
 
     Rectangle editor_area = Rectangle(ws.x * 0.5, ws.y * 0.5, ws.x * 0.8, ws.y * 0.8);
     Color editor_background = Color(0x66, 0x55, 0x66);
@@ -762,7 +764,6 @@ bool Application::init_game_ui() {
 
     m_ui[UiGame].editor.add(mainEditor);
 
-    m_ui[UiGame].button.add(backToMenu);
     return true;
 }
 
