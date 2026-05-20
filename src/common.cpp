@@ -461,6 +461,8 @@ int String_Builder::append_many(String* strings, int n) {
 }
 
 const char* String_Builder::c_string() {
+    ensure_size(32);
+
     this->buffer[this->cursor] = '\0';
     return this->buffer;
 }

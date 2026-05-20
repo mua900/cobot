@@ -44,6 +44,25 @@ enum Events {
     EVENT_COUNT,
 };
 
+struct Time {
+    s64 time = 0;  // miliseconds
+    s64 deltaTime = 0;
+    double timeSeconds = 0;
+    double deltaTimeSeconds = 0;
+};
+
+struct ApplicationMessage {
+    vec2 where = {};
+    vec2 scale = {};
+    const char* message = nullptr;
+    float expire = 0;
+    SDL_Texture* texture = nullptr;
+    Color background = {};
+
+    ApplicationMessage() {}
+    ApplicationMessage(vec2 w, vec2 s, const char* m, Color color) : where(w), scale(s), message(m), background(color) {}
+};
+
 class Application {
 public:
     ApplicationMode m_mode = ModeMenu;
@@ -58,8 +77,7 @@ public:
     UiState m_ui[UiCount];
     Color m_background_color = DEFAULT_BACKGROUND_COLOR;
 
-    s64 m_time = 0;
-    double m_time_seconds = 0;
+    Time m_time = {};
 
     Event_Timeout m_events[EVENT_COUNT] = {};
 
@@ -69,6 +87,8 @@ public:
     AssetId m_editor_font = {};
 
     GameState game = {};
+
+    DArray<ApplicationMessage> messages = {};
 
     bool quit = false;
     bool doing_text_input = false;
@@ -98,13 +118,11 @@ private:
     void set_event_active(int event_index, double timeout_seconds);
     void set_event_deactive(int event_index);
 
+    int display_message(vec2 where, vec2 scale, const char* message, float duration, Color color, Color background);
+
     void draw_game();
 	void draw_ui();
-
-    void draw_main_menu();
-    void draw_settings_menu();
-    void draw_game_ui();
-    void draw_editor_ui();
+    void draw_messages();
 
     void draw_ui_state(const UiState& state);
 

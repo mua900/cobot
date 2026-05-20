@@ -443,28 +443,44 @@ bool Application::mouse_input_game()
             }
 
             if (editor.get_icon1_area().contains_centered(mouse_pos)) {
+                // run
                 editor.clicked_icon = 1;
                 
                 Script& script = game.scripts.get_ref(editor.user.number);
-                luaL_dostring(script.lua, script.script.c_string());
-                
+
+                String scriptSource = script.script.to_string();
+
+                if (scriptSource.size == 0) {
+                    // run a non existing program
+                    return true;
+                }
+
+                int result = luaL_dostring(script.lua, script.script.c_string());
+
+                if (result == LUA_OK) {
+                    log_info("Okay program");
+                }
+                else {
+                    log_info("Not okay program");
+                    display_message(editor.get_title_area().get_position() + vec2(0, 100), vec2(100, 100), "Invalid program", 1, Color(0xAA, 0x44, 0x55), Color(0x44, 0x99, 0x55));
+                }
 
                 return true;
             }
             else if (editor.get_icon2_area().contains_centered(mouse_pos)) {
+                // compile
                 editor.clicked_icon = 2;
                 
-                // compile
                 Script& script = game.scripts.get_ref(editor.user.number);
                 script.set_source(ScriptLanguage::LUA, editor.field.get_string());
 
                 return true;
             }
             else if (editor.get_icon3_area().contains_centered(mouse_pos)) {
+                // debug
                 editor.clicked_icon = 3;
                 
                 // @todo
-                // debug
 
                 return true;
             }
@@ -570,10 +586,12 @@ void Application::update_keyboard_state()
 void Application::update()
 {
     // update time
-    SDL_Time time = SDL_GetTicksNS();
+    SDL_Time time = SDL_GetTicks();
     double time_sec = (double)time / NS_PER_SECONDS;
-    m_time = time;
-    m_time_seconds = time_sec;
+    m_time.deltaTime = time - m_time.time;
+    m_time.deltaTimeSeconds = time_sec - m_time.timeSeconds;
+    m_time.time = time;
+    m_time.timeSeconds = time_sec;
 
     update_ui_pos();
     timeout();
@@ -585,10 +603,17 @@ void Application::timeout()
     {
         if (m_events[i].active)
         {
-            if (m_events[i].event < m_time)
+            if (m_events[i].event < m_time.time)
             {
                 m_events[i].active = false;
             }
+        }
+    }
+
+    for (int i = 0; i < messages.size(); i++) {
+        if (messages[i].expire < m_time.timeSeconds) {
+            messages.remove(i);
+            i--;
         }
     }
 }
@@ -644,12 +669,22 @@ void Application::set_event_active(int event_index, double timeout_seconds)
 {
     s64 timeout = (s64)(timeout_seconds * NS_PER_SECONDS);
     m_events[event_index].active = true;
-    m_events[event_index].event = m_time + timeout;
+    m_events[event_index].event = m_time.time + timeout;
 }
 
 void Application::set_event_deactive(int event_index)
 {
     m_events[event_index].active = false;
+}
+
+int Application::display_message(vec2 where, vec2 scale, const char* message, float duration, Color color, Color background) {
+    auto appMessage = ApplicationMessage(where, scale, message, background);
+    Font font = m_catalog.get_font(m_font);
+    Text text = create_text(m_render.renderer, String(message), font, color);
+    appMessage.expire = m_time.timeSeconds + duration;
+    appMessage.texture = text.texture;
+
+    return messages.add(appMessage);
 }
 
 void Application::cleanup()
@@ -786,6 +821,8 @@ void Application::draw()
     draw_game();
     draw_ui();
 
+    draw_messages();
+
     SDL_RenderPresent(renderer);
 }
 
@@ -814,16 +851,16 @@ void Application::draw_ui()
             switch (m_menu)
             {
                 case MenuMain:
-                    draw_main_menu();
+                    draw_ui_state(m_ui[UiMainMenu]);
                     break;
                 case MenuSettings:
-                    draw_settings_menu();
+                    draw_ui_state(m_ui[UiSettings]);
                     break;
             }
             break;
         }
         case ModeGame: {
-            draw_game_ui();
+            draw_ui_state(m_ui[UiGame]);
             break;
         }
         default: {
@@ -832,23 +869,10 @@ void Application::draw_ui()
     }
 }
 
-void Application::draw_main_menu()
-{
-    draw_ui_state(m_ui[UiMainMenu]);
-}
-
-void Application::draw_settings_menu()
-{
-    draw_ui_state(m_ui[UiSettings]);
-}
-
-void Application::draw_game_ui()
-{
-    draw_ui_state(m_ui[UiGame]);
-}
-
-void Application::draw_editor_ui() {
-    draw_ui_state(m_ui[UiEditor]);
+void Application::draw_messages() {
+    for (auto msg : messages) {
+        render_textured_rectangle(Rectangle(msg.where, msg.scale), msg.texture, msg.background, true);
+    }
 }
 
 void Application::draw_ui_state(const UiState& state)
