@@ -39,6 +39,8 @@ add_executable(game
 	src/script.hpp
 	src/vehicle.hpp
 	src/vehicle.cpp
+	src/map.hpp
+	src/map.cpp
 	src/template.hpp
 	src/main.cpp
 )
@@ -129,7 +131,7 @@ target_include_directories(game PRIVATE src/)
 target_include_directories(language PRIVATE src/)
 target_include_directories(game PRIVATE src/lua/src)
 
-add_subdirectory(vendor/SDL-3.4.4 EXCLUDE_FROM_ALL)
+add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 
 # turn unused image formats off
 set(SDLIMAGE_ANI  OFF)
@@ -151,15 +153,15 @@ set(SDLIMAGE_XV   OFF)
 # png
 set(SDLIMAGE_PNG ON)
 set(SDLIMAGE_SVG  ON)
-add_subdirectory(vendor/SDL_image-3.4.2 EXCLUDE_FROM_ALL)
+add_subdirectory(vendor/SDL_image EXCLUDE_FROM_ALL)
 
-add_subdirectory(vendor/SDL_mixer-3.2.0 EXCLUDE_FROM_ALL)
-add_subdirectory(vendor/SDL_ttf-3.2.2 EXCLUDE_FROM_ALL)
+add_subdirectory(vendor/SDL_mixer EXCLUDE_FROM_ALL)
+add_subdirectory(vendor/SDL_ttf EXCLUDE_FROM_ALL)
 
-target_include_directories(game PRIVATE vendor/SDL-3.4.4/include/)
-target_include_directories(game PRIVATE vendor/SDL_image-3.4.2/include/)
-target_include_directories(game PRIVATE vendor/SDL_mixer-3.2.0/include)
-target_include_directories(game PRIVATE vendor/SDL_ttf-3.2.2/include/)
+target_include_directories(game PRIVATE vendor/SDL/include/)
+target_include_directories(game PRIVATE vendor/SDL_image/include/)
+target_include_directories(game PRIVATE vendor/SDL_mixer/include)
+target_include_directories(game PRIVATE vendor/SDL_ttf/include/)
 
 target_link_libraries(
 	game

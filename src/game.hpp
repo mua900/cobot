@@ -8,6 +8,7 @@
 
 #include "vehicle.hpp"
 #include "script.hpp"
+#include "map.hpp"
 
 struct GameState {
     Vehicle vehicle;
@@ -16,5 +17,6 @@ struct GameState {
 
     ~GameState();
 };
+
 
 #endif // _GAME_H

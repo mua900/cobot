@@ -814,6 +814,7 @@ bool Application::init_mission_ui() {
     Color background = Color(0x33, 0x55, 0x66);
 
     add_button(UiMissionSelect, BackButton, Button(create_text(m_render.renderer, String("Back"), m_catalog.get_font(m_font), button_color), ws * 0.05, ws * 0.1, background));
+    
 
     return true;
 }
