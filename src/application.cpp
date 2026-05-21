@@ -139,23 +139,31 @@ bool Application::load_assets()
 
 UiState& Application::get_active_ui()
 {
-    if (m_mode == ModeMenu)
+    switch (m_mode)
     {
-        if (m_menu == MenuMain)
-        {
-            return m_ui[UiMainMenu];
+        case ModeMenu: {
+            switch (m_menu)
+            {
+                case MenuMain:
+                    return m_ui[UiMainMenu];
+                case MenuSettings:
+                    return m_ui[UiSettings];
+                case MenuMissionSelect:
+                    return m_ui[UiMissionSelect];
+                default:
+                    panic("Invalid menu type");
+            }
         }
-        else if (m_menu == MenuSettings)
-        {
-            return m_ui[UiSettings];
+        case ModeGame: {
+            return m_ui[UiGame];
+        }
+        case ModeEditor: {
+            return m_ui[UiEditor];
+        }
+        default: {
+            panic("Invalid game mode");
         }
     }
-    else if (m_mode == ModeGame)
-    {
-        return m_ui[UiGame];
-    }
-
-    panic("Invalid application state");
 }
 
 void Application::handle_events()
@@ -503,12 +511,12 @@ bool Application::mouse_input_game()
             Rectangle area = Rectangle(button.position, button.scale);
             if (area.contains_centered(mouse_pos)) {
                 switch (button.id) {
-                case BackButton:
-                {
-                    switch_modes(ModeMenu);
-                    switch_menu(MenuMain);
-                    break;
-                }
+                    case BackButton:
+                    {
+                        switch_modes(ModeMenu);
+                        switch_menu(MenuMain);
+                        break;
+                    }
                 }
             }
         }
@@ -519,7 +527,34 @@ bool Application::mouse_input_game()
 
 bool Application::mouse_input_menu()
 {
-    return (m_menu == MenuMain) ? mouse_input_main_menu() : mouse_input_settings();
+    switch (m_menu) {
+        case MenuMain:          return mouse_input_main_menu();
+        case MenuSettings:      return mouse_input_settings();
+        case MenuMissionSelect: return mouse_input_mission_select();
+        default: panic("Invalid menu");
+    }
+}
+
+bool Application::mouse_input_mission_select() {
+    vec2 mouse_pos = m_input.mouse.pos;
+    UiState& ui = m_ui[UiMissionSelect];
+
+    if (m_input.mouse.buttonFlags & MOUSE_LEFT)
+    {
+        for (auto& button : ui.button) {
+            Rectangle area = Rectangle(button.position, button.scale);
+            if (area.contains_centered(mouse_pos)) {
+                switch (button.id) {
+                    case BackButton: {
+                        switch_modes(ModeMenu);
+                        switch_menu(MenuMain);
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
 }
 
 bool Application::mouse_input_main_menu()
@@ -534,7 +569,7 @@ bool Application::mouse_input_main_menu()
             if (area.contains_centered(mouse_pos)) {
                 switch (button.id) {
                 case PlayButton: {
-                    switch_modes(ModeGame);
+                    switch_menu(MenuMissionSelect);
                     break;
                 }
                 case SettingsButton: {
@@ -575,6 +610,10 @@ bool Application::mouse_input_settings()
     }
 
     return false;
+}
+
+void Application::mouse_hover() {
+
 }
 
 void Application::update_keyboard_state()
@@ -690,11 +729,11 @@ int Application::display_message(vec2 where, vec2 scale, const char* message, fl
 void Application::cleanup()
 {
     MIX_Quit();
-    TTF_Quit();
     SDL_Quit();
+    TTF_Quit();
 }
 
-void Application::add_button(UiId ui, UiElementId id, Label button) {
+void Application::add_button(UiId ui, UiElementId id, Button button) {
     button.id = id;
     m_ui[ui].button.add(button);
 }
@@ -718,14 +757,15 @@ bool Application::init_ui()
     Color background = Color(0x33, 0x55, 0x66);
 
     // main menu
-    add_button(UiMainMenu, PlayButton, Label(create_text(m_render.renderer, String("Play"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.2), button_scale, background));
-    add_button(UiMainMenu, SettingsButton, Label(create_text(m_render.renderer, String("Settings"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.5), button_scale, background));
-    add_button(UiMainMenu, QuitButton, Label(create_text(m_render.renderer, String("Quit"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.8), button_scale, background));
+    add_button(UiMainMenu, PlayButton, Button(create_text(m_render.renderer, String("Play"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.2), button_scale, background));
+    add_button(UiMainMenu, SettingsButton, Button(create_text(m_render.renderer, String("Settings"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.5), button_scale, background));
+    add_button(UiMainMenu, QuitButton, Button(create_text(m_render.renderer, String("Quit"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.8), button_scale, background));
 
     // settings
-    add_button(UiSettings, BackButton, Label(create_text(m_render.renderer, String("Back"), font, button_color), ws * 0.1, ws * 0.1, background));
+    add_button(UiSettings, BackButton, Button(create_text(m_render.renderer, String("Back"), font, button_color), ws * 0.1, ws * 0.1, background));
 
     if (!init_game_ui()) return false;
+    if (!init_mission_ui()) return false;
     if (!init_editor_ui()) return false;
 
     return true;
@@ -737,7 +777,7 @@ bool Application::init_game_ui() {
     Color button_color = Color(0x77, 0x55, 0x55);
     Color background = Color(0x33, 0x55, 0x66);
 
-    add_button(UiGame, BackButton, Label(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
+    add_button(UiGame, BackButton, Button(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
 
     Rectangle editor_area = Rectangle(ws.x * 0.5, ws.y * 0.5, ws.x * 0.8, ws.y * 0.8);
     Color editor_background = Color(0x66, 0x55, 0x66);
@@ -763,6 +803,17 @@ bool Application::init_game_ui() {
     mainEditor.user.number = 0;  // which script this editor is associated with
 
     m_ui[UiGame].editor.add(mainEditor);
+
+    return true;
+}
+
+bool Application::init_mission_ui() {
+    vec2 ws = get_window_size();
+    Font font = m_catalog.get_font(m_editor_font);
+    Color button_color = Color(0x77, 0x55, 0x55);
+    Color background = Color(0x33, 0x55, 0x66);
+
+    add_button(UiMissionSelect, BackButton, Button(create_text(m_render.renderer, String("Back"), m_catalog.get_font(m_font), button_color), ws * 0.05, ws * 0.1, background));
 
     return true;
 }
@@ -846,28 +897,7 @@ void Application::draw_game()
 
 void Application::draw_ui()
 {
-    switch (m_mode)
-    {
-        case ModeMenu: {
-            switch (m_menu)
-            {
-                case MenuMain:
-                    draw_ui_state(m_ui[UiMainMenu]);
-                    break;
-                case MenuSettings:
-                    draw_ui_state(m_ui[UiSettings]);
-                    break;
-            }
-            break;
-        }
-        case ModeGame: {
-            draw_ui_state(m_ui[UiGame]);
-            break;
-        }
-        default: {
-            panic("Invalid game mode");
-        }
-    }
+    draw_ui_state(get_active_ui());
 }
 
 void Application::draw_messages() {
@@ -893,7 +923,7 @@ void Application::draw_ui_state(const UiState& state)
         render_dropdown(list);
     }
 
-    for (const Label& button : state.button)
+    for (const Button& button : state.button)
     {
         render_textured_rectangle(Rectangle(button.position, button.scale), button.text.texture, button.background);
     }
@@ -1104,6 +1134,7 @@ bool Script::set_source(ScriptLanguage language, String source) {
         lua = state;
 
         script.clear_and_append(source);
+        return true;
     }
     else {
         ASSERT(false);

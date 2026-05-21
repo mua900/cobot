@@ -20,12 +20,14 @@ enum ApplicationMode {
 enum MenuName {
     MenuMain,
     MenuSettings,
+    MenuMissionSelect,
 };
 
 enum UiId {
     UiMainMenu,
     UiSettings,
     UiEditor,
+    UiMissionSelect,
     UiGame,
     UiCount,
 };
@@ -108,6 +110,7 @@ private:
 
     bool init_ui();
     bool init_game_ui();
+    bool init_mission_ui();
     bool init_editor_ui();
 
     bool load_assets();
@@ -131,9 +134,11 @@ private:
 
     bool on_mouse_down();
     void on_mouse_up(int button);
+    void mouse_hover();
 
     bool mouse_input_game();
     bool mouse_input_menu();
+    bool mouse_input_mission_select();
     bool mouse_input_main_menu();
     bool mouse_input_settings();
 
@@ -164,7 +169,7 @@ private:
     void switch_modes(ApplicationMode mode);
     void switch_menu(MenuName menu);
 
-    void add_button(UiId ui, UiElementId id, Label button);
+    void add_button(UiId ui, UiElementId id, Button button);
     void add_label(UiId ui, UiElementId id, Label label);
 
     bool is_fullscreen() const;

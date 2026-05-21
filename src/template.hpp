@@ -206,6 +206,7 @@ private:
 	void grow() {
 		int ncap = m_cap ? (m_cap * 2) : 8;
 		T* ndata = new T[ncap];
+		if (m_size > m_cap) panic("Invalid dynamic array");
 		for (int i = 0; i < m_size; i++)
 		{
 			ndata[i] = std::move(m_data[i]);
