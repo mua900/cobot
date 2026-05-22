@@ -102,7 +102,7 @@ bool Application::initialize()
 
 bool Application::init_game_state()
 {
-    game.map = generate_map();
+    game.map = generate_map(600, 600);
     game.vehicle = get_default_vehicle();
 
     return true;
@@ -930,7 +930,11 @@ vec2 Application::get_window_size() const {
 
 void Application::draw_game()
 {
-
+    vec2 ws = get_window_size();
+    if (game.map.texture) {
+        SDL_FRect dst = { ws.x * 0.3, 0, ws.x * 0.7, ws.y };
+        SDL_RenderTexture(m_render.renderer, game.map.texture, nullptr, &dst);
+    }
 }
 
 void Application::draw_ui()

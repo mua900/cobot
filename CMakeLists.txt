@@ -45,6 +45,9 @@ add_executable(game
 	src/editor.cpp
 	src/template.hpp
 	src/main.cpp
+
+	src/external/open_simplex.hpp
+	src/external/open_simplex.cpp
 )
 
 add_library(language STATIC

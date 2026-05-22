@@ -20,6 +20,6 @@ struct Map {
 };
 
 // @todo
-Map generate_map();
+Map generate_map(int width, int height);
 
 #endif // _MAP_H
