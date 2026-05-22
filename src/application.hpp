@@ -159,6 +159,7 @@ private:
     bool read_asset_catalog(String_Builder& path);
 
     void render_rectangle(Rectangle rect, Color color, bool center = true) const;
+    void render_texture(Rectangle area, Texture* texture, bool strech = false);
     void render_textured_rectangle(Rectangle rect, Texture* texture, Color color, bool strech = false, bool center = true) const;
 
     Icon create_icon(AssetId image, Color background);

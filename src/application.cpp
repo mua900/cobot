@@ -106,7 +106,7 @@ bool Application::initialize()
 
 bool Application::init_game_state()
 {
-    if (!generate_map(m_render.renderer, &game.map, time(0), 600, 600)) {
+    if (!generate_map(m_render.renderer, &game.map, 32, 640, 640)) {
         return false;
     }
     game.vehicle = get_default_vehicle();
@@ -914,7 +914,20 @@ void Application::draw()
     SDL_SetRenderDrawColor(renderer, COLOR_ARG(background));
     SDL_RenderClear(renderer);
 
-    draw_game();
+    switch (m_mode)
+    {
+        case ModeGame: {
+            draw_game();
+            break;
+        }
+        case ModeMenu: {
+            break;
+        }
+        case ModeEditor: {
+            break;
+        }
+    }
+
     draw_ui();
 
     draw_messages();
@@ -938,7 +951,7 @@ void Application::draw_game()
 {
     vec2 ws = get_window_size();
     if (game.map.texture) {
-        SDL_FRect dst = { ws.x * 0.3, 0, ws.x * 0.7, ws.y };
+        SDL_FRect dst = { 0, 0, ws.x, ws.y };
         SDL_RenderTexture(m_render.renderer, game.map.texture, nullptr, &dst);
     }
 }
@@ -1126,6 +1139,17 @@ void Application::render_dropdown(const Drop_Down_List& list) const {
 Icon Application::create_icon(AssetId image, Color background) {
     SDL_Texture* texture = m_catalog.get_image(image);
     return Icon(texture, background);
+}
+
+void Application::render_texture(Rectangle area, Texture* texture, bool strech)
+{
+    float tex_w, tex_h;
+    SDL_GetTextureSize(texture, &tex_w, &tex_h);
+    SDL_FRect src = { 0, 0, tex_w, tex_h };
+    float width = strech ? area.w : tex_w;
+    float height = strech ? area.h : tex_h;
+    SDL_FRect dst = { area.x, area.y, width, height };
+    SDL_RenderTexture(m_render.renderer, texture, &src, &dst);
 }
 
 void Application::render_textured_rectangle(Rectangle rect, SDL_Texture* texture, Color color, bool strech, bool center) const {
