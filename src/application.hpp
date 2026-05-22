@@ -141,6 +141,7 @@ private:
     bool mouse_input_mission_select();
     bool mouse_input_main_menu();
     bool mouse_input_settings();
+    bool mouse_input_editor();
 
     void update_keyboard_state();
     bool keyboard_input(KeyboardEvent keyboard);
@@ -157,12 +158,12 @@ private:
     void render_textured_rectangle(Rectangle rect, Texture* texture, Color color, bool strech = false, bool center = true) const;
 
     Icon create_icon(AssetId image, Color background);
-    void render_icon(const Icon& icon) const;
 
     void render_slider(Rectangle area, vec2 knob_scale, float value, Color slider_color, Color knob_color, const Text& text) const;
     void render_text_field(const Text_Field& text_field) const;
     void render_text_editor(const TextEditor& editor) const;
     void render_dropdown(const Drop_Down_List& list) const;
+    void render_panel(const Panel& panel) const;
 
     void clear_text_input_selection();
 

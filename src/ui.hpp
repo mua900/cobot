@@ -196,7 +196,7 @@ struct Text_Field
 
     void clear() {
         m_buffer.remove(0, m_buffer.length);
-        SDL_DestroyTexture(m_texture);
+        // SDL_DestroyTexture(m_texture);
         m_texture = nullptr;
         m_cursor_pixel_x = 0;
         m_cursor_pixel_y = 0;
@@ -412,17 +412,17 @@ struct Drop_Down_List {
         {
             selected = DROP_DOWN_LIST_SELECTED_SENTINEL;
         }
-        options.get_ref(index).label.clear();
+        // options.get_ref(index).label.clear();
         options.remove_shift(index);
     }
 
     Drop_Down_List() {}
     Drop_Down_List(vec2 p_pos, vec2 p_scale) : pos(p_pos), scale(p_scale) {}
     ~Drop_Down_List() {
-        title.clear();
+        // title.clear();
         for (auto entry : options)
         {
-            entry.label.clear();
+            // entry.label.clear();
         }
         options.reset();
     }
@@ -440,10 +440,17 @@ struct PanelTab {
 struct Panel {
     UiElementId id = {};
     Rectangle area = {};
+    int activeTab = 0;
+    float tabHeaderSize = 0;
+    float iconSize = 0;
+    float iconMargin = 0;
     DArray<PanelTab> tabs = {};
 
     Panel() {}
-    Panel(UiElementId id, Rectangle area) : id(id), area(area) {}
+    Panel(UiElementId id, Rectangle area, float headerSize, float icoSize, float margin) : id(id), area(area), tabHeaderSize(headerSize), iconSize(icoSize), iconMargin(margin) {}
+
+    Rectangle get_icon_area(int index) const;
+    Rectangle get_tab_header_area(int index) const;
 };
 
 #define TEXT_INPUT_TARGET_IS_VALID     BIT(0)

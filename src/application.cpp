@@ -394,9 +394,41 @@ bool Application::on_mouse_down()
     {
         return mouse_input_menu();
     }
+    else if (m_mode == ModeEditor)
+    {
+        return mouse_input_editor();
+    }
     else {
         panic("Invalid application mode");
     }
+}
+
+bool Application::mouse_input_editor()
+{
+    UiState& ui = m_ui[UiEditor];
+    vec2 mouse_pos = m_input.mouse.pos;
+
+    if (m_input.mouse.buttonFlags & MOUSE_LEFT) {
+        for (Panel& panel : ui.panels) {
+            if (panel.area.contains_top_left(mouse_pos))
+            {
+                PanelTab& tab = panel.tabs.get_ref(panel.activeTab);
+                for (int i = 0; i < tab.icons.size(); i++) {
+                }
+
+                return true;
+            }
+
+            for (int i = 0; i < panel.tabs.size(); i++) {
+                if (panel.get_tab_header_area(i).contains_centered(mouse_pos)) {
+                    panel.activeTab = i;
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 bool Application::mouse_input_game()
@@ -551,8 +583,7 @@ bool Application::mouse_input_mission_select() {
                         break;
                     }
                     case MissionButton: {
-                        switch_modes(ModeGame);
-                        switch_menu(MenuMain);
+                        switch_modes(ModeEditor);
                         break;
                     }
                 }
@@ -785,31 +816,6 @@ bool Application::init_game_ui() {
 
     add_button(UiGame, BackButton, Button(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
 
-    Rectangle editor_area = Rectangle(ws.x * 0.5, ws.y * 0.5, ws.x * 0.8, ws.y * 0.8);
-    Color editor_background = Color(0x66, 0x55, 0x66);
-    Color editor_text_color = Color{ 0x11, 0x22, 0x11, 0xff };
-    Color title_color = Color(0x44, 0x77, 0x55);
-    Color title_bar_color = Color(0x33, 0x55, 0x66);
-    Color icon_background = Color(0x44, 0x55, 0x99);
-    AssetId runIcon = get_asset(String("runIcon"), m_catalog);
-    AssetId compileIcon = get_asset(String("buildIcon"), m_catalog);
-    AssetId debugIcon = get_asset(String("debugIcon"), m_catalog);
-    if (!(runIcon.is_valid() && compileIcon.is_valid() && debugIcon.is_valid())) {
-        return false;
-    }
-    auto mainEditor = TextEditor(MainEditor, editor_area, m_editor_font, editor_background, editor_text_color, title_color, title_bar_color, String("Main Editor"), 32);
-    Rectangle titleArea = mainEditor.get_title_area();
-    vec2 scale = titleArea.get_scale();
-    vec2 icon_scale = vec2(titleArea.get_scale().y);
-    vec2 titleEnd = titleArea.get_position() + vec2(scale.x / 2, 0);
-    mainEditor.title_texture = render_text(m_render.renderer, mainEditor.name.to_string(), font, title_color);
-    mainEditor.icon1 = create_icon(runIcon, icon_background);
-    mainEditor.icon2 = create_icon(compileIcon, icon_background);
-    mainEditor.icon3 = create_icon(debugIcon, icon_background);
-    mainEditor.user.number = 0;  // which script this editor is associated with
-
-    m_ui[UiGame].editor.add(mainEditor);
-
     return true;
 }
 
@@ -840,7 +846,7 @@ bool Application::init_editor_ui() {
 
     Rectangle panel_area = { 0, 0, ws.x * 0.3f, ws.y };
     Color panel_color = Color(0x33, 0x44, 0x44);
-    Panel partsPanel (PartsPanel, panel_area);
+    Panel partsPanel (PartsPanel, panel_area, 32, 32, 16);
 
     Color iconColor = Color(0x77, 0x33, 0x44);
     Color tabIconColor = Color(0x33, 0x66, 0x44);
@@ -908,7 +914,7 @@ vec2 Application::get_window_size() const {
 
 void Application::draw_game()
 {
-    // @todo
+
 }
 
 void Application::draw_ui()
@@ -946,7 +952,12 @@ void Application::draw_ui_state(const UiState& state)
 
     for (const Label& label : state.label)
     {
-        render_textured_rectangle(Rectangle(label.position, label.scale), label.text.texture, label.background);
+        render_textured_rectangle(Rectangle(label.position, label.scale), label.text.texture, label.background, false);
+    }
+
+    for (const Panel& panel : state.panels)
+    {
+        render_panel(panel);
     }
 }
 
@@ -988,6 +999,24 @@ void Application::render_slider(Rectangle area, vec2 knob_scale, float value, Co
         const int margin = 10;
         render_text_scale(m_render.renderer, text,
             vec2(slider.x + slider.w / 2, slider.y + slider.h * 2 + margin), vec2(0.6, 0.6));
+    }
+}
+
+void Application::render_panel(const Panel& panel) const
+{
+    auto& tab = panel.tabs.get_ref(panel.activeTab);
+    render_rectangle(panel.area, tab.color, false);
+
+    const float margin = 16;
+    const float iconSize = 32;
+    for (int i = 0; i < tab.icons.size(); i++) {
+        Rectangle area = panel.get_icon_area(i);
+        render_textured_rectangle(area, tab.icons.get(i).texture, tab.icons.get(i).background, true, false);
+    }
+
+    for (int i = 0; i < panel.tabs.size(); i++) {
+        Rectangle area = panel.get_tab_header_area(i);
+        render_textured_rectangle(area, panel.tabs.get(i).tabIcon.texture, panel.tabs.get(i).tabIcon.background, true);
     }
 }
 

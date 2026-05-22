@@ -371,14 +371,13 @@ AssetId get_asset_at_index(int index, AssetCatalog& catalog)
         return NullAssetId;
     }
 
-    Asset& asset = catalog.assets.get_ref(index);
-    if (asset.identifier.is_valid())
+    if (catalog.assets[index].identifier.is_valid())
     {
-        return asset.identifier;
+        return catalog.assets[index].identifier;
     }
     else
     {
-        if (asset.flags & ASSET_IS_FOLDER) {
+        if (catalog.assets[index].flags & ASSET_IS_FOLDER) {
             auto asset_path = catalog.get_asset_path_at_index(index);
             SCOPE_STRING(asset_path, folder);
             get_to_run_tree_path(catalog.path, folder);
@@ -388,22 +387,22 @@ AssetId get_asset_at_index(int index, AssetCatalog& catalog)
                 return NullAssetId;
             }
 
-            asset.identifier.generation += 1;
-            return asset.identifier;
+            catalog.assets[index].identifier.generation += 1;
+            return catalog.assets[index].identifier;
         }
         else {
             auto asset_path = catalog.get_asset_path_at_index(index);
             SCOPE_STRING(asset_path, asset_path_c);
             get_to_run_tree_path(catalog.path, asset_path_c);
 
-            bool load = load_asset(catalog.path, asset, catalog.load_context);
+            bool load = load_asset(catalog.path, catalog.assets[index], catalog.load_context);
             if (!load)
             {
                 return NullAssetId;
             }
 
-            asset.identifier.generation += 1;
-            return asset.identifier;
+            catalog.assets[index].identifier.generation += 1;
+            return catalog.assets[index].identifier;
         }
     }
 }
