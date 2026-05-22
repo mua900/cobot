@@ -9,10 +9,13 @@
 #include "vehicle.hpp"
 #include "script.hpp"
 #include "map.hpp"
+#include "mission.hpp"
 
 struct GameState {
-    Vehicle vehicle;
-    Icon icons[32];  // @todo update
+    Vehicle vehicle = {};
+    Map map = {};
+    Mission mission = {};
+    Icon icons[32] = {};
     DArray<Script> scripts = {};
 
     ~GameState();

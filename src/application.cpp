@@ -548,6 +548,12 @@ bool Application::mouse_input_mission_select() {
                     case BackButton: {
                         switch_modes(ModeMenu);
                         switch_menu(MenuMain);
+                        break;
+                    }
+                    case MissionButton: {
+                        switch_modes(ModeGame);
+                        switch_menu(MenuMain);
+                        break;
                     }
                 }
             }
@@ -812,9 +818,18 @@ bool Application::init_mission_ui() {
     Font font = m_catalog.get_font(m_editor_font);
     Color button_color = Color(0x77, 0x55, 0x55);
     Color background = Color(0x33, 0x55, 0x66);
-
+    
     add_button(UiMissionSelect, BackButton, Button(create_text(m_render.renderer, String("Back"), m_catalog.get_font(m_font), button_color), ws * 0.05, ws * 0.1, background));
     
+    // @todo layouts would be useful here
+    float buttonY = ws.y * 0.2;
+    float buttonX = ws.x * 0.1;
+    vec2 buttonScale = vec2(ws.x * 0.1, ws.y * 0.1);
+    Color missionBackground = Color(0x44, 0x55, 0x55);
+    Color missionTextColor = Color(0x66, 0x33, 0x77);
+    Button testMission = Button(create_text(m_render.renderer, String("Test Mission"), m_catalog.get_font(m_font), missionTextColor), vec2(buttonX, buttonY), buttonScale, missionBackground);
+    testMission.data.number = 0;  // the id of the mission this represents
+    add_button(UiMissionSelect, MissionButton, testMission);
 
     return true;
 }
@@ -926,7 +941,7 @@ void Application::draw_ui_state(const UiState& state)
 
     for (const Button& button : state.button)
     {
-        render_textured_rectangle(Rectangle(button.position, button.scale), button.text.texture, button.background);
+        render_textured_rectangle(Rectangle(button.position, button.scale), button.text.texture, button.background, true);
     }
 
     for (const Label& label : state.label)

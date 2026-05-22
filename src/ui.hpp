@@ -26,6 +26,7 @@ enum UiElementId {
     BackButton,
     MainEditor,
     PartsPanel,
+    MissionButton,
 };
 
 union UserData {
