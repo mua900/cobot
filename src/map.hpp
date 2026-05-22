@@ -12,14 +12,20 @@ struct Environment {
     float moist = 0;
 };
 
+struct MapPixel {
+    u8 a = 0;
+    u8 b = 0;
+    u8 g = 0;
+    u8 r = 0;
+};
+
 struct Map {
-    // @todo
     Surface surface = {};
     Environment environment = {};
     SDL_Texture* texture = nullptr;
+    MapPixel* mapData = nullptr;
 };
 
-// @todo
-Map generate_map(int width, int height);
+bool generate_map(SDL_Renderer* renderer, Map* map, u64 seed, int width, int height);
 
 #endif // _MAP_H

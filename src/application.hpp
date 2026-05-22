@@ -183,3 +183,5 @@ private:
 
 void get_base_path(String_Builder& builder);
 lua_State* init_lua();
+
+void initialize_libraries();

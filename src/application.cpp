@@ -1,6 +1,8 @@
 #include "application.hpp"
 #include "log.hpp"
 
+#include "external/open_simplex.hpp"
+
 #include <iostream>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -91,6 +93,8 @@ bool Application::initialize()
         game.scripts.add(Script());
     }
 
+    initialize_libraries();
+
     if (!init_game_state()) {
         return false;
     }
@@ -102,7 +106,9 @@ bool Application::initialize()
 
 bool Application::init_game_state()
 {
-    game.map = generate_map(600, 600);
+    if (!generate_map(m_render.renderer, &game.map, time(0), 600, 600)) {
+        return false;
+    }
     game.vehicle = get_default_vehicle();
 
     return true;
@@ -1215,4 +1221,11 @@ lua_State* init_lua()
     // @todo register the functions we want etc.
 
     return state;
+}
+
+void initialize_libraries()
+{
+    OpenSimplex2::initializeGradients2d();
+    OpenSimplex2::initializeGradients3d();
+    OpenSimplex2::initializeGradients4d();
 }

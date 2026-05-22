@@ -6,6 +6,20 @@
 #include "asset.hpp"
 #include "text.hpp"
 
+enum PartKind : u32 {
+    PART_TIRE,
+    PART_CHASIS,
+    PART_CONTROLLER,
+    PART_KIND_COUNT,
+    PART_KIND_SENTINEL,
+};
+
+struct AttachmentPoint {
+    u32 kindMask = 0;  // what kind of parts can be attached
+    PartKind kind;  // the kind of the attached part
+    int part;  // the index of the part
+};
+
 enum TireKind {
     TireBasic,
     TireKindCount,
@@ -22,6 +36,7 @@ struct Tire {
     };
 
     Tire() {}
+    Tire(BasicTire t) : kind(TireBasic), basic(t) {}
 };
 
 enum ChasisKind {
@@ -31,6 +46,10 @@ enum ChasisKind {
 
 struct BasicChasis {
     vec2 scale = {};
+    AttachmentPoint frontLeft = {};
+    AttachmentPoint frontRight = {};
+    AttachmentPoint backLeft = {};
+    AttachmentPoint backRight = {};
 };
 
 struct Chasis {
@@ -40,6 +59,7 @@ struct Chasis {
     };
 
     Chasis() {}
+    Chasis(BasicChasis c) : kind(ChasisBasic), basic(c) {}
 };
 
 enum ControllerKind {
@@ -58,20 +78,13 @@ struct Controller {
     };
 
     Controller() {}
+    Controller(BasicController c) : kind(ControllerBasic), basic(c) {}
 };
 
 struct Vehicle {
     DArray<Tire> tire;
     DArray<Chasis> chasis;
     DArray<Controller> controller;
-};
-
-enum PartKind {
-    TIRE,
-    CHASIS,
-    CONTROLLER,
-    PART_KIND_COUNT,
-    PART_KIND_SENTINEL,
 };
 
 struct VehiclePart {

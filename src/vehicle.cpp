@@ -22,7 +22,7 @@ bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& 
         if (!id.is_valid()) return false;
         SDL_Texture* texture = catalog.get_image(id);
 
-        icons.add(IconButton(texture, background, getPartId(TIRE, i)));
+        icons.add(IconButton(texture, background, getPartId(PART_TIRE, i)));
     }
 
     return true;
@@ -36,7 +36,7 @@ bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog
         if (!id.is_valid()) return false;
         SDL_Texture* texture = catalog.get_image(id);
 
-        icons.add(IconButton(texture, background, getPartId(CHASIS, i)));
+        icons.add(IconButton(texture, background, getPartId(PART_CHASIS, i)));
     }
 
     return true;
@@ -50,7 +50,7 @@ bool load_controller_icons(DArray<IconButton>& icons, Color background, AssetCat
         if (!id.is_valid()) return false;
         SDL_Texture* texture = catalog.get_image(id);
 
-        icons.add(IconButton(texture, background, getPartId(CONTROLLER, i)));
+        icons.add(IconButton(texture, background, getPartId(PART_CONTROLLER, i)));
     }
 
     return true;
@@ -66,8 +66,8 @@ Vehicle get_default_vehicle()
 {
     Vehicle vehicle;
 
-    Chasis chasis;
-    chasis.basic.scale = 10;
+    BasicChasis chasis = {};
+    chasis.scale = 10;
 
     return vehicle;
 }
