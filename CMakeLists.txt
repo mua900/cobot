@@ -41,6 +41,8 @@ add_executable(game
 	src/vehicle.cpp
 	src/map.hpp
 	src/map.cpp
+	src/editor.hpp
+	src/editor.cpp
 	src/template.hpp
 	src/main.cpp
 )

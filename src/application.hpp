@@ -110,6 +110,8 @@ public:
 private:
     void run_program();
 
+    bool init_game_state();
+
     bool init_ui();
     bool init_game_ui();
     bool init_mission_ui();

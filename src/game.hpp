@@ -15,10 +15,7 @@ struct GameState {
     Vehicle vehicle = {};
     Map map = {};
     Mission mission = {};
-    Icon icons[32] = {};
     DArray<Script> scripts = {};
-
-    ~GameState();
 };
 
 

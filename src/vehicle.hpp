@@ -20,6 +20,8 @@ struct Tire {
     union {
         BasicTire basic;
     };
+
+    Tire() {}
 };
 
 enum ChasisKind {
@@ -36,6 +38,8 @@ struct Chasis {
     union {
         BasicChasis basic;
     };
+
+    Chasis() {}
 };
 
 enum ControllerKind {
@@ -52,6 +56,8 @@ struct Controller {
     union {
         BasicController basic;
     };
+
+    Controller() {}
 };
 
 struct Vehicle {
@@ -88,5 +94,7 @@ const char* get_controller_name(ControllerKind kind);
 bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
 bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
 bool load_controller_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
+
+Vehicle get_default_vehicle();
 
 #endif // _VEHICLE_H

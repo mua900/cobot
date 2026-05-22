@@ -60,3 +60,14 @@ PartId getPartId(int partKind, int subType)
 {
     return (partKind << 16) | (subType);
 }
+
+
+Vehicle get_default_vehicle()
+{
+    Vehicle vehicle;
+
+    Chasis chasis;
+    chasis.basic.scale = 10;
+
+    return vehicle;
+}

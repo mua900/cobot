@@ -91,7 +91,19 @@ bool Application::initialize()
         game.scripts.add(Script());
     }
 
+    if (!init_game_state()) {
+        return false;
+    }
+
     quit = false;
+
+    return true;
+}
+
+bool Application::init_game_state()
+{
+    game.map = generate_map();
+    game.vehicle = get_default_vehicle();
 
     return true;
 }
@@ -587,7 +599,7 @@ bool Application::mouse_input_mission_select() {
                         break;
                     }
                     case MissionButton: {
-                        switch_modes(ModeEditor);
+                        switch_modes(ModeGame);
                         break;
                     }
                 }

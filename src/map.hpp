@@ -19,4 +19,7 @@ struct Map {
     SDL_Texture* texture = nullptr;
 };
 
+// @todo
+Map generate_map();
+
 #endif // _MAP_H
