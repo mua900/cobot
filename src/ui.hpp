@@ -29,11 +29,6 @@ enum UiElementId {
     MissionButton,
 };
 
-union UserData {
-    s64 number;
-    void* ptr;
-};
-
 struct DragInfo {
     vec2 start = vec2();
     bool drag = false;
@@ -196,7 +191,7 @@ struct Text_Field
 
     void clear() {
         m_buffer.remove(0, m_buffer.length);
-        // SDL_DestroyTexture(m_texture);
+        SDL_DestroyTexture(m_texture);
         m_texture = nullptr;
         m_cursor_pixel_x = 0;
         m_cursor_pixel_y = 0;
@@ -430,11 +425,11 @@ struct Drop_Down_List {
 
 struct PanelTab {
     Icon tabIcon = {};
-    DArray<Icon> icons = {};
+    DArray<IconButton> icons = {};
     Color color = {};
 
     PanelTab() {}
-    PanelTab(Icon tab, DArray<Icon> icons, Color color) : tabIcon(tab), icons(icons), color(color) {}
+    PanelTab(Icon tab, DArray<IconButton> icons, Color color) : tabIcon(tab), icons(icons), color(color) {}
 };
 
 struct Panel {

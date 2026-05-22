@@ -494,6 +494,8 @@ Label* UiState::get_label(UiElementId id) {
 }
 
 Rectangle Panel::get_icon_area(int index) const {
+    ASSERT(index < tabs.get(activeTab).icons.size());
+
     float length_per_icon = iconSize + iconMargin;
     int rowCount = area.h / length_per_icon;
     int row = index % rowCount;
@@ -503,6 +505,8 @@ Rectangle Panel::get_icon_area(int index) const {
 }
 
 Rectangle Panel::get_tab_header_area(int index) const {
+    ASSERT(index < tabs.size());
+
     int rowCount = area.h / (tabHeaderSize * 2);
     int row = index % rowCount;
     int column = index / rowCount;

@@ -414,6 +414,10 @@ bool Application::mouse_input_editor()
             {
                 PanelTab& tab = panel.tabs.get_ref(panel.activeTab);
                 for (int i = 0; i < tab.icons.size(); i++) {
+                    Rectangle area = panel.get_icon_area(i);
+                    if (area.contains_centered(mouse_pos)) {
+                        
+                    }
                 }
 
                 return true;
@@ -854,19 +858,19 @@ bool Application::init_editor_ui() {
     AssetId tireIconId = get_asset(String("tireTabIcon"), m_catalog);
     if (!tireIconId.is_valid()) return false;
     Icon tireIcon = Icon(m_catalog.get_image(tireIconId), tabIconColor);
-    DArray <Icon> tireTabIcons;
+    DArray <IconButton> tireTabIcons;
     if (!load_tire_icons(tireTabIcons, iconColor, m_catalog)) return false;
 
     AssetId chasisIconId = get_asset(String("chasisTabIcon"), m_catalog);
     if (!chasisIconId.is_valid()) return false;
     Icon chasisIcon = Icon(m_catalog.get_image(chasisIconId), tabIconColor);
-    DArray<Icon> chasisTabIcons;
+    DArray<IconButton> chasisTabIcons;
     if (!load_chasis_icons(chasisTabIcons, iconColor, m_catalog)) return false;
 
     AssetId controllerIconId = get_asset(String("controllerTabIcon"), m_catalog);
     if (!controllerIconId.is_valid()) return false;
     Icon controllerIcon = Icon(m_catalog.get_image(controllerIconId), tabIconColor);
-    DArray<Icon> controllerTabIcons;
+    DArray<IconButton> controllerTabIcons;
     if (!load_controller_icons(controllerTabIcons, iconColor, m_catalog)) return false;
 
     partsPanel.tabs.add(PanelTab(tireIcon, tireTabIcons, panel_color));
@@ -1011,7 +1015,7 @@ void Application::render_panel(const Panel& panel) const
     const float iconSize = 32;
     for (int i = 0; i < tab.icons.size(); i++) {
         Rectangle area = panel.get_icon_area(i);
-        render_textured_rectangle(area, tab.icons.get(i).texture, tab.icons.get(i).background, true, false);
+        render_textured_rectangle(area, tab.icons.get(i).icon.texture, tab.icons.get(i).icon.background, true, false);
     }
 
     for (int i = 0; i < panel.tabs.size(); i++) {

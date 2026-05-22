@@ -8,6 +8,7 @@
 #include "input.hpp"
 #include "draw.hpp"
 #include "game.hpp"
+#include "editor.hpp"
 
 enum ApplicationMode {
     ModeMenu,
@@ -92,6 +93,7 @@ public:
     AssetId m_editor_font = {};
 
     GameState game = {};
+    VehicleEditor editor = {};
 
     DArray<ApplicationMessage> messages = {};
 
