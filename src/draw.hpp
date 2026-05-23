@@ -58,6 +58,9 @@ void draw_texture(const RenderContext& context, Rectangle area, SDL_Texture* tex
 SDL_Texture* render_text(SDL_Renderer* renderer, String text, Font font, Color color);
 Text create_text(SDL_Renderer* renderer, String text, Font font, Color color);
 
+void render_texture(SDL_Renderer* renderer, Rectangle area, Texture* texture, bool strech = false);
+void render_textured_rectangle(SDL_Renderer* renderer, Rectangle rect, Texture* texture, Color color, bool strech = false, bool center = true);
+
 void render_text_size(SDL_Renderer* renderer, Text text, vec2 where, vec2 absolute_scale = vec2(0, 0));
 void render_text_scale(SDL_Renderer* renderer, Text text, vec2 where, vec2 scale_factor = vec2(0,0));
 

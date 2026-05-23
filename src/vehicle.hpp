@@ -15,9 +15,21 @@ enum PartKind : u32 {
 };
 
 struct AttachmentPoint {
-    u32 kindMask = 0;  // what kind of parts can be attached
-    PartKind kind;  // the kind of the attached part
-    int part;  // the index of the part
+    u32 kindMask = 0;   // what kind of parts can be attached (it is ignored if it's 0)
+    PartKind kind;      // the kind of the attached part
+    int part = 0;       // the index of the part
+
+    AttachmentPoint() {}
+    AttachmentPoint(u32 kind_mask) : kindMask(kind_mask) {}
+
+    bool attach(PartKind partKind, int partIndex) {
+        if (kindMask != 0 && !(kindMask & partKind)) {
+            return false;
+        }
+
+        kind = partKind;
+        part = partIndex;
+    }
 };
 
 enum TireKind {
@@ -36,6 +48,7 @@ struct Tire {
     };
 
     Tire() {}
+    // implicit
     Tire(BasicTire t) : kind(TireBasic), basic(t) {}
 };
 
@@ -59,6 +72,7 @@ struct Chasis {
     };
 
     Chasis() {}
+    // implicit
     Chasis(BasicChasis c) : kind(ChasisBasic), basic(c) {}
 };
 
@@ -68,7 +82,8 @@ enum ControllerKind {
 };
 
 struct BasicController {
-    u32 codeSize = 0;
+    u32 codeSizeLimit = 0;
+    int script = 0;
 };
 
 struct Controller {
@@ -78,10 +93,13 @@ struct Controller {
     };
 
     Controller() {}
+    // implicit
     Controller(BasicController c) : kind(ControllerBasic), basic(c) {}
 };
 
 struct Vehicle {
+    vec2 worldPosition = {};
+
     DArray<Tire> tire;
     DArray<Chasis> chasis;
     DArray<Controller> controller;
@@ -95,6 +113,8 @@ struct VehiclePart {
         Controller controller;
     };
 };
+
+constexpr static int MaxPartCount = cobot::max(cobot::max(ChasisKindCount, TireKindCount), ControllerKindCount);
 
 // lower 16 bits are the subtype and the higher 16 bits are the type
 using PartId = u32;

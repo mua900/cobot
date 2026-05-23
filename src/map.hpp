@@ -27,5 +27,6 @@ struct Map {
 };
 
 bool generate_map(SDL_Renderer* renderer, Map* map, u64 seed, int width, int height);
+bool generate_map_rgb(SDL_Renderer* renderer, Map* map, u64 seedR, u64 seedG, u64 seedB, int width, int height);
 
 #endif // _MAP_H

@@ -189,4 +189,9 @@ struct Rectangle {
 
 #define COLOR_ARG(color) color.r,color.g,color.b,color.a
 
+namespace cobot {
+    constexpr int max(int x, int y) { return x > y ? x : y; }
+    constexpr int min(int x, int y) { return x > y ? y : x; }
+}
+
 #endif // _MATH_UTIL_H

@@ -16,7 +16,12 @@ struct GameState {
     Map map = {};
     Mission mission = {};
     DArray<Script> scripts = {};
+
+    AssetId partImages [PART_KIND_COUNT][MaxPartCount] = {};
+
+    bool load_part_images(AssetCatalog& catalog);
 };
 
+void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 
 #endif // _GAME_H

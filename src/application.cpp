@@ -94,9 +94,10 @@ bool Application::initialize()
         return false;
     }
 
-    // scripts
+    // game state
     {
         game.scripts.add(Script());
+        game.load_part_images(m_catalog);
     }
 
     initialize_libraries();
@@ -960,6 +961,8 @@ void Application::draw_game()
         SDL_FRect dst = { 0, 0, ws.x, ws.y };
         SDL_RenderTexture(m_render.renderer, game.map.texture, nullptr, &dst);
     }
+
+    draw_vehicle(m_render, m_catalog, game);
 }
 
 void Application::draw_ui()
@@ -969,7 +972,7 @@ void Application::draw_ui()
 
 void Application::draw_messages() {
     for (auto msg : messages) {
-        render_textured_rectangle(Rectangle(msg.where, msg.scale), msg.texture, msg.background, true);
+        render_textured_rectangle(m_render.renderer, Rectangle(msg.where, msg.scale), msg.texture, msg.background, true);
     }
 }
 
@@ -992,12 +995,12 @@ void Application::draw_ui_state(const UiState& state)
 
     for (const Button& button : state.button)
     {
-        render_textured_rectangle(Rectangle(button.position, button.scale), button.text.texture, button.background, true);
+        render_textured_rectangle(m_render.renderer, Rectangle(button.position, button.scale), button.text.texture, button.background, true);
     }
 
     for (const Label& label : state.label)
     {
-        render_textured_rectangle(Rectangle(label.position, label.scale), label.text.texture, label.background, false);
+        render_textured_rectangle(m_render.renderer, Rectangle(label.position, label.scale), label.text.texture, label.background, false);
     }
 
     for (const Panel& panel : state.panels)
@@ -1056,12 +1059,12 @@ void Application::render_panel(const Panel& panel) const
     const float iconSize = 32;
     for (int i = 0; i < tab.icons.size(); i++) {
         Rectangle area = panel.get_icon_area(i);
-        render_textured_rectangle(area, tab.icons.get(i).icon.texture, tab.icons.get(i).icon.background, true, false);
+        render_textured_rectangle(m_render.renderer, area, tab.icons.get(i).icon.texture, tab.icons.get(i).icon.background, true, false);
     }
 
     for (int i = 0; i < panel.tabs.size(); i++) {
         Rectangle area = panel.get_tab_header_area(i);
-        render_textured_rectangle(area, panel.tabs.get(i).tabIcon.texture, panel.tabs.get(i).tabIcon.background, true);
+        render_textured_rectangle(m_render.renderer, area, panel.tabs.get(i).tabIcon.texture, panel.tabs.get(i).tabIcon.background, true);
     }
 }
 
@@ -1069,16 +1072,16 @@ void Application::render_text_editor(const TextEditor& editor) const
 {
     Rectangle text_area = editor.field.m_area;
     Rectangle title_area = editor.get_title_area();
-    render_textured_rectangle(title_area, editor.title_texture, editor.title_bar_color);
+    render_textured_rectangle(m_render.renderer, title_area, editor.title_texture, editor.title_bar_color);
 
     Rectangle area = editor.get_title_area();
     vec2 iconPos = area.get_position() + vec2(area.get_scale().x / 2, 0);
     vec2 iconScale = vec2(editor.title_height, editor.title_height);
     
     Color clicked_background = Color(0xAA, 0x55, 0x33);
-    render_textured_rectangle(editor.get_icon1_area(), editor.icon1.texture, (editor.clicked_icon == 1) ? clicked_background : editor.icon1.background, true);
-    render_textured_rectangle(editor.get_icon2_area(), editor.icon2.texture, (editor.clicked_icon == 2) ? clicked_background : editor.icon2.background, true);
-    render_textured_rectangle(editor.get_icon3_area(), editor.icon3.texture, (editor.clicked_icon == 3) ? clicked_background : editor.icon3.background, true);
+    render_textured_rectangle(m_render.renderer, editor.get_icon1_area(), editor.icon1.texture, (editor.clicked_icon == 1) ? clicked_background : editor.icon1.background, true);
+    render_textured_rectangle(m_render.renderer, editor.get_icon2_area(), editor.icon2.texture, (editor.clicked_icon == 2) ? clicked_background : editor.icon2.background, true);
+    render_textured_rectangle(m_render.renderer, editor.get_icon3_area(), editor.icon3.texture, (editor.clicked_icon == 3) ? clicked_background : editor.icon3.background, true);
 
     render_text_field(editor.field);
 }
@@ -1147,7 +1150,7 @@ Icon Application::create_icon(AssetId image, Color background) {
     return Icon(texture, background);
 }
 
-void Application::render_texture(Rectangle area, Texture* texture, bool strech)
+void render_texture(SDL_Renderer* renderer, Rectangle area, Texture* texture, bool strech)
 {
     float tex_w, tex_h;
     SDL_GetTextureSize(texture, &tex_w, &tex_h);
@@ -1155,15 +1158,15 @@ void Application::render_texture(Rectangle area, Texture* texture, bool strech)
     float width = strech ? area.w : tex_w;
     float height = strech ? area.h : tex_h;
     SDL_FRect dst = { area.x, area.y, width, height };
-    SDL_RenderTexture(m_render.renderer, texture, &src, &dst);
+    SDL_RenderTexture(renderer, texture, &src, &dst);
 }
 
-void Application::render_textured_rectangle(Rectangle rect, SDL_Texture* texture, Color color, bool strech, bool center) const {
-    SDL_SetRenderDrawColor(m_render.renderer, COLOR_ARG(color));
+void render_textured_rectangle(SDL_Renderer* renderer, Rectangle rect, SDL_Texture* texture, Color color, bool strech, bool center) {
+    SDL_SetRenderDrawColor(renderer, COLOR_ARG(color));
     SDL_FRect area = center ?
         SDL_FRect { rect.x - rect.w / 2, rect.y - rect.h / 2, rect.w, rect.h } :
         SDL_FRect { rect.x, rect.y, rect.w, rect.h };
-    SDL_RenderFillRect(m_render.renderer, &area);
+    SDL_RenderFillRect(renderer, &area);
 
     float tex_w, tex_h;
     SDL_GetTextureSize(texture, &tex_w, &tex_h);
@@ -1171,7 +1174,7 @@ void Application::render_textured_rectangle(Rectangle rect, SDL_Texture* texture
     float width = strech ? area.w : tex_w;
     float height = strech ? area.h : tex_h;
     SDL_FRect dst = { area.x, area.y, width, height };
-    SDL_RenderTexture(m_render.renderer, texture, &src, &dst);
+    SDL_RenderTexture(renderer, texture, &src, &dst);
 }
 
 void Application::text_input_stop()

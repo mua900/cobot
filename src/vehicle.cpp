@@ -64,10 +64,31 @@ PartId getPartId(int partKind, int subType)
 
 Vehicle get_default_vehicle()
 {
-    Vehicle vehicle;
+    Vehicle vehicle = {};
+
+    BasicTire tires[4] = {};
+    for (auto& t : tires) {
+        t.size = 5;
+    }
+
+    int fl = vehicle.tire.add(tires[0]);
+    int fr = vehicle.tire.add(tires[1]);
+    int bl = vehicle.tire.add(tires[2]);
+    int br = vehicle.tire.add(tires[3]);
 
     BasicChasis chasis = {};
     chasis.scale = 10;
+    chasis.frontLeft.attach(PART_TIRE, fl);
+    chasis.frontRight.attach(PART_TIRE, fr);
+    chasis.backLeft.attach(PART_TIRE, bl);
+    chasis.backRight.attach(PART_TIRE, br);
+
+    vehicle.chasis.add(chasis);
+
+    BasicController con = {};
+    con.codeSizeLimit = 128;
+    con.script = 0;  // @todo
+    vehicle.controller.add(con);
 
     return vehicle;
 }
