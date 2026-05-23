@@ -6,7 +6,7 @@
 bool parse_image_attribute(String attribute, SDL_Texture*& texture);
 bool parse_audio_attribute(String attribute, TrackId& audio);
 bool parse_font_attribute(String attribute, Font& font);
-bool parse_shader_attribute(String attribute, SDL_GPUShader*& shader);
+bool parse_shader_attribute(String attribute, Shader& shader);
 
 bool parse_attribute_value(String attribute, const char* key, String& out_value);
 
@@ -232,8 +232,44 @@ bool parse_font_attribute(String attribute, Font& font)
     return false;
 }
 
-bool parse_shader_attribute(String attribute, SDL_GPUShader*& shader)
+bool parse_shader_attribute(String attribute, Shader& shader)
 {
+    String out = {};
+
+    if (parse_attribute_value(attribute, "stage", out)) {
+        if (string_compare(out, String("vertex"))) {
+            shader.stage = ShaderStageVertex;
+        }
+        else if (string_compare(out, String("fragment"))) {
+            shader.stage = ShaderStageFragment;
+        }
+        else {
+            return false;
+        }
+
+        return true;
+    }
+    else if (parse_attribute_value(attribute, "nuniforms", out)) {
+        bool success = false;
+        int value = string_to_integer(out, &success);
+        if (!success) {
+            return false;
+        }
+
+        shader.numUniformBuffers = value;
+        return true;
+    }
+    else if (parse_attribute_value(attribute, "nsamplers", out)) {
+        bool success = false;
+        int value = string_to_integer(out, &success);
+        if (!success) {
+            return false;
+        }
+
+        shader.numSamplers = value;
+        return true;
+    }
+
     return false;
 }
 
@@ -446,9 +482,14 @@ bool load_asset(String_Builder& path, Asset& asset, AssetLoadContext& load_conte
             return true;
         }
         case ASSET_KIND_SHADER: {
-            // @todo
-            panic("No shaders support is implemented yet");
-            return false;
+            bool success = loadShader(*load_context.render, asset.data.shader, path.c_string());
+            if (!success)
+            {
+                asset.identifier.id = -1;
+                return false;
+            }
+
+            return true;
         }
         default: {
             return false;

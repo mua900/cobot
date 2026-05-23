@@ -39,7 +39,9 @@ bool Application::initialize()
         // minimum aspect ratio of 1 and maximum aspect ratio of 2 default 1.6
         SDL_SetWindowAspectRatio(window, 1.0, 2.0);
 
-        SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
+        SDL_GPUDevice* device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, false, nullptr);
+
+        SDL_Renderer* renderer = SDL_CreateGPURenderer(device, window);
         if (!renderer)
         {
             SDL_Log("Failed to create renderer with SDL: %s\n", SDL_GetError());
@@ -52,7 +54,11 @@ bool Application::initialize()
 
         int render_size_x, render_size_y;
         SDL_GetRenderOutputSize(renderer, &render_size_x, &render_size_y);
-        m_render = { vec2(render_size_x, render_size_y), renderer };
+        m_render = {
+            .render_size = vec2(render_size_x, render_size_y),
+            .renderer = renderer,
+            .device = device
+        };
     }
 
     {
@@ -868,7 +874,7 @@ bool Application::init_editor_ui() {
 
     Rectangle panel_area = { 0, 0, ws.x * 0.3f, ws.y };
     Color panel_color = Color(0x33, 0x44, 0x44);
-    Panel partsPanel (PartsPanel, panel_area, 32, 32, 16);
+    Panel partsPanel (PartsPanel, panel_area, 32, 48, 16);
 
     Color iconColor = Color(0x77, 0x33, 0x44);
     Color tabIconColor = Color(0x33, 0x66, 0x44);

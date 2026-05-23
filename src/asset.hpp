@@ -50,7 +50,7 @@ struct Asset {
         Font font;
         SDL_Texture* image;
         TrackId audio;
-        SDL_GPUShader* shader;
+        Shader shader;
     } data = {};
 
     Asset() : kind(ASSET_KIND_ZERO), identifier(NullAssetId) {}
@@ -141,7 +141,7 @@ struct AssetCatalog {
         return asset.data.audio;
     }
 
-    SDL_GPUShader* get_shader(AssetId id) const
+    const Shader* get_shader(AssetId id) const
     {
         if (!id.is_valid())
         {
@@ -154,7 +154,7 @@ struct AssetCatalog {
             return nullptr;
         }
 
-        return asset.data.shader;
+        return &asset.data.shader;
     }
 };
 

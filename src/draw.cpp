@@ -309,9 +309,33 @@ void render_text_scale(SDL_Renderer* renderer, Text text, vec2 where, vec2 scale
     SDL_RenderTexture(renderer, text.texture, &src, &dst);
 }
 
-bool loadShader(RenderContext& context, const char* path)
+bool loadShader(RenderContext& context, Shader& shader, const char* path)
 {
-    // @todo
-    ASSERT(false);
-    return false;
+    SDL_GPUShaderFormat format = SDL_GPU_SHADERFORMAT_SPIRV;
+    SDL_GPUShaderStage shaderStage = SDL_GPUShaderStage(shader.stage);
+
+    BinaryData code = {};
+    if (!load_file(path, code)) {
+        return false;
+    }
+
+    SDL_GPUShaderCreateInfo info = {};
+    info.code_size = code.size;
+    info.code = code.data;
+    info.entrypoint = "main";
+    info.format = format;
+    info.stage = shaderStage;
+    info.num_samplers = shader.numSamplers;
+    info.num_storage_textures = shader.numStorageTextures;
+    info.num_storage_buffers = shader.numStorageBuffers;
+    info.num_uniform_buffers = shader.numUniformBuffers;
+    
+    SDL_GPUShader* shaderObj = SDL_CreateGPUShader(context.device, &info);
+    if (!shaderObj) {
+        return false;
+    }
+
+    shader.shader = shaderObj;
+
+    return true;
 }
