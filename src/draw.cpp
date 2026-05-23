@@ -1,6 +1,7 @@
 #include "draw.hpp"
 #include "math_util.hpp"
 #include "common.hpp"
+#include "log.hpp"
 
 void draw_segment(const RenderContext& context, vec2 start, vec2 end, float thick, ColorF color)
 {
@@ -316,6 +317,7 @@ bool loadShader(RenderContext& context, Shader& shader, const char* path)
 
     BinaryData code = {};
     if (!load_file(path, code)) {
+        log_error("Could not load shader %s", path);
         return false;
     }
 
@@ -332,6 +334,7 @@ bool loadShader(RenderContext& context, Shader& shader, const char* path)
     
     SDL_GPUShader* shaderObj = SDL_CreateGPUShader(context.device, &info);
     if (!shaderObj) {
+        log_error("%s", SDL_GetError());
         return false;
     }
 

@@ -336,8 +336,7 @@ bool parse_asset_description(const char* description, AssetCatalog& catalog)
             else
             {
                 SCOPE_STRING(line, line_cstr);
-                log_error("Could not parse line %d in %s asset description", line_number, description);
-                log_info("Line: %s", line_cstr);
+                log_error("Could not parse line %d in asset description. Line: %s", line_number, line_cstr);
                 return false;
             }
         }

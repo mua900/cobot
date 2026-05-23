@@ -208,7 +208,7 @@ long get_file_size(FILE* file) {
 }
 
 bool load_file(const char* filepath, BinaryData& data) {
-	FILE* handle = std::fopen(filepath, "r");
+	FILE* handle = std::fopen(filepath, "rb");
     if (!handle)
     {
         return false;

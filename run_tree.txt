@@ -11,3 +11,10 @@ image folder Icons icon
 
 # parts
 image folder Parts parts
+
+# shader
+# @todo load different ones depending on the platform
+# shader file VertexShader shader/binary/vertex.spv     stage=vertex
+# shader file FragmentShader shader/binary/fragment.spv stage=fragment
+shader file VertexShader shader/binary/vertex.dxil      stage=vertex
+shader file FragmentShader shader/binary/fragment.dxil  stage=fragment
