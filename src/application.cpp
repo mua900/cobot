@@ -1157,7 +1157,7 @@ void render_texture(SDL_Renderer* renderer, Rectangle area, Texture* texture, bo
     SDL_FRect src = { 0, 0, tex_w, tex_h };
     float width = strech ? area.w : tex_w;
     float height = strech ? area.h : tex_h;
-    SDL_FRect dst = { area.x, area.y, width, height };
+    SDL_FRect dst = { area.x - width / 2, area.y - height / 2, width, height };
     SDL_RenderTexture(renderer, texture, &src, &dst);
 }
 

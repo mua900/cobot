@@ -398,7 +398,6 @@ AssetId get_asset(String name, AssetCatalog& catalog)
     return NullAssetId;
 }
 
-
 AssetId get_asset_at_index(int index, AssetCatalog& catalog)
 {
     if (!catalog.assets.in_bounds(index))
@@ -518,6 +517,7 @@ SDL_EnumerationResult asset_callback(void* userdata, const char* dirname, const 
 
     int amount = catalog->path.append_path(String(fname));
 
+    // we could make this recursize but maybe not necessary
     if (!load_asset(catalog->path, asset, catalog->load_context)) {
         return SDL_ENUM_FAILURE;
     }
