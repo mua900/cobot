@@ -61,10 +61,18 @@ vec2 get_direction_vector(float angle)
 Rectangle merge_volumes(Rectangle v1, Rectangle v2)
 {
     Rectangle res = {};
-    res.x = (v1.x + v2.x) / 2;
-    res.y = (v1.y + v2.y) / 2;
-    res.w = fabsf(v1.x - v2.x) + (v1.w + v2.w) / 2;
-    res.h = fabsf(v1.y - v2.y) + (v1.h + v2.h) / 2;
+    vec2 p = vec2(v1.x, v1.y) - vec2(v1.w / 2, v1.h / 2);
+    vec2 q = vec2(v2.x, v2.y) - vec2(v2.w / 2, v2.h / 2);
+    vec2 r = vec2(v1.x, v1.y) + vec2(v1.w / 2, v1.h / 2);
+    vec2 w = vec2(v2.x, v2.y) + vec2(v2.w / 2, v2.h / 2);
+
+    vec2 min = vec2(cobot::min(p.x, q.x), cobot::min(p.y, q.y));
+    vec2 max = vec2(cobot::max(r.x, w.x), cobot::max(r.y, w.y));
+
+    res.x = (min.x + max.x) / 2;
+    res.y = (min.y + max.y) / 2;
+    res.w = max.x - min.x;
+    res.h = max.y - min.y;
 
     return res;
 }

@@ -452,7 +452,7 @@ struct Panel {
 struct ControlMenu {
     DragInfo drag = {};
     vec2 position = {};
-    float button_height = 0;
+    vec2 scale = {};
     DArray<Entry> buttons = {};
     Color background = {};
     bool visible = false;

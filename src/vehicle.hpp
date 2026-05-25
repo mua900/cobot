@@ -8,15 +8,15 @@
 #include "script.hpp"
 
 enum PartKind : u16 {
-    PART_KIND_SENTINEL = 0,
-    PART_TIRE = 1,
-    PART_CHASIS = 2,
-    PART_CONTROLLER = 3,
-    PART_KIND_COUNT = 3,
+    PART_TIRE = 0,
+    PART_CHASIS = 1,
+    PART_CONTROLLER = 2,
+    PART_KIND_COUNT = 2,
+    PART_KIND_SENTINEL = 3,
 };
 
 struct PartId {
-    u16 kind = 0;
+    u16 kind = PART_KIND_SENTINEL;
     u16 index = 0;
 
     PartId() {}
@@ -26,7 +26,7 @@ struct PartId {
     bool is_null() const { return kind == PART_KIND_SENTINEL; }
 };
 
-static const PartId NullPartId = PartId(PART_KIND_SENTINEL, 0);
+static const PartId NullPartId = PartId();
 
 struct VPartTransform {
     vec2 position = {};
@@ -67,6 +67,7 @@ struct AttachmentPoint {
 enum TireKind {
     TireBasic,
     TireKindCount,
+    TireSentinel,
 };
 
 struct BasicTire {
@@ -74,13 +75,15 @@ struct BasicTire {
 };
 
 struct Tire {
-    TireKind kind;
+    TireKind kind = TireSentinel;
     VPartData part = {};
     union {
         BasicTire basic;
     };
 
-    Tire() {}
+    Tire() {
+        basic = {};
+    }
     // implicit
     Tire(BasicTire t) : kind(TireBasic), basic(t) {}
     Tire(VPartData part, BasicTire t) : kind(TireBasic), part(part), basic(t) {}
@@ -89,6 +92,7 @@ struct Tire {
 enum ChasisKind {
     ChasisBasic,
     ChasisKindCount,
+    ChasisSentinel,
 };
 
 struct BasicChasis {
@@ -99,13 +103,15 @@ struct BasicChasis {
 };
 
 struct Chasis {
-    ChasisKind kind;
+    ChasisKind kind = ChasisSentinel;
     VPartData part = {};
     union {
         BasicChasis basic;
     };
 
-    Chasis() {}
+    Chasis() {
+        basic = {};
+    }
     // implicit
     Chasis(BasicChasis c) : kind(ChasisBasic), basic(c) {}
     Chasis(VPartData part, BasicChasis c) : kind(ChasisBasic), part(part), basic(c) {}
@@ -114,6 +120,7 @@ struct Chasis {
 enum ControllerKind {
     ControllerBasic,
     ControllerKindCount,
+    ControllerSentinel,
 };
 
 struct BasicController {
@@ -122,13 +129,15 @@ struct BasicController {
 };
 
 struct Controller {
-    ControllerKind kind;
+    ControllerKind kind = ControllerSentinel;
     VPartData part = {};
     union {
         BasicController basic;
     };
 
-    Controller() {}
+    Controller() {
+        basic = {};
+    }
     // implicit
     Controller(BasicController c) : kind(ControllerBasic), basic(c) {}
     Controller(VPartData part, BasicController c) : kind(ControllerBasic), part(part), basic(c) {}
@@ -142,7 +151,9 @@ struct VehiclePart {
         Controller* controller;
     };
 
-    VehiclePart() {}
+    VehiclePart() {
+        tire = nullptr;
+    }
     VehiclePart(Tire* t) : kind(PART_TIRE), tire(t) {}
     VehiclePart(Chasis* c) : kind(PART_CHASIS), chasis(c) {}
     VehiclePart(Controller* c) : kind(PART_CONTROLLER), controller(c) {}
@@ -158,9 +169,13 @@ struct Vehicle {
     DArray<Chasis> chasis = {};
     DArray<Controller> controller = {};
 
-    int add_tire(Tire& t, PartId parent);
-    int add_chasis(Chasis& c, PartId parent);
-    int add_controller(Controller& c, PartId parent);
+    PartId add_tire(Tire& t);
+    PartId add_chasis(Chasis& c);
+    PartId add_controller(Controller& c);
+
+    Tire* get_tire(PartId t);
+    Chasis* get_chasis(PartId c);
+    Controller* get_controller(PartId c);
 
     int add_root(PartId part);
 

@@ -13,7 +13,7 @@ struct vec2 {
     float x = 0, y = 0;
     vec2() {}
     vec2(float p_x, float p_y) : x(p_x), y(p_y) {}
-    vec2(float p) : x(p), y(p) {}
+    explicit vec2(float p) : x(p), y(p) {}
 
     vec2 normalized() const
     {

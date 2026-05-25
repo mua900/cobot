@@ -32,10 +32,10 @@ VPartData& Vehicle::getPartData(PartId id) const
             return chasis[id.index].part;
         }
         case PART_TIRE: {
-            return controller[id.index].part;
+            return tire[id.index].part;
         }
         case PART_CONTROLLER: {
-            return tire[id.index].part;
+            return controller[id.index].part;
         }
         default: panic("Invalid part type");
     }
@@ -72,59 +72,74 @@ PartKindId getPartKindId(PartKind partKind, u16 subType)
     return (partKind << 16) | (subType);
 }
 
-int Vehicle::add_tire(Tire& t, PartId parent) {
-    if (parent.is_valid()) {
-        volume = merge_volumes(volume, Rectangle(t.part.transform.position, t.part.transform.scale));
-    }
-    return tire.add(t);
+PartId Vehicle::add_tire(Tire& t) {
+    int index = tire.add(t);
+
+    PartId thisPart = PartId(PART_TIRE, index);
+
+    VPartTransform transform = getWorldTransform(PartId(PART_TIRE, index));
+    volume = merge_volumes(volume, Rectangle(transform.position, transform.scale * get_tire_scale(t.kind)));
+
+    return thisPart;
 }
 
-int Vehicle::add_chasis(Chasis& c, PartId parent) {
-    if (parent.is_valid()) {
-        volume = merge_volumes(volume, Rectangle(c.part.transform.position, c.part.transform.scale));
+PartId Vehicle::add_chasis(Chasis& c) {
+    int index = chasis.add(c);
+
+    PartId thisPart = PartId(PART_CHASIS, index);
+    switch (c.kind) {
+        case ChasisBasic:
+        {
+            if (c.basic.frontLeft.part.is_valid())  getParentRef(c.basic.frontLeft.part) = thisPart;
+            if (c.basic.frontRight.part.is_valid()) getParentRef(c.basic.frontRight.part) = thisPart;
+            if (c.basic.backLeft.part.is_valid())   getParentRef(c.basic.backLeft.part) = thisPart;
+            if (c.basic.backRight.part.is_valid())  getParentRef(c.basic.backRight.part) = thisPart;
+            break;
+        }
+        default: panic("Invalid chasis kind");
     }
-    return chasis.add(c);
+
+    VPartTransform transform = getWorldTransform(PartId(PART_CHASIS, index));
+    volume = merge_volumes(volume, Rectangle(transform.position, transform.scale * get_chasis_scale(c.kind)));
+
+    return thisPart;
 }
 
-int Vehicle::add_controller(Controller& c, PartId parent) {
-    if (parent.is_valid()) {
-        volume = merge_volumes(volume, Rectangle(c.part.transform.position, c.part.transform.scale));
+PartId Vehicle::add_controller(Controller& c) {
+    int index = controller.add(c);
+
+    PartId thisPart = PartId(PART_CONTROLLER, index);
+
+    VPartTransform transform = getWorldTransform(PartId(PART_CONTROLLER, index));
+    volume = merge_volumes(volume, Rectangle(transform.position, transform.scale * get_controller_scale(c.kind)));
+
+    return thisPart;
+}
+
+Tire* Vehicle::get_tire(PartId t) {
+    if (t.kind != PART_TIRE) {
+        return nullptr;
     }
-    return controller.add(c);
+    return tire.get_ptr(t.index);
+}
+
+Chasis* Vehicle::get_chasis(PartId c) {
+    if (c.kind != PART_CHASIS) {
+        return nullptr;
+    }
+    return chasis.get_ptr(c.index);
+}
+
+Controller* Vehicle::get_controller(PartId c) {
+    if (c.kind != PART_CONTROLLER) {
+        return nullptr;
+    }
+    return controller.get_ptr(c.index);
 }
 
 int Vehicle::add_root(PartId part)
 {
-    switch (part.kind)
-    {
-        case PART_CHASIS: {
-            Chasis& cha = chasis[part.index];
-            if (cha.part.parent.is_valid()) {
-                return -1;
-            }
-
-            switch (cha.kind) {
-                case ChasisBasic:
-                {
-                    getParentRef(cha.basic.frontLeft.part) = part;
-                    getParentRef(cha.basic.frontRight.part) = part;
-                    getParentRef(cha.basic.backLeft.part) = part;
-                    getParentRef(cha.basic.backRight.part) = part;
-                    break;
-                }
-                default: panic("Invalid chasis kind");
-            }
-            
-            return rootParts.add(part);
-        }
-        case PART_TIRE: {
-            return -1;
-        }
-        case PART_CONTROLLER: {
-            return -1;
-        }
-        default: panic("Invalid part type");
-    }
+    return rootParts.add(part);
 }
 
 PartId Vehicle::getPartAt(vec2 position) const
@@ -207,11 +222,18 @@ Vehicle get_default_vehicle()
     vehicle.worldPosition = vec2(600, 300);
     vehicle.volume = Rectangle(vehicle.worldPosition, vec2());
 
+    Chasis chasis = {};
+    chasis.kind = ChasisBasic;
+    chasis.part.transform.scale = 1;
+
+    PartId chasis_id = vehicle.add_chasis(chasis);
+
     Tire tires[4] = {};
     for (auto& t : tires) {
         t.kind = TireBasic;
         t.part.transform.scale = 1;
         t.basic.size = 5;
+        t.part.parent = chasis_id;
     }
 
     tires[0].part.transform.position = vec2(-25, -25);
@@ -219,29 +241,25 @@ Vehicle get_default_vehicle()
     tires[2].part.transform.position = vec2(-25, 25);
     tires[3].part.transform.position = vec2(25, 25);
 
-    int fl = vehicle.add_tire(tires[0], NullPartId);
-    int fr = vehicle.add_tire(tires[1], NullPartId);
-    int bl = vehicle.add_tire(tires[2], NullPartId);
-    int br = vehicle.add_tire(tires[3], NullPartId);
+    PartId fl = vehicle.add_tire(tires[0]);
+    PartId fr = vehicle.add_tire(tires[1]);
+    PartId bl = vehicle.add_tire(tires[2]);
+    PartId br = vehicle.add_tire(tires[3]);
 
-    Chasis chasis = {};
-    chasis.kind = ChasisBasic;
-    chasis.part.transform.scale = 1;
-    chasis.basic.frontLeft.attach(PartId(PART_TIRE, fl));
-    chasis.basic.frontRight.attach(PartId(PART_TIRE, fr));
-    chasis.basic.backLeft.attach(PartId(PART_TIRE, bl));
-    chasis.basic.backRight.attach(PartId(PART_TIRE, br));
-
-    int chasis_idx = vehicle.add_chasis(chasis, NullPartId);
+    Chasis* ch = vehicle.get_chasis(chasis_id);
+    ch->basic.frontLeft.attach(fl);
+    ch->basic.frontRight.attach(fr);
+    ch->basic.backLeft.attach(bl);
+    ch->basic.backRight.attach(br);
 
     Controller con = {};
     con.kind = ControllerBasic;
     con.part.transform.scale = 1;
     con.basic.codeSizeLimit = 128;
     con.basic.script = {};
-    vehicle.add_controller(con, NullPartId);
+    vehicle.add_controller(con);
 
-    vehicle.add_root(PartId(PART_CHASIS, chasis_idx));
+    vehicle.add_root(chasis_id);
 
     return vehicle;
 }

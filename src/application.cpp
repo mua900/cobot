@@ -583,6 +583,13 @@ bool Application::mouse_input_game()
                 }
             }
         }
+
+        if (game.vehicle.volume.contains_centered(mouse_pos))
+        {
+            PartId part = game.vehicle.getPartAt(mouse_pos);
+            auto& menu = m_ui[UiGame].control.get_ref(part.kind);
+            menu.visible = false;
+        }
     }
     else if (m_input.mouse.buttonFlags & MOUSE_RIGHT_MASK)
     {
@@ -590,6 +597,7 @@ bool Application::mouse_input_game()
         {
             PartId part = game.vehicle.getPartAt(mouse_pos);
             auto& menu = m_ui[UiGame].control.get_ref(part.kind);
+            menu.position = mouse_pos + menu.scale / 2;
             menu.visible = true;
         }
     }
@@ -861,6 +869,11 @@ bool Application::init_game_ui() {
     Color controlMenuButtonColor = Color(0x44, 0x66, 0x77);
     ControlMenu menus[PART_KIND_COUNT] = {};
 
+    for (int i = 0; i < PART_KIND_COUNT; i++)
+    {
+        menus[i].scale = vec2(200, 100);
+    }
+
     menus[PART_TIRE].add_button(create_text(m_render.renderer, String("Brake"), font, controlMenuButtonColor), 0);
     
     for (int i = 0; i < PART_KIND_COUNT; i++)
@@ -1030,6 +1043,14 @@ void Application::draw_ui_state(const UiState& state)
     {
         render_panel(panel);
     }
+
+    for (const ControlMenu& menu : state.control)
+    {
+        if (menu.visible)
+        {
+            render_control_menu(menu);
+        }
+    }
 }
 
 void Application::switch_modes(ApplicationMode mode) {
@@ -1096,7 +1117,7 @@ void Application::render_control_menu(const ControlMenu& menu) const
     int index = 0;
     for (auto& button : menu.buttons)
     {
-        render_textured_rectangle(m_render.renderer, Rectangle(menu.position + vec2(0, menu.button_height * index), vec2(menu.button_height)), button.label.texture, menu.background, true);
+        render_textured_rectangle(m_render.renderer, Rectangle(menu.position + vec2(0, menu.scale.y * index), menu.scale), button.label.texture, menu.background, true);
         index += 1;
     }
 }
