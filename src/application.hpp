@@ -167,6 +167,7 @@ private:
     void render_text_editor(const TextEditor& editor) const;
     void render_dropdown(const Drop_Down_List& list) const;
     void render_panel(const Panel& panel) const;
+    void render_control_menu(const ControlMenu& menu) const;
 
     void clear_text_input_selection();
 

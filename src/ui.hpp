@@ -378,7 +378,7 @@ struct Drop_Down_List {
         options.add(Entry(text, index));
     }
 
-    Text get_option_label(int index) const {
+    Text get_option_text(int index) const {
         return options.get(index).label;
     }
 
@@ -452,9 +452,39 @@ struct Panel {
 struct ControlMenu {
     DragInfo drag = {};
     vec2 position = {};
-    vec2 scale = {};
+    float button_height = 0;
     DArray<Entry> buttons = {};
     Color background = {};
+    bool visible = false;
+
+    void add_button(Text text, void* data) {
+        buttons.add(Entry(text, data));
+    }
+
+    void add_button(Text text, int index) {
+        buttons.add(Entry(text, index));
+    }
+
+    Text get_button_text(int index) const {
+        return buttons.get(index).label;
+    }
+
+    String get_button_name(int index) const {
+        return buttons.get(index).label.string;
+    }
+
+    void* get_button_data(int index) const {
+        return buttons.get(index).data;
+    }
+
+    int get_button_data_index(int index) const {
+        return buttons.get(index).index;
+    }
+
+    void remove_button(int index) {
+        buttons.get_ref(index).label.clear();
+        buttons.remove_shift(index);
+    }
 };
 
 #define TEXT_INPUT_TARGET_IS_VALID     BIT(0)

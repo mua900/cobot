@@ -167,6 +167,10 @@ struct Vehicle {
     VPartTransform getWorldTransform(PartId part) const;
     VPartData& getPartData(PartId id) const;
     PartId& getParentRef(PartId part);
+
+    PartId getPartAt(vec2 position) const;
+private:
+    PartId get_part_on_location(PartId part, vec2 location, VPartTransform parent) const;
 };
 
 // the lower 16 bits are the subkind and the higher 16 bits are the kind

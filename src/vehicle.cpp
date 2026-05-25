@@ -67,49 +67,6 @@ vec2 get_controller_scale(ControllerKind kind) {
 }
 
 
-bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog)
-{
-    for (int i = 0; i < (int)TireKindCount; i++)
-    {
-        const char* name = get_tire_name(TireKind(i));
-        AssetId id = get_asset(String(name), catalog);
-        if (!id.is_valid()) return false;
-        SDL_Texture* texture = catalog.get_image(id);
-
-        icons.add(IconButton(texture, background, getPartKindId(PART_TIRE, i)));
-    }
-
-    return true;
-}
-
-bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog) {
-    for (int i = 0; i < (int)ChasisKindCount; i++)
-    {
-        const char* name = get_chasis_name(ChasisKind(i));
-        AssetId id = get_asset(String(name), catalog);
-        if (!id.is_valid()) return false;
-        SDL_Texture* texture = catalog.get_image(id);
-
-        icons.add(IconButton(texture, background, getPartKindId(PART_CHASIS, i)));
-    }
-
-    return true;
-}
-
-bool load_controller_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog) {
-    for (int i = 0; i < (int)ControllerKindCount; i++)
-    {
-        const char* name = get_controller_name(ControllerKind(i));
-        AssetId id = get_asset(String(name), catalog);
-        if (!id.is_valid()) return false;
-        SDL_Texture* texture = catalog.get_image(id);
-
-        icons.add(IconButton(texture, background, getPartKindId(PART_CONTROLLER, i)));
-    }
-
-    return true;
-}
-
 PartKindId getPartKindId(PartKind partKind, u16 subType)
 {
     return (partKind << 16) | (subType);
@@ -170,6 +127,78 @@ int Vehicle::add_root(PartId part)
     }
 }
 
+PartId Vehicle::getPartAt(vec2 position) const
+{
+    position -= worldPosition;
+    for (int i = 0; i < rootParts.size(); i++)
+    {
+        PartId part = get_part_on_location(rootParts[i], position, getPartData(rootParts[i]).transform);
+        if (part.is_valid())
+        {
+            return part;
+        }
+    }
+
+    return NullPartId;
+}
+
+PartId Vehicle::get_part_on_location(PartId part, vec2 location, VPartTransform parent) const
+{
+    switch (part.kind)
+    {
+        case PART_CHASIS: {
+            Chasis& cha = chasis[part.index];
+            VPartTransform t = chain_part_transform(parent, cha.part.transform);
+            vec2 scale = get_chasis_scale(cha.kind);
+
+            switch (cha.kind) {
+                case ChasisBasic: {
+                    PartId part;
+                    part = get_part_on_location(cha.basic.frontLeft.part, location, t);
+                    if (part.is_valid()) return part;
+                    part = get_part_on_location(cha.basic.frontRight.part, location, t);
+                    if (part.is_valid()) return part;
+                    part = get_part_on_location(cha.basic.backLeft.part, location, t);
+                    if (part.is_valid()) return part;
+                    part = get_part_on_location(cha.basic.backRight.part, location, t);
+                    if (part.is_valid()) return part;
+                    break;
+                }
+                default: panic("Invalid chasis kind");
+            }
+
+            if (Rectangle(t.position, scale * t.scale).contains_centered(location)) {
+                return part;
+            }
+            else {
+                return NullPartId;
+            }
+        }
+        case PART_TIRE: {
+            Tire& tr = tire[part.index];
+            VPartTransform t = chain_part_transform(parent, tr.part.transform);
+            vec2 scale = get_tire_scale(tr.kind);
+            if (Rectangle(t.position, scale * t.scale).contains_centered(location)) {
+                return part;
+            }
+            else {
+                return NullPartId;
+            }
+        }
+        case PART_CONTROLLER: {
+            Controller& con = controller[part.index];
+            VPartTransform t = chain_part_transform(parent, con.part.transform);
+            vec2 scale = get_controller_scale(controller[part.index].kind);
+            if (Rectangle(t.position, scale * t.scale).contains_centered(location)) {
+                return part;
+            }
+            else {
+                return NullPartId;
+            }
+        }
+        default: panic("Invalid part type");
+    }
+}
 
 Vehicle get_default_vehicle()
 {
@@ -215,4 +244,48 @@ Vehicle get_default_vehicle()
     vehicle.add_root(PartId(PART_CHASIS, chasis_idx));
 
     return vehicle;
+}
+
+
+bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog)
+{
+    for (int i = 0; i < (int)TireKindCount; i++)
+    {
+        const char* name = get_tire_name(TireKind(i));
+        AssetId id = get_asset(String(name), catalog);
+        if (!id.is_valid()) return false;
+        SDL_Texture* texture = catalog.get_image(id);
+
+        icons.add(IconButton(texture, background, getPartKindId(PART_TIRE, i)));
+    }
+
+    return true;
+}
+
+bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog) {
+    for (int i = 0; i < (int)ChasisKindCount; i++)
+    {
+        const char* name = get_chasis_name(ChasisKind(i));
+        AssetId id = get_asset(String(name), catalog);
+        if (!id.is_valid()) return false;
+        SDL_Texture* texture = catalog.get_image(id);
+
+        icons.add(IconButton(texture, background, getPartKindId(PART_CHASIS, i)));
+    }
+
+    return true;
+}
+
+bool load_controller_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog) {
+    for (int i = 0; i < (int)ControllerKindCount; i++)
+    {
+        const char* name = get_controller_name(ControllerKind(i));
+        AssetId id = get_asset(String(name), catalog);
+        if (!id.is_valid()) return false;
+        SDL_Texture* texture = catalog.get_image(id);
+
+        icons.add(IconButton(texture, background, getPartKindId(PART_CONTROLLER, i)));
+    }
+
+    return true;
 }

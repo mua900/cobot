@@ -588,7 +588,9 @@ bool Application::mouse_input_game()
     {
         if (game.vehicle.volume.contains_centered(mouse_pos))
         {
-            log_info("Vehicle");
+            PartId part = game.vehicle.getPartAt(mouse_pos);
+            auto& menu = m_ui[UiGame].control.get_ref(part.kind);
+            menu.visible = true;
         }
     }
 
@@ -848,11 +850,23 @@ bool Application::init_ui()
 
 bool Application::init_game_ui() {
     vec2 ws = get_window_size();
-    Font font = m_catalog.get_font(m_editor_font);
+    UiState& ui = m_ui[UiGame];
+    Font editor_font = m_catalog.get_font(m_editor_font);
+    Font font = m_catalog.get_font(m_font);
     Color button_color = Color(0x77, 0x55, 0x55);
     Color background = Color(0x33, 0x55, 0x66);
 
-    add_button(UiGame, BackButton, Button(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
+    add_button(UiGame, BackButton, Button(create_text(m_render.renderer, String("Main Menu"), editor_font, button_color), ws * 0.05, ws * 0.1, background));
+
+    Color controlMenuButtonColor = Color(0x44, 0x66, 0x77);
+    ControlMenu menus[PART_KIND_COUNT] = {};
+
+    menus[PART_TIRE].add_button(create_text(m_render.renderer, String("Brake"), font, controlMenuButtonColor), 0);
+    
+    for (int i = 0; i < PART_KIND_COUNT; i++)
+    {
+        ui.control.add(menus[i]);
+    }
 
     return true;
 }
@@ -1077,6 +1091,16 @@ void Application::render_panel(const Panel& panel) const
     }
 }
 
+void Application::render_control_menu(const ControlMenu& menu) const
+{
+    int index = 0;
+    for (auto& button : menu.buttons)
+    {
+        render_textured_rectangle(m_render.renderer, Rectangle(menu.position + vec2(0, menu.button_height * index), vec2(menu.button_height)), button.label.texture, menu.background, true);
+        index += 1;
+    }
+}
+
 void Application::render_text_editor(const TextEditor& editor) const
 {
     Rectangle text_area = editor.field.m_area;
@@ -1148,7 +1172,7 @@ void Application::render_dropdown(const Drop_Down_List& list) const {
             SDL_FRect area = header_area;
             area.y += area.h * (i + 1);
             SDL_RenderFillRect(m_render.renderer, &area);
-            render_text_size(m_render.renderer, list.get_option_label(i),
+            render_text_size(m_render.renderer, list.get_option_text(i),
                 vec2(area.x + area.w/2, area.y + area.h/2), vec2(area.w, area.h));
         }
     }
