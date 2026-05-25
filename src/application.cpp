@@ -113,9 +113,11 @@ bool Application::initialize()
 
 bool Application::init_game_state()
 {
+    /*
     if (!generate_map(m_render.renderer, &game.map, 32, 640, 640)) {
         return false;
     }
+    */
     game.vehicle = get_default_vehicle();
 
     return true;
@@ -465,7 +467,7 @@ bool Application::mouse_input_game()
     vec2 mouse_pos = m_input.mouse.pos;
     UiState& ui = m_ui[UiGame];
 
-    if (m_input.mouse.buttonFlags & MOUSE_LEFT)
+    if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
     {
         for (int it = 0; it < ui.text_field.size(); it++)
         {
@@ -580,6 +582,13 @@ bool Application::mouse_input_game()
                     }
                 }
             }
+        }
+    }
+    else if (m_input.mouse.buttonFlags & MOUSE_RIGHT_MASK)
+    {
+        if (game.vehicle.volume.contains_centered(mouse_pos))
+        {
+            log_info("Vehicle");
         }
     }
 

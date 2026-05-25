@@ -330,21 +330,22 @@ struct TextEditor {
     }
 };
 
+// owns the text object inside it
+struct Entry {
+    Text label = {};
+    union {
+        void* data;
+        int index;
+    };
+
+    Entry() : label(), data(nullptr) {}
+    Entry(Text text, void* p_data) : label(text), data(p_data) {}
+    Entry(Text text, int p_index) : label(text), index(p_index) {}
+};
+
 #define DROP_DOWN_LIST_SELECTED_SENTINEL -1
 
 struct Drop_Down_List {
-	// owns the text object inside it
-    struct Entry {
-        Text label = {};
-        union {
-            void* data;
-            int index;
-        };
-
-        Entry() : label(), data(nullptr) {}
-        Entry(Text text, void* p_data) : label(text), data(p_data) {}
-        Entry(Text text, int p_index) : label(text), index(p_index) {}
-    };
 
     UiElementId id = {};
 
@@ -407,17 +408,17 @@ struct Drop_Down_List {
         {
             selected = DROP_DOWN_LIST_SELECTED_SENTINEL;
         }
-        // options.get_ref(index).label.clear();
+        options.get_ref(index).label.clear();
         options.remove_shift(index);
     }
 
     Drop_Down_List() {}
     Drop_Down_List(vec2 p_pos, vec2 p_scale) : pos(p_pos), scale(p_scale) {}
     ~Drop_Down_List() {
-        // title.clear();
+        title.clear();
         for (auto entry : options)
         {
-            // entry.label.clear();
+            entry.label.clear();
         }
         options.reset();
     }
@@ -448,6 +449,14 @@ struct Panel {
     Rectangle get_tab_header_area(int index) const;
 };
 
+struct ControlMenu {
+    DragInfo drag = {};
+    vec2 position = {};
+    vec2 scale = {};
+    DArray<Entry> buttons = {};
+    Color background = {};
+};
+
 #define TEXT_INPUT_TARGET_IS_VALID     BIT(0)
 #define TEXT_INPUT_TARGET_IS_EDITOR    BIT(1)
 
@@ -463,6 +472,7 @@ struct UiState {
     DArray<Button> button = {};
     DArray<Label> label = {};
     DArray<Panel> panels = {};
+    DArray<ControlMenu> control = {};
 
     TextInputTarget text_input_target = {};
     vec2 assumed_window_size = {};

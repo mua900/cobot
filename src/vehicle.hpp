@@ -5,13 +5,14 @@
 #include "math_util.hpp"
 #include "asset.hpp"
 #include "text.hpp"
+#include "script.hpp"
 
 enum PartKind : u16 {
-    PART_TIRE,
-    PART_CHASIS,
-    PART_CONTROLLER,
-    PART_KIND_COUNT,
-    PART_KIND_SENTINEL,
+    PART_KIND_SENTINEL = 0,
+    PART_TIRE = 1,
+    PART_CHASIS = 2,
+    PART_CONTROLLER = 3,
+    PART_KIND_COUNT = 3,
 };
 
 struct PartId {
@@ -20,6 +21,31 @@ struct PartId {
 
     PartId() {}
     PartId(PartKind kind, u16 index) : kind(kind), index(index) {}
+
+    bool is_valid() const { return kind != PART_KIND_SENTINEL; }
+    bool is_null() const { return kind == PART_KIND_SENTINEL; }
+};
+
+static const PartId NullPartId = PartId(PART_KIND_SENTINEL, 0);
+
+struct VPartTransform {
+    vec2 position = {};
+    float scale = 0;
+
+    VPartTransform() {}
+    VPartTransform(vec2 pos, float sca) : position(pos), scale(sca) {}
+};
+
+VPartTransform chain_part_transform(VPartTransform p0, VPartTransform p1);
+
+struct VPartData {
+    PartId parent = {};
+    VPartTransform transform = {};
+
+    VPartData() {}
+    VPartData(vec2 position) : transform(position, 1.0f) {}
+    VPartData(vec2 position, float scale) : transform(position, scale) {}
+    VPartData(PartId parent, vec2 position, float scale) : parent(parent), transform(position, scale) {}
 };
 
 struct AttachmentPoint {
@@ -37,17 +63,6 @@ struct AttachmentPoint {
         part = part_id;
     }
 };
-
-struct VPartData {
-    vec2 position = {};  // relative to parent
-    float scale = 0;
-
-    VPartData() {}
-    VPartData(vec2 position) : position(position), scale(1.0) {}
-    VPartData(vec2 position, float scale) : position(position), scale(scale) {}
-};
-
-VPartData chain_part_data(VPartData p0, VPartData p1);
 
 enum TireKind {
     TireBasic,
@@ -135,6 +150,7 @@ struct VehiclePart {
 
 struct Vehicle {
     vec2 worldPosition = {};
+    Rectangle volume = {};
 
     DArray<PartId> rootParts = {};
     
@@ -142,7 +158,15 @@ struct Vehicle {
     DArray<Chasis> chasis = {};
     DArray<Controller> controller = {};
 
-    VPartData getPartData(PartId id) const;
+    int add_tire(Tire& t, PartId parent);
+    int add_chasis(Chasis& c, PartId parent);
+    int add_controller(Controller& c, PartId parent);
+
+    int add_root(PartId part);
+
+    VPartTransform getWorldTransform(PartId part) const;
+    VPartData& getPartData(PartId id) const;
+    PartId& getParentRef(PartId part);
 };
 
 // the lower 16 bits are the subkind and the higher 16 bits are the kind

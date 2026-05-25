@@ -1,11 +1,31 @@
 #include "vehicle.hpp"
 
-VPartData chain_part_data(VPartData p0, VPartData p1)
+VPartTransform chain_part_transform(VPartTransform p0, VPartTransform p1)
 {
-    return VPartData(p0.position + p1.position, p0.scale * p1.scale);
+    return VPartTransform(p0.position + p1.position, p0.scale * p1.scale);
 }
 
-VPartData Vehicle::getPartData(PartId id) const
+VPartTransform Vehicle::getWorldTransform(PartId part) const
+{
+    VPartData data = getPartData(part);
+    VPartTransform t = data.transform;
+    while (data.parent.is_valid()) {
+        data = getPartData(data.parent);
+        t = chain_part_transform(t, data.transform);
+    }
+
+    t = chain_part_transform(t, VPartTransform(worldPosition, 1.0f));
+
+    return t;
+}
+
+PartId& Vehicle::getParentRef(PartId part)
+{
+    VPartData& data = getPartData(part);
+    return data.parent;
+}
+
+VPartData& Vehicle::getPartData(PartId id) const
 {
     switch (id.kind) {
         case PART_CHASIS: {
@@ -95,48 +115,104 @@ PartKindId getPartKindId(PartKind partKind, u16 subType)
     return (partKind << 16) | (subType);
 }
 
+int Vehicle::add_tire(Tire& t, PartId parent) {
+    if (parent.is_valid()) {
+        volume = merge_volumes(volume, Rectangle(t.part.transform.position, t.part.transform.scale));
+    }
+    return tire.add(t);
+}
+
+int Vehicle::add_chasis(Chasis& c, PartId parent) {
+    if (parent.is_valid()) {
+        volume = merge_volumes(volume, Rectangle(c.part.transform.position, c.part.transform.scale));
+    }
+    return chasis.add(c);
+}
+
+int Vehicle::add_controller(Controller& c, PartId parent) {
+    if (parent.is_valid()) {
+        volume = merge_volumes(volume, Rectangle(c.part.transform.position, c.part.transform.scale));
+    }
+    return controller.add(c);
+}
+
+int Vehicle::add_root(PartId part)
+{
+    switch (part.kind)
+    {
+        case PART_CHASIS: {
+            Chasis& cha = chasis[part.index];
+            if (cha.part.parent.is_valid()) {
+                return -1;
+            }
+
+            switch (cha.kind) {
+                case ChasisBasic:
+                {
+                    getParentRef(cha.basic.frontLeft.part) = part;
+                    getParentRef(cha.basic.frontRight.part) = part;
+                    getParentRef(cha.basic.backLeft.part) = part;
+                    getParentRef(cha.basic.backRight.part) = part;
+                    break;
+                }
+                default: panic("Invalid chasis kind");
+            }
+            
+            return rootParts.add(part);
+        }
+        case PART_TIRE: {
+            return -1;
+        }
+        case PART_CONTROLLER: {
+            return -1;
+        }
+        default: panic("Invalid part type");
+    }
+}
+
 
 Vehicle get_default_vehicle()
 {
     Vehicle vehicle = {};
 
     vehicle.worldPosition = vec2(600, 300);
+    vehicle.volume = Rectangle(vehicle.worldPosition, vec2());
 
     Tire tires[4] = {};
     for (auto& t : tires) {
         t.kind = TireBasic;
-        t.part.scale = 1;
+        t.part.transform.scale = 1;
         t.basic.size = 5;
     }
 
-    tires[0].part.position = vec2(-25, -25);
-    tires[1].part.position = vec2(25, -25);
-    tires[2].part.position = vec2(-25, 25);
-    tires[3].part.position = vec2(25, 25);
+    tires[0].part.transform.position = vec2(-25, -25);
+    tires[1].part.transform.position = vec2(25, -25);
+    tires[2].part.transform.position = vec2(-25, 25);
+    tires[3].part.transform.position = vec2(25, 25);
 
-    int fl = vehicle.tire.add(tires[0]);
-    int fr = vehicle.tire.add(tires[1]);
-    int bl = vehicle.tire.add(tires[2]);
-    int br = vehicle.tire.add(tires[3]);
+    int fl = vehicle.add_tire(tires[0], NullPartId);
+    int fr = vehicle.add_tire(tires[1], NullPartId);
+    int bl = vehicle.add_tire(tires[2], NullPartId);
+    int br = vehicle.add_tire(tires[3], NullPartId);
 
     Chasis chasis = {};
     chasis.kind = ChasisBasic;
-    chasis.part.scale = 1;
+    chasis.part.transform.scale = 1;
     chasis.basic.frontLeft.attach(PartId(PART_TIRE, fl));
     chasis.basic.frontRight.attach(PartId(PART_TIRE, fr));
     chasis.basic.backLeft.attach(PartId(PART_TIRE, bl));
     chasis.basic.backRight.attach(PartId(PART_TIRE, br));
 
-    int chasis_idx = vehicle.chasis.add(chasis);
+    int chasis_idx = vehicle.add_chasis(chasis, NullPartId);
 
     Controller con = {};
     con.kind = ControllerBasic;
-    con.part.scale = 1;
+    con.part.transform.scale = 1;
     con.basic.codeSizeLimit = 128;
-    con.basic.script = 0;  // @todo
-    vehicle.controller.add(con);
+    con.basic.script = {};
+    vehicle.add_controller(con, NullPartId);
 
-    vehicle.rootParts.add(PartId(PART_CHASIS, chasis_idx));
+    vehicle.add_root(PartId(PART_CHASIS, chasis_idx));
 
     return vehicle;
 }

@@ -181,6 +181,8 @@ struct Rectangle {
     }
 };
 
+Rectangle merge_volumes(Rectangle v1, Rectangle v2);
+
 #define COLOR_WHITE ((Color){0xff,0xff,0xff,0xff})
 #define COLOR_BLACK ((Color){0,0,0,0xff})
 #define COLOR_RED   ((Color){0xff,0,0,0xff})

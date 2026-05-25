@@ -58,6 +58,17 @@ vec2 get_direction_vector(float angle)
     return vec2(c, s);
 }
 
+Rectangle merge_volumes(Rectangle v1, Rectangle v2)
+{
+    Rectangle res = {};
+    res.x = (v1.x + v2.x) / 2;
+    res.y = (v1.y + v2.y) / 2;
+    res.w = fabsf(v1.x - v2.x) + (v1.w + v2.w) / 2;
+    res.h = fabsf(v1.y - v2.y) + (v1.h + v2.h) / 2;
+
+    return res;
+}
+
 bool Rectangle::contains_top_left(vec2 p) const
 {
     return p.x >= x && p.x <= x + w &&

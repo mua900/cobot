@@ -28,20 +28,20 @@ bool GameState::load_part_images(AssetCatalog& catalog)
     return true;
 }
 
-void draw_vehicle_part(PartId part, VPartData parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
+void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 
-void draw_chasis(const Chasis& chasis, VPartData parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+void draw_chasis(const Chasis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
     AssetId imageId = game.partImages[PART_CHASIS][chasis.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
-    float scale = chasis.part.scale * parent.scale;
-    Rectangle area = Rectangle(chasis.part.position + parent.position, get_chasis_scale(chasis.kind) * scale);
+    float scale = chasis.part.transform.scale * parent.scale;
+    Rectangle area = Rectangle(chasis.part.transform.position + parent.position, get_chasis_scale(chasis.kind) * scale);
     render_texture(context.renderer, area, texture, true);
 
     switch (chasis.kind) {
         case ChasisBasic: {
-            auto passDown = chain_part_data(parent, chasis.part);
+            auto passDown = chain_part_transform(parent, chasis.part.transform);
             draw_vehicle_part(chasis.basic.frontLeft.part, passDown, context, catalog, game);
             draw_vehicle_part(chasis.basic.frontRight.part, passDown, context, catalog, game);
             draw_vehicle_part(chasis.basic.backLeft.part, passDown, context, catalog, game);
@@ -51,28 +51,28 @@ void draw_chasis(const Chasis& chasis, VPartData parent, const RenderContext& co
     }
 }
 
-void draw_tire(const Tire& tire, VPartData parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
     AssetId imageId = game.partImages[PART_TIRE][tire.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
-    float scale = tire.part.scale * parent.scale;
-    Rectangle area = Rectangle(tire.part.position + parent.position, get_tire_scale(tire.kind) * scale);
+    float scale = tire.part.transform.scale * parent.scale;
+    Rectangle area = Rectangle(tire.part.transform.position + parent.position, get_tire_scale(tire.kind) * scale);
     render_texture(context.renderer, area, texture, true);
 }
 
-void draw_controller(const Controller& controller, VPartData parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
     AssetId imageId = game.partImages[PART_CONTROLLER][controller.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
-    float scale = controller.part.scale * parent.scale;
-    Rectangle area = Rectangle(controller.part.position + parent.position, get_controller_scale(controller.kind) * scale);
+    float scale = controller.part.transform.scale * parent.scale;
+    Rectangle area = Rectangle(controller.part.transform.position + parent.position, get_controller_scale(controller.kind) * scale);
     render_texture(context.renderer, area, texture, true);
 }
 
 
-void draw_vehicle_part(PartId part, VPartData parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
     switch (part.kind)
     {
@@ -100,7 +100,7 @@ void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, con
     for (int i = 0; i < game.vehicle.rootParts.size(); i++)
     {
         VPartData part_data = game.vehicle.getPartData(game.vehicle.rootParts[i]);
-        part_data.position += game.vehicle.worldPosition;
-        draw_vehicle_part(game.vehicle.rootParts[i], part_data, context, catalog, game);
+        part_data.transform.position += game.vehicle.worldPosition;
+        draw_vehicle_part(game.vehicle.rootParts[i], part_data.transform, context, catalog, game);
     }
 }
