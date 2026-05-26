@@ -84,6 +84,7 @@ PartId Vehicle::add_tire(Tire& t) {
 }
 
 PartId Vehicle::add_chasis(Chasis& c) {
+    
     int index = chasis.add(c);
 
     PartId thisPart = PartId(PART_CHASIS, index);
@@ -99,7 +100,7 @@ PartId Vehicle::add_chasis(Chasis& c) {
         default: panic("Invalid chasis kind");
     }
 
-    VPartTransform transform = getWorldTransform(PartId(PART_CHASIS, index));
+    VPartTransform transform = getWorldTransform(thisPart);
     volume = merge_volumes(volume, Rectangle(transform.position, transform.scale * get_chasis_scale(c.kind)));
 
     return thisPart;

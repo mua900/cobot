@@ -584,11 +584,15 @@ bool Application::mouse_input_game()
             }
         }
 
-        if (game.vehicle.volume.contains_centered(mouse_pos))
+        if (!game.vehicle.volume.contains_centered(mouse_pos))
         {
             PartId part = game.vehicle.getPartAt(mouse_pos);
-            auto& menu = m_ui[UiGame].control.get_ref(part.kind);
-            menu.visible = false;
+            if (part.is_null())
+            {
+                for (auto& menu : ui.control) {
+                    menu.visible = false;
+                }
+            }
         }
     }
     else if (m_input.mouse.buttonFlags & MOUSE_RIGHT_MASK)
@@ -596,9 +600,12 @@ bool Application::mouse_input_game()
         if (game.vehicle.volume.contains_centered(mouse_pos))
         {
             PartId part = game.vehicle.getPartAt(mouse_pos);
-            auto& menu = m_ui[UiGame].control.get_ref(part.kind);
-            menu.position = mouse_pos + menu.scale / 2;
-            menu.visible = true;
+            if (part.is_valid())
+            {
+                auto& menu = ui.control.get_ref(part.kind);
+                menu.position = mouse_pos + menu.scale / 2;
+                menu.visible = true;
+            }
         }
     }
 
@@ -871,7 +878,7 @@ bool Application::init_game_ui() {
 
     for (int i = 0; i < PART_KIND_COUNT; i++)
     {
-        menus[i].scale = vec2(200, 100);
+        menus[i].scale = vec2(100, 50);
     }
 
     menus[PART_TIRE].add_button(create_text(m_render.renderer, String("Brake"), font, controlMenuButtonColor), 0);
@@ -1046,10 +1053,7 @@ void Application::draw_ui_state(const UiState& state)
 
     for (const ControlMenu& menu : state.control)
     {
-        if (menu.visible)
-        {
-            render_control_menu(menu);
-        }
+        render_control_menu(menu);
     }
 }
 
@@ -1114,11 +1118,14 @@ void Application::render_panel(const Panel& panel) const
 
 void Application::render_control_menu(const ControlMenu& menu) const
 {
-    int index = 0;
-    for (auto& button : menu.buttons)
+    if (menu.visible)
     {
-        render_textured_rectangle(m_render.renderer, Rectangle(menu.position + vec2(0, menu.scale.y * index), menu.scale), button.label.texture, menu.background, true);
-        index += 1;
+        int index = 0;
+        for (auto& button : menu.buttons)
+        {
+            render_textured_rectangle(m_render.renderer, Rectangle(menu.position + vec2(0, menu.scale.y * index), menu.scale), button.label.texture, menu.background, true);
+            index += 1;
+        }
     }
 }
 
