@@ -1,3 +1,5 @@
+uniform float4x4 ModelViewProjection;
+
 struct VSInput {
     float3 position : POSITION;
 };

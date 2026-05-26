@@ -41,6 +41,7 @@ VPartTransform chain_part_transform(VPartTransform p0, VPartTransform p1);
 struct VPartData {
     PartId parent = {};
     VPartTransform transform = {};
+    // float weight = 0;
 
     VPartData() {}
     VPartData(vec2 position) : transform(position, 1.0f) {}
