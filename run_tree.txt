@@ -14,7 +14,7 @@ image folder Parts parts
 
 # shader
 # @todo load different ones depending on the platform
-# shader file VertexShader shader/binary/vertex.spv     stage=vertex   nuniforms=1
-# shader file FragmentShader shader/binary/fragment.spv stage=fragment
-shader file VertexShader shader/binary/vertex.dxil      stage=vertex   nuniforms=1
-shader file FragmentShader shader/binary/fragment.dxil  stage=fragment
+# shader file VertexShader shader/binary/vertex.spv     stage=vertex   nUniforms=1
+# shader file FragmentShader shader/binary/fragment.spv stage=fragment nUniforms=1
+shader file VertexShader shader/binary/vertex.dxil      stage=vertex   nUniforms=1
+shader file FragmentShader shader/binary/fragment.dxil  stage=fragment nUniforms=1

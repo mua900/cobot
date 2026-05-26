@@ -12,6 +12,7 @@ struct RenderContext {
     SDL_Renderer* renderer = nullptr;
     SDL_Texture* render_target = nullptr;
     SDL_GPUDevice* device = nullptr;
+    SDL_GPURenderState* render_state = nullptr;
 
     DArray<SDL_Vertex> vertex_scratch;
     DArray<int> index_scratch;
@@ -47,7 +48,11 @@ struct Shader {
     }
 };
 
+bool initialize_render_context(RenderContext* render, SDL_Window* window);
+void clear_render_state(RenderContext& render);
+
 bool loadShader(RenderContext& context, Shader& shader, const char* path);
+bool setShader(RenderContext& render, const Shader* shader);
 
 void draw_circle(const RenderContext& context, vec2 center, float radius);
 void draw_quadratic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, float thick, ColorF color);

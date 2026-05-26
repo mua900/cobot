@@ -39,26 +39,14 @@ bool Application::initialize()
         // minimum aspect ratio of 1 and maximum aspect ratio of 2 default 1.6
         SDL_SetWindowAspectRatio(window, 1.0, 2.0);
 
-        SDL_GPUDevice* device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, false, nullptr);
-
-        SDL_Renderer* renderer = SDL_CreateGPURenderer(device, window);
-        if (!renderer)
+        if (!initialize_render_context(&m_render, window))
         {
-            SDL_Log("Failed to create renderer with SDL: %s\n", SDL_GetError());
             return false;
         }
 
         SDL_ShowWindow(window);
 
         m_window = { window };
-
-        int render_size_x, render_size_y;
-        SDL_GetRenderOutputSize(renderer, &render_size_x, &render_size_y);
-        m_render = {
-            .render_size = vec2(render_size_x, render_size_y),
-            .renderer = renderer,
-            .device = device
-        };
     }
 
     {

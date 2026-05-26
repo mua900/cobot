@@ -3,6 +3,67 @@
 #include "common.hpp"
 #include "log.hpp"
 
+bool initialize_render_context(RenderContext* render, SDL_Window* window)
+{
+    SDL_GPUDevice* device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, false, nullptr);
+
+    SDL_Renderer* renderer = SDL_CreateGPURenderer(device, window);
+    if (!renderer)
+    {
+        SDL_Log("Failed to create renderer with SDL: %s\n", SDL_GetError());
+        return false;
+    }
+
+    int render_size_x, render_size_y;
+    SDL_GetRenderOutputSize(renderer, &render_size_x, &render_size_y);
+
+    SDL_Texture* target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR32, SDL_TEXTUREACCESS_TARGET, render_size_x, render_size_y);
+
+    render->device = device;
+    render->renderer = renderer;
+    render->render_size = vec2(render_size_x, render_size_y);
+    render->render_target = target;
+
+    return true;
+}
+
+void clear_render_state(RenderContext& render)
+{
+    if (render.render_state)
+    {
+        SDL_DestroyGPURenderState(render.render_state);
+        SDL_SetGPURenderState(render.renderer, nullptr);
+        render.render_state = nullptr;
+    }
+}
+
+bool setShader(RenderContext& render, const Shader* shader)
+{
+    if (shader->stage != ShaderStageFragment)
+    {
+        return false;
+    }
+
+    clear_render_state(render);
+
+    SDL_GPURenderStateCreateInfo state_info = {};
+    state_info.fragment_shader = shader->shader;
+    SDL_GPURenderState* state = SDL_CreateGPURenderState(render.renderer, &state_info);
+    if (!state)
+    {
+        return false;
+    }
+
+    if (!SDL_SetGPURenderState(render.renderer, state))
+    {
+        return false;
+    }
+
+    render.render_state = state;
+
+    return true;
+}
+
 void draw_segment(const RenderContext& context, vec2 start, vec2 end, float thick, ColorF color)
 {
     vec2 dir = (end - start).normalized();

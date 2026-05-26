@@ -249,7 +249,7 @@ bool parse_shader_attribute(String attribute, Shader& shader)
 
         return true;
     }
-    else if (parse_attribute_value(attribute, "nuniforms", out)) {
+    else if (parse_attribute_value(attribute, "nUniforms", out)) {
         bool success = false;
         int value = string_to_integer(out, &success);
         if (!success) {
@@ -259,7 +259,7 @@ bool parse_shader_attribute(String attribute, Shader& shader)
         shader.numUniformBuffers = value;
         return true;
     }
-    else if (parse_attribute_value(attribute, "nsamplers", out)) {
+    else if (parse_attribute_value(attribute, "nSamplers", out)) {
         bool success = false;
         int value = string_to_integer(out, &success);
         if (!success) {
@@ -267,6 +267,20 @@ bool parse_shader_attribute(String attribute, Shader& shader)
         }
 
         shader.numSamplers = value;
+        return true;
+    }
+    else if (parse_attribute_value(attribute, "nTextures", out)) {
+        bool success = false;
+        int value = string_to_integer(out, &success);
+        if (!success) return false;
+        shader.numStorageTextures = value;
+        return true;
+    }
+    else if (parse_attribute_value(attribute, "nStorageBuffers", out)) {
+        bool success = false;
+        int value = string_to_integer(out, &success);
+        if (!success) return false;
+        shader.numStorageBuffers = value;
         return true;
     }
 
