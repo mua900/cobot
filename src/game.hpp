@@ -19,6 +19,8 @@ struct GameState {
 
     AssetId partImages [PART_KIND_COUNT][MaxPartCount] = {};
 
+    void update(s64 dt, double dts);
+
     bool load_part_images(AssetCatalog& catalog);
 };
 

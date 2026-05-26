@@ -148,7 +148,8 @@ private:
     bool mouse_input_editor();
 
     void update_keyboard_state();
-    bool keyboard_input(KeyboardEvent keyboard);
+    bool keyboard_input_down(KeyboardEvent keyboard);
+    bool keyboard_input_up(KeyboardEvent keyboard);
 
     bool gen_static_text(Color color);
 

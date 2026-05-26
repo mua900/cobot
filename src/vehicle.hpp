@@ -161,6 +161,7 @@ struct VehiclePart {
 
 struct Vehicle {
     vec2 worldPosition = {};
+    vec2 velocity = {};
     Rectangle volume = {};
 
     DArray<PartId> rootParts = {};

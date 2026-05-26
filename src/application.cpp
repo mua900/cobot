@@ -208,9 +208,13 @@ void Application::handle_events()
             case SDL_EVENT_KEY_DOWN:
             {
                 SDL_KeyboardEvent keyboard = e.key;
-
-                keyboard_input(keyboard);
-
+                keyboard_input_down(keyboard);
+                break;
+            }
+            case SDL_EVENT_KEY_UP:
+            {
+                SDL_KeyboardEvent keyboard = e.key;
+                keyboard_input_up(keyboard);
                 break;
             }
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -275,13 +279,35 @@ void Application::handle_events()
     update_keyboard_state();
 }
 
-bool Application::keyboard_input(SDL_KeyboardEvent keyboard)
+bool Application::keyboard_input_up(SDL_KeyboardEvent keyboard)
+{
+    switch (keyboard.scancode)
+    {
+        case SDL_SCANCODE_DOWN: // fallthrough
+        case SDL_SCANCODE_UP: {
+            game.vehicle.velocity.y = 0;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Application::keyboard_input_down(SDL_KeyboardEvent keyboard)
 {
     switch (keyboard.scancode)
     {
         case SDL_SCANCODE_ESCAPE:
         {
             quit = true;
+            return true;
+        }
+        case SDL_SCANCODE_UP: {
+            game.vehicle.velocity.y = -10;
+            return true;
+        }
+        case SDL_SCANCODE_DOWN: {
+            game.vehicle.velocity.y = 10;
             return true;
         }
         case SDL_SCANCODE_RETURN:
@@ -726,6 +752,8 @@ void Application::update()
 
     update_ui_pos();
     timeout();
+
+    game.update(m_time.deltaTime, m_time.deltaTimeSeconds);
 }
 
 void Application::timeout()

@@ -1,6 +1,11 @@
 #include "game.hpp"
 #include "draw.hpp"
 
+void GameState::update(s64 dt, double dts)
+{
+    vehicle.worldPosition += dts * vehicle.velocity;
+}
+
 
 bool GameState::load_part_images(AssetCatalog& catalog)
 {
