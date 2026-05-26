@@ -23,6 +23,25 @@ bool Application::initialize()
         return false;
     }
 
+    {
+        if (!TTF_Init())
+        {
+            fprintf(stderr, "Could not initialize TTF: %s\n", SDL_GetError());
+            return false;
+        }
+
+        if (!MIX_Init())
+        {
+            fprintf(stderr, "Could not initialize MIX: %s\n", SDL_GetError());
+            return false;
+        }
+    }
+    
+    if (!load_assets())
+    {
+        return false;
+    }
+
     // window
     {
         float scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
@@ -39,7 +58,12 @@ bool Application::initialize()
         // minimum aspect ratio of 1 and maximum aspect ratio of 2 default 1.6
         SDL_SetWindowAspectRatio(window, 1.0, 2.0);
 
-        if (!initialize_render_context(&m_render, window))
+        AssetId vertex_id = get_asset(String("VertexShader"), m_catalog);
+        AssetId fragment_id = get_asset(String("FragmentShader"), m_catalog);
+        const Shader* vertex = m_catalog.get_shader(vertex_id);
+        const Shader* fragment = m_catalog.get_shader(fragment_id);
+
+        if (!initialize_render_context(&m_render, window, vertex->shader, fragment->shader))
         {
             return false;
         }
@@ -47,25 +71,6 @@ bool Application::initialize()
         SDL_ShowWindow(window);
 
         m_window = { window };
-    }
-
-    {
-        if (!TTF_Init())
-        {
-            fprintf(stderr, "Could not initialize TTF: %s\n", SDL_GetError());
-            return false;
-        }
-
-        if (!MIX_Init())
-        {
-            fprintf(stderr, "Could not initialize MIX: %s\n", SDL_GetError());
-            return false;
-        }
-    }
-
-    if (!load_assets())
-    {
-        return false;
     }
 
     AssetId fontId = get_asset(String("FiraSans"), m_catalog);
@@ -980,6 +985,8 @@ void Application::draw()
     SDL_SetRenderDrawColor(renderer, COLOR_ARG(background));
     SDL_RenderClear(renderer);
 
+    start_render(m_render);
+
     switch (m_mode)
     {
         case ModeGame: {
@@ -994,9 +1001,11 @@ void Application::draw()
         }
     }
 
+    
     draw_ui();
-
     draw_messages();
+    
+    end_render(m_render);
 
     SDL_RenderPresent(renderer);
 }

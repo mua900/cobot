@@ -287,12 +287,36 @@ struct BucketList {
 		buckets.get_ref(bucket_index).occupied_flags &= ~BIT(index);
 	}
 
-	T& get(int elem_index)
+	bool in_bounds(int elem_index) const {
+		int bucket_index = elem_index / BUCKET_SIZE;
+		int index = elem_index % BUCKET_SIZE;
+
+		return buckets.in_bounds(bucket_index) && (index >= 0 && index < BUCKET_SIZE);
+	}
+
+	T& get(int elem_index) const
 	{
 		int bucket_index = elem_index / BUCKET_SIZE;
 		int index = elem_index % BUCKET_SIZE;
 
-		return buckets.get_ref(bucket_index).elements[index];
+		if (!in_bounds(elem_index)) panic("Out of bounds array access");
+		return buckets[bucket_index].elements[index];
+	}
+
+	T get_or_default(int elem_index) const {
+		int bucket_index = elem_index / BUCKET_SIZE;
+		int index = elem_index % BUCKET_SIZE;
+
+		if (!in_bounds(elem_index)) return T();
+		return buckets.get_ref(bucket_index).elemets[index];
+	}
+
+	T* get_ptr(int elem_index) const {
+		int bucket_index = elem_index / BUCKET_SIZE;
+		int index = elem_index % BUCKET_SIZE;
+
+		if (!in_bounds(elem_index)) panic("Out of bounds array access");
+		return &buckets[bucket_index].elements[index];
 	}
 
 	struct Iterator {

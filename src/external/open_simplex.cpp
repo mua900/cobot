@@ -4,14 +4,13 @@
 
 #define ARRAY_LENGTH(arr) (sizeof(arr) / sizeof(arr[0]))
 
-
-static const long PRIME_X = 0x5205402B9270C86FL;
-static const long PRIME_Y = 0x598CD327003817B5L;
-static const long PRIME_Z = 0x5BCC226E9FA0BACBL;
-static const long PRIME_W = 0x56CC5227E58F554BL;
-static const long HASH_MULTIPLIER = 0x53A3F72DEEC546F5L;
-static const long SEED_FLIP_3D = -0x52D547B2E96ED629L;
-static const long SEED_OFFSET_4D = 0xE83DC3E0DA7164DL;
+static const s64 PRIME_X = 0x5205402B9270C86FL;
+static const s64 PRIME_Y = 0x598CD327003817B5L;
+static const s64 PRIME_Z = 0x5BCC226E9FA0BACBL;
+static const s64 PRIME_W = 0x56CC5227E58F554BL;
+static const s64 HASH_MULTIPLIER = 0x53A3F72DEEC546F5L;
+static const s64 SEED_FLIP_3D = -0x52D547B2E96ED629L;
+static const s64 SEED_OFFSET_4D = 0xE83DC3E0DA7164DL;
 
 static const double ROOT2OVER2 = 0.7071067811865476;
 static const double SKEW_2D = 0.366025403784439;
@@ -44,7 +43,7 @@ static float GRADIENTS_4D[N_GRADS_4D * 4];
 /**
  * 2D Simplex noise, standard lattice orientation.
  */
-float OpenSimplex2::noise2(long seed, double x, double y) {
+float OpenSimplex2::noise2(s64 seed, double x, double y) {
 
     // Get points for A2* lattice
     double s = SKEW_2D * (x + y);
@@ -60,7 +59,7 @@ float OpenSimplex2::noise2(long seed, double x, double y) {
  * unless your map is centered around an equator. It's a subtle
  * difference, but the option is here to make it an easy choice.
  */
-float OpenSimplex2::noise2_ImproveX(long seed, double x, double y) {
+float OpenSimplex2::noise2_ImproveX(s64 seed, double x, double y) {
 
     // Skew transform and rotation baked into one.
     double xx = x * ROOT2OVER2;
@@ -72,14 +71,14 @@ float OpenSimplex2::noise2_ImproveX(long seed, double x, double y) {
 /**
  * 2D Simplex noise base.
  */
-float OpenSimplex2::noise2_UnskewedBase(long seed, double xs, double ys) {
+float OpenSimplex2::noise2_UnskewedBase(s64 seed, double xs, double ys) {
 
     // Get base points and offsets.
     int xsb = fastFloor(xs), ysb = fastFloor(ys);
     float xi = (float)(xs - xsb), yi = (float)(ys - ysb);
 
     // Prime pre-multiplication for hash.
-    long xsbp = xsb * PRIME_X, ysbp = ysb * PRIME_Y;
+    s64 xsbp = xsb * PRIME_X, ysbp = ysb * PRIME_Y;
 
     // Unskew.
     float t = (xi + yi) * (float)UNSKEW_2D;
@@ -130,7 +129,7 @@ float OpenSimplex2::noise2_UnskewedBase(long seed, double xs, double ys) {
  * If Z is vertical in world coordinates, call noise3_ImproveXZ(x, y, Z).
  * For a time varied animation, call noise3_ImproveXY(x, y, T).
  */
-float OpenSimplex2::noise3_ImproveXY(long seed, double x, double y, double z) {
+float OpenSimplex2::noise3_ImproveXY(s64 seed, double x, double y, double z) {
 
     // Re-orient the cubic lattices without skewing, so Z points up the main lattice diagonal,
     // and the planes formed by XY are moved far out of alignment with the cube faces.
@@ -154,7 +153,7 @@ float OpenSimplex2::noise3_ImproveXY(long seed, double x, double y, double z) {
  * If Z is vertical in world coordinates, call noise3_ImproveXZ(x, Z, y) or use noise3_ImproveXY.
  * For a time varied animation, call noise3_ImproveXZ(x, T, y) or use noise3_ImproveXY.
  */
-float OpenSimplex2::noise3_ImproveXZ(long seed, double x, double y, double z) {
+float OpenSimplex2::noise3_ImproveXZ(s64 seed, double x, double y, double z) {
 
     // Re-orient the cubic lattices without skewing, so Y points up the main lattice diagonal,
     // and the planes formed by XZ are moved far out of alignment with the cube faces.
@@ -175,7 +174,7 @@ float OpenSimplex2::noise3_ImproveXZ(long seed, double x, double y, double z) {
  * Use noise3_ImproveXY or noise3_ImproveXZ instead, wherever appropriate.
  * They have less diagonal bias. This function's best use is as a fallback.
  */
-float OpenSimplex2::noise3_Fallback(long seed, double x, double y, double z) {
+float OpenSimplex2::noise3_Fallback(s64 seed, double x, double y, double z) {
 
     // Re-orient the cubic lattices via rotation, to produce a familiar look.
     // Orthonormal rotation. Not a skew transform.
@@ -189,7 +188,7 @@ float OpenSimplex2::noise3_Fallback(long seed, double x, double y, double z) {
 /**
  * Generate overlapping cubic lattices for 3D OpenSimplex2 noise.
  */
-float OpenSimplex2::noise3_UnrotatedBase(long seed, double xr, double yr, double zr) {
+float OpenSimplex2::noise3_UnrotatedBase(s64 seed, double xr, double yr, double zr) {
 
     // Get base points and offsets.
     int xrb = fastRound(xr), yrb = fastRound(yr), zrb = fastRound(zr);
@@ -202,7 +201,7 @@ float OpenSimplex2::noise3_UnrotatedBase(long seed, double xr, double yr, double
     float ax0 = xNSign * -xri, ay0 = yNSign * -yri, az0 = zNSign * -zri;
 
     // Prime pre-multiplication for hash.
-    long xrbp = xrb * PRIME_X, yrbp = yrb * PRIME_Y, zrbp = zrb * PRIME_Z;
+    s64 xrbp = xrb * PRIME_X, yrbp = yrb * PRIME_Y, zrbp = zrb * PRIME_Z;
 
     // Loop: Pick an edge on each lattice copy.
     float value = 0;
@@ -277,7 +276,7 @@ float OpenSimplex2::noise3_UnrotatedBase(long seed, double xr, double yr, double
  * Recommended for time-varied animations which texture a 3D object (W=time)
  * in a space where Z is vertical
  */
-float OpenSimplex2::noise4_ImproveXYZ_ImproveXY(long seed, double x, double y, double z, double w) {
+float OpenSimplex2::noise4_ImproveXYZ_ImproveXY(s64 seed, double x, double y, double z, double w) {
 
     double xy = x + y;
     double s2 = xy * -0.21132486540518699998;
@@ -296,7 +295,7 @@ float OpenSimplex2::noise4_ImproveXYZ_ImproveXY(long seed, double x, double y, d
  * Recommended for time-varied animations which texture a 3D object (W=time)
  * in a space where Y is vertical
  */
-float OpenSimplex2::noise4_ImproveXYZ_ImproveXZ(long seed, double x, double y, double z, double w) {
+float OpenSimplex2::noise4_ImproveXYZ_ImproveXZ(s64 seed, double x, double y, double z, double w) {
 
     double xz = x + z;
     double s2 = xz * -0.21132486540518699998;
@@ -315,7 +314,7 @@ float OpenSimplex2::noise4_ImproveXYZ_ImproveXZ(long seed, double x, double y, d
  * Recommended for time-varied animations which texture a 3D object (W=time)
  * where there isn't a clear distinction between horizontal and vertical
  */
-float OpenSimplex2::noise4_ImproveXYZ(long seed, double x, double y, double z, double w) {
+float OpenSimplex2::noise4_ImproveXYZ(s64 seed, double x, double y, double z, double w) {
 
     double xyz = x + y + z;
     double ww = w * 0.2236067977499788;
@@ -330,7 +329,7 @@ float OpenSimplex2::noise4_ImproveXYZ(long seed, double x, double y, double z, d
  * Recommended for 3D terrain, where X and Y (or Z and W) are horizontal.
  * Recommended for noise(x, y, sin(time), cos(time)) trick.
  */
-float OpenSimplex2::noise4_ImproveXY_ImproveZW(long seed, double x, double y, double z, double w) {
+float OpenSimplex2::noise4_ImproveXY_ImproveZW(s64 seed, double x, double y, double z, double w) {
     
     double s2 = (x + y) * -0.178275657951399372 + (z + w) * 0.215623393288842828;
     double t2 = (z + w) * -0.403949762580207112 + (x + y) * -0.375199083010075342;
@@ -342,7 +341,7 @@ float OpenSimplex2::noise4_ImproveXY_ImproveZW(long seed, double x, double y, do
 /**
  * 4D OpenSimplex2 noise, fallback lattice orientation.
  */
-float OpenSimplex2::noise4_Fallback(long seed, double x, double y, double z, double w) {
+float OpenSimplex2::noise4_Fallback(s64 seed, double x, double y, double z, double w) {
 
     // Get points for A4 lattice
     double s = SKEW_4D * (x + y + z + w);
@@ -354,7 +353,7 @@ float OpenSimplex2::noise4_Fallback(long seed, double x, double y, double z, dou
 /**
  * 4D OpenSimplex2 noise base.
  */
-float OpenSimplex2::noise4_UnskewedBase(long seed, double xs, double ys, double zs, double ws) {
+float OpenSimplex2::noise4_UnskewedBase(s64 seed, double xs, double ys, double zs, double ws) {
 
     // Get base points and offsets
     int xsb = fastFloor(xs), ysb = fastFloor(ys), zsb = fastFloor(zs), wsb = fastFloor(ws);
@@ -376,7 +375,7 @@ float OpenSimplex2::noise4_UnskewedBase(long seed, double xs, double ys, double 
     float ssi = (siSum + startingLatticeOffset * 4) * UNSKEW_4D;
 
     // Prime pre-multiplication for hash.
-    long xsvp = xsb * PRIME_X, ysvp = ysb * PRIME_Y, zsvp = zsb * PRIME_Z, wsvp = wsb * PRIME_W;
+    s64 xsvp = xsb * PRIME_X, ysvp = ysb * PRIME_Y, zsvp = zsb * PRIME_Z, wsvp = wsb * PRIME_W;
 
     // Five points to add, total, from five copies of the A4 lattice.
     float value = 0;
@@ -439,24 +438,24 @@ float OpenSimplex2::noise4_UnskewedBase(long seed, double xs, double ys, double 
     * Utility
 */
 
-float OpenSimplex2::grad(long seed, long xsvp, long ysvp, float dx, float dy) {
-    long hash = seed ^ xsvp ^ ysvp;
+float OpenSimplex2::grad(s64 seed, s64 xsvp, s64 ysvp, float dx, float dy) {
+    s64 hash = seed ^ xsvp ^ ysvp;
     hash *= HASH_MULTIPLIER;
     hash ^= hash >> (64 - N_GRADS_2D_EXPONENT + 1);
     int gi = (int)hash & ((N_GRADS_2D - 1) << 1);
     return GRADIENTS_2D[gi | 0] * dx + GRADIENTS_2D[gi | 1] * dy;
 }
 
-float OpenSimplex2::grad(long seed, long xrvp, long yrvp, long zrvp, float dx, float dy, float dz) {
-    long hash = (seed ^ xrvp) ^ (yrvp ^ zrvp);
+float OpenSimplex2::grad(s64 seed, s64 xrvp, s64 yrvp, s64 zrvp, float dx, float dy, float dz) {
+    s64 hash = (seed ^ xrvp) ^ (yrvp ^ zrvp);
     hash *= HASH_MULTIPLIER;
     hash ^= hash >> (64 - N_GRADS_3D_EXPONENT + 2);
     int gi = (int)hash & ((N_GRADS_3D - 1) << 2);
     return GRADIENTS_3D[gi | 0] * dx + GRADIENTS_3D[gi | 1] * dy + GRADIENTS_3D[gi | 2] * dz;
 }
 
-float OpenSimplex2::grad(long seed, long xsvp, long ysvp, long zsvp, long wsvp, float dx, float dy, float dz, float dw) {
-    long hash = seed ^ (xsvp ^ ysvp) ^ (zsvp ^ wsvp);
+float OpenSimplex2::grad(s64 seed, s64 xsvp, s64 ysvp, s64 zsvp, s64 wsvp, float dx, float dy, float dz, float dw) {
+    s64 hash = seed ^ (xsvp ^ ysvp) ^ (zsvp ^ wsvp);
     hash *= HASH_MULTIPLIER;
     hash ^= hash >> (64 - N_GRADS_4D_EXPONENT + 2);
     int gi = (int)hash & ((N_GRADS_4D - 1) << 2);

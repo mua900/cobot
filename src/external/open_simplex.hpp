@@ -3,6 +3,9 @@
 
 // Adopted from https://github.com/KdotJPG/OpenSimplex2/blob/master/java/OpenSimplex2.java
 
+#include <cstdint>
+typedef int64_t s64;
+
 static const int N_GRADS_2D_EXPONENT = 7;
 static const int N_GRADS_3D_EXPONENT = 8;
 static const int N_GRADS_4D_EXPONENT = 9;
@@ -23,7 +26,7 @@ public:
     /**
      * 2D Simplex noise, standard lattice orientation.
      */
-    static float noise2(long seed, double x, double y);
+    static float noise2(s64 seed, double x, double y);
 
     /**
      * 2D Simplex noise, with Y pointing down the main diagonal.
@@ -32,13 +35,13 @@ public:
      * unless your map is centered around an equator. It's a subtle
      * difference, but the option is here to make it an easy choice.
      */
-    static float noise2_ImproveX(long seed, double x, double y);
+    static float noise2_ImproveX(s64 seed, double x, double y);
 
 private:
     /**
      * 2D Simplex noise base.
      */
-    static float noise2_UnskewedBase(long seed, double xs, double ys);
+    static float noise2_UnskewedBase(s64 seed, double xs, double ys);
 
 public:
     /**
@@ -49,7 +52,7 @@ public:
      * If Z is vertical in world coordinates, call noise3_ImproveXZ(x, y, Z).
      * For a time varied animation, call noise3_ImproveXY(x, y, T).
      */
-    static float noise3_ImproveXY(long seed, double x, double y, double z);
+    static float noise3_ImproveXY(s64 seed, double x, double y, double z);
 
     /**
      * 3D OpenSimplex2 noise, with better visual isotropy in (X, Z).
@@ -59,20 +62,20 @@ public:
      * If Z is vertical in world coordinates, call noise3_ImproveXZ(x, Z, y) or use noise3_ImproveXY.
      * For a time varied animation, call noise3_ImproveXZ(x, T, y) or use noise3_ImproveXY.
      */
-    static float noise3_ImproveXZ(long seed, double x, double y, double z);
+    static float noise3_ImproveXZ(s64 seed, double x, double y, double z);
 
     /**
      * 3D OpenSimplex2 noise, fallback rotation option
      * Use noise3_ImproveXY or noise3_ImproveXZ instead, wherever appropriate.
      * They have less diagonal bias. This function's best use is as a fallback.
      */
-    static float noise3_Fallback(long seed, double x, double y, double z);
+    static float noise3_Fallback(s64 seed, double x, double y, double z);
 
 private:
     /**
      * Generate overlapping cubic lattices for 3D OpenSimplex2 noise.
      */
-    static float noise3_UnrotatedBase(long seed, double xr, double yr, double zr);
+    static float noise3_UnrotatedBase(s64 seed, double xr, double yr, double zr);
 
 public:
     /**
@@ -81,7 +84,7 @@ public:
      * Recommended for time-varied animations which texture a 3D object (W=time)
      * in a space where Z is vertical
      */
-    static float noise4_ImproveXYZ_ImproveXY(long seed, double x, double y, double z, double w);
+    static float noise4_ImproveXYZ_ImproveXY(s64 seed, double x, double y, double z, double w);
 
     /**
      * 4D OpenSimplex2 noise, with XYZ oriented like noise3_ImproveXZ
@@ -89,7 +92,7 @@ public:
      * Recommended for time-varied animations which texture a 3D object (W=time)
      * in a space where Y is vertical
      */
-    static float noise4_ImproveXYZ_ImproveXZ(long seed, double x, double y, double z, double w);
+    static float noise4_ImproveXYZ_ImproveXZ(s64 seed, double x, double y, double z, double w);
 
     /**
      * 4D OpenSimplex2 noise, with XYZ oriented like noise3_Fallback
@@ -97,33 +100,33 @@ public:
      * Recommended for time-varied animations which texture a 3D object (W=time)
      * where there isn't a clear distinction between horizontal and vertical
      */
-    static float noise4_ImproveXYZ(long seed, double x, double y, double z, double w);
+    static float noise4_ImproveXYZ(s64 seed, double x, double y, double z, double w);
     
     /**
      * 4D OpenSimplex2 noise, with XY and ZW forming orthogonal triangular-based planes.
      * Recommended for 3D terrain, where X and Y (or Z and W) are horizontal.
      * Recommended for noise(x, y, sin(time), cos(time)) trick.
      */
-    static float noise4_ImproveXY_ImproveZW(long seed, double x, double y, double z, double w);
+    static float noise4_ImproveXY_ImproveZW(s64 seed, double x, double y, double z, double w);
 
     /**
      * 4D OpenSimplex2 noise, fallback lattice orientation.
      */
-    static float noise4_Fallback(long seed, double x, double y, double z, double w);
+    static float noise4_Fallback(s64 seed, double x, double y, double z, double w);
 
 private:
     /**
      * 4D OpenSimplex2 noise base.
      */
-    static float noise4_UnskewedBase(long seed, double xs, double ys, double zs, double ws);
+    static float noise4_UnskewedBase(s64 seed, double xs, double ys, double zs, double ws);
 
     /*
      * Utility
      */
 
-    static float grad(long seed, long xsvp, long ysvp, float dx, float dy);
-    static float grad(long seed, long xrvp, long yrvp, long zrvp, float dx, float dy, float dz);
-    static float grad(long seed, long xsvp, long ysvp, long zsvp, long wsvp, float dx, float dy, float dz, float dw);
+    static float grad(s64 seed, s64 xsvp, s64 ysvp, float dx, float dy);
+    static float grad(s64 seed, s64 xrvp, s64 yrvp, s64 zrvp, float dx, float dy, float dz);
+    static float grad(s64 seed, s64 xsvp, s64 ysvp, s64 zsvp, s64 wsvp, float dx, float dy, float dz, float dw);
     static int fastFloor(double x);
     static int fastRound(double x);
 };

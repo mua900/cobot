@@ -7,6 +7,10 @@
 #include "template.hpp"
 #include "text.hpp"
 
+struct FrameRenderContext {
+    SDL_GPUCommandBuffer* command_buffer = nullptr;
+};
+
 struct RenderContext {
     vec2 render_size = {};
     SDL_Renderer* renderer = nullptr;
@@ -14,11 +18,27 @@ struct RenderContext {
     SDL_GPUDevice* device = nullptr;
     SDL_GPURenderState* render_state = nullptr;
 
+    SDL_GPUBuffer* buffer = nullptr;
+    SDL_GPUSampler* sampler = nullptr;
+    SDL_GPUGraphicsPipeline* graphics = nullptr;
+    FrameRenderContext frame = {};
+
     DArray<SDL_Vertex> vertex_scratch;
     DArray<int> index_scratch;
 };
 
 using Texture = SDL_Texture;
+
+struct Vertex {
+    float x;
+    float y;
+    float r;
+    float g;
+    float b;
+    float a;
+    float padding1;
+    float padding2;
+};
 
 struct Mesh {
     DArray<vec2> points;
@@ -48,8 +68,11 @@ struct Shader {
     }
 };
 
-bool initialize_render_context(RenderContext* render, SDL_Window* window);
+bool initialize_render_context(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment);
 void clear_render_state(RenderContext& render);
+
+void start_render(RenderContext& context);
+void end_render(RenderContext& context);
 
 bool loadShader(RenderContext& context, Shader& shader, const char* path);
 bool setShader(RenderContext& render, const Shader* shader);
