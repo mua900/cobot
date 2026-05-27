@@ -37,11 +37,6 @@ bool Application::initialize()
         }
     }
     
-    if (!load_assets())
-    {
-        return false;
-    }
-
     // window
     {
         float scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
@@ -58,19 +53,35 @@ bool Application::initialize()
         // minimum aspect ratio of 1 and maximum aspect ratio of 2 default 1.6
         SDL_SetWindowAspectRatio(window, 1.0, 2.0);
 
-        AssetId vertex_id = get_asset(String("VertexShader"), m_catalog);
-        AssetId fragment_id = get_asset(String("FragmentShader"), m_catalog);
-        const Shader* vertex = m_catalog.get_shader(vertex_id);
-        const Shader* fragment = m_catalog.get_shader(fragment_id);
-
-        if (!initialize_render_context(&m_render, window, vertex->shader, fragment->shader))
+        if (!initialize_render_context(&m_render, window))
         {
             return false;
         }
 
+        AssetId vertex_id = get_asset(String("VertexShader"), m_catalog);
+        AssetId fragment_id = get_asset(String("FragmentShader"), m_catalog);
+        SDL_GPUShader* vertex = m_catalog.get_shader(vertex_id);
+        SDL_GPUShader* fragment = m_catalog.get_shader(fragment_id);
+        if (!(vertex && fragment))
+        {
+            return false;
+        }
+
+        /*
+        if (!init_gpu_renderer(&m_render, vertex, fragment)) {
+            log_error("Couldn't initialize gpu renderer");
+            return false;
+        }
+        */
+
         SDL_ShowWindow(window);
 
         m_window = { window };
+    }
+
+    if (!load_assets())
+    {
+        return false;
     }
 
     AssetId fontId = get_asset(String("FiraSans"), m_catalog);

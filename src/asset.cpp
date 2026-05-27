@@ -392,7 +392,7 @@ AssetId get_asset(String name, AssetCatalog& catalog)
                     return asset.identifier;
                 }
                 else {
-                    auto asset_path = catalog.get_asset_path(asset.identifier);
+                    auto asset_path = catalog.catalog.get_string(asset.path);
                     SCOPE_STRING(asset_path, asset_path_c);
                     get_to_run_tree_path(catalog.path, asset_path_c);
 

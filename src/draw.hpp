@@ -68,7 +68,8 @@ struct Shader {
     }
 };
 
-bool initialize_render_context(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment);
+bool initialize_render_context(RenderContext* render, SDL_Window* window);
+bool init_gpu_renderer(RenderContext* render, SDL_GPUShader* vertex, SDL_GPUShader* fragment);
 void clear_render_state(RenderContext& render);
 
 void start_render(RenderContext& context);

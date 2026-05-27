@@ -141,7 +141,7 @@ struct AssetCatalog {
         return asset.data.audio;
     }
 
-    const Shader* get_shader(AssetId id) const
+    SDL_GPUShader* get_shader(AssetId id) const
     {
         if (!id.is_valid())
         {
@@ -154,7 +154,7 @@ struct AssetCatalog {
             return nullptr;
         }
 
-        return &asset.data.shader;
+        return asset.data.shader.shader;
     }
 };
 

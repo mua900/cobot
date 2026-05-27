@@ -18,7 +18,7 @@ void end_render(RenderContext& context) {
     }
 }
 
-bool initialize_render_context(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment)
+bool initialize_render_context(RenderContext* render, SDL_Window* window)
 {
     SDL_GPUDevice* device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, false, nullptr);
 
@@ -38,8 +38,6 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window, SDL_GP
     render->renderer = renderer;
     render->render_size = vec2(render_size_x, render_size_y);
     render->render_target = target;
-
-    // if (!init_gpu_renderer(render, vertex, fragment)) return false;
 
     return true;
 }
