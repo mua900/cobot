@@ -67,12 +67,10 @@ bool Application::initialize()
             return false;
         }
 
-        /*
-        if (!init_gpu_renderer(&m_render, vertex, fragment)) {
+        if (!init_gpu_renderer(&m_render, window, vertex, fragment)) {
             log_error("Couldn't initialize gpu renderer");
             return false;
         }
-        */
 
         SDL_ShowWindow(window);
 

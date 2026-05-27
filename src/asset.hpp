@@ -53,8 +53,8 @@ struct Asset {
         Shader shader;
     } data = {};
 
-    Asset() : kind(ASSET_KIND_ZERO), identifier(NullAssetId) {}
-    Asset(AssetKind kind) : kind(kind), identifier(NullAssetId)
+    Asset() : kind(ASSET_KIND_ZERO), identifier(NullAssetId), data{} {}
+    Asset(AssetKind kind) : kind(kind), identifier(NullAssetId), data{}
     {}
 };
 

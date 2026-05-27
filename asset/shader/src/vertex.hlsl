@@ -1,15 +1,20 @@
-cbuffer buffer : register(b0, space1)
-{
-    float4x4 ModelViewProjection;
-};
-
 struct VSInput {
-    float3 position : POSITION;
+    float2 position : TEXCOORD0;
+    float2 uv : TEXCOORD1;
+    float4 color : TEXCOORD2;
 };
 
-float4 main(VSInput input) : SV_POSITION
+struct VSOutput {
+    float4 position : SV_POSITION;
+    float2 uv : TEXCOORD0;
+    float4 color : TEXCOORD1;
+};
+
+VSOutput main(VSInput input)
 {
-    float4 pos = float4(input.position, 1.0);
-    // return mul(ModelViewProjection, pos);
-    return pos;
+    VSOutput output;
+    output.position = float4(input.position, 0.0, 1.0);
+    output.uv = input.uv;
+    output.color = input.color;
+    return output;
 }

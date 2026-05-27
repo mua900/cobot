@@ -42,22 +42,40 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
     return true;
 }
 
-bool init_gpu_renderer(RenderContext* render, SDL_GPUShader* vertex, SDL_GPUShader* fragment)
+bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment)
 {
     SDL_GPUVertexBufferDescription vertex_buffer_description[1] = {};
+    SDL_GPUVertexAttribute vertex_attributes[3] = {};
     vertex_buffer_description[0].slot = 0;                        /**< The binding slot of the vertex buffer. */
     vertex_buffer_description[0].pitch = sizeof(Vertex);                       /**< The size of a single element + the offset between elements. */
     vertex_buffer_description[0].input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;  /**< Whether attribute addressing is a function of the vertex index or instance index. */
     vertex_buffer_description[0].instance_step_rate = 0;          /**< Reserved for future use. Must be set to 0. */
+
+    vertex_attributes[0].location = 0;                    /**< The shader input location index. */
+    vertex_attributes[0].buffer_slot = 0;                 /**< The binding slot of the associated vertex buffer. */
+    vertex_attributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;  /**< The size and type of the attribute data. */
+    vertex_attributes[0].offset = 0;                      /**< The byte offset of this attribute relative to the start of the vertex element. */
+
+    vertex_attributes[1].location = 1;                    /**< The shader input location index. */
+    vertex_attributes[1].buffer_slot = 0;                 /**< The binding slot of the associated vertex buffer. */
+    vertex_attributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;  /**< The size and type of the attribute data. */
+    vertex_attributes[1].offset = 8;                      /**< The byte offset of this attribute relative to the start of the vertex element. */
+
+    vertex_attributes[2].location = 2;                    /**< The shader input location index. */
+    vertex_attributes[2].buffer_slot = 0;                 /**< The binding slot of the associated vertex buffer. */
+    vertex_attributes[2].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;  /**< The size and type of the attribute data. */
+    vertex_attributes[2].offset = 16;                      /**< The byte offset of this attribute relative to the start of the vertex element. */
+
     SDL_GPUVertexInputState vertex_input = {
         vertex_buffer_description,  /**< A pointer to an array of vertex buffer descriptions. */
         ARRAY_SIZE(vertex_buffer_description),                          /**< The number of vertex buffer descriptions in the above array. */
-        nullptr,                    /**< A pointer to an array of vertex attribute descriptions. */
-        0                           /**< The number of vertex attribute descriptions in the above array. */
+        vertex_attributes,                   /**< A pointer to an array of vertex attribute descriptions. */
+        ARRAY_SIZE(vertex_attributes)                          /**< The number of vertex attribute descriptions in the above array. */
     };
     SDL_GPURasterizerState rasterizer = {};
     rasterizer.fill_mode = SDL_GPU_FILLMODE_FILL;         /**< Whether polygons will be filled in or drawn as lines. */
-    rasterizer.cull_mode = SDL_GPU_CULLMODE_BACK;         /**< The facing direction in which triangles will be culled. */
+    // @todo this may need to change
+    rasterizer.cull_mode = SDL_GPU_CULLMODE_NONE;         /**< The facing direction in which triangles will be culled. */
     rasterizer.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;       /**< The vertex winding that will cause a triangle to be determined as front-facing. */
     // rasterizer.depth_bias_constant_factor;  /**< A scalar factor controlling the depth value added to each fragment. */
     // rasterizer.depth_bias_clamp;            /**< The maximum depth bias of a fragment. */
@@ -74,8 +92,6 @@ bool init_gpu_renderer(RenderContext* render, SDL_GPUShader* vertex, SDL_GPUShad
     // we don't need it for now
     SDL_GPUDepthStencilState stencil = {};
 
-    SDL_GPUColorTargetDescription color_target_description[1] = {};
-
     // @todo test this
     SDL_GPUColorTargetBlendState blend_state = {};
     blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;     /**< The value to be multiplied by the source RGB value. */
@@ -88,9 +104,11 @@ bool init_gpu_renderer(RenderContext* render, SDL_GPUShader* vertex, SDL_GPUShad
     blend_state.enable_blend = true;                            /**< Whether blending is enabled for the color target. */
     blend_state.enable_color_write_mask = false;                 /**< Whether the color write mask is enabled. */
 
-    color_target_description[0].format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT;               /**< The pixel format of the texture to be used as a color target. */
-    color_target_description[0].blend_state = blend_state;  /**< The blend state to be used for the color target. */
 
+    SDL_GPUColorTargetDescription color_target_description[1] = {};
+
+    color_target_description[0].format = SDL_GetGPUSwapchainTextureFormat(render->device, window);               /**< The pixel format of the texture to be used as a color target. */
+    color_target_description[0].blend_state = blend_state;  /**< The blend state to be used for the color target. */
 
     SDL_GPUGraphicsPipelineTargetInfo target_info = {};
     target_info.color_target_descriptions = color_target_description;  /**< A pointer to an array of color target descriptions. */
@@ -102,7 +120,7 @@ bool init_gpu_renderer(RenderContext* render, SDL_GPUShader* vertex, SDL_GPUShad
     info.vertex_shader = vertex;
     info.fragment_shader = fragment;
     info.vertex_input_state = vertex_input;
-    info.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP;            /**< The primitive topology of the graphics pipeline. */
+    info.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;            /**< The primitive topology of the graphics pipeline. */
     info.rasterizer_state = rasterizer;        /**< The rasterizer state of the graphics pipeline. */
     info.multisample_state = multisample;      /**< The multisample state of the graphics pipeline. */
     info.depth_stencil_state = stencil;   /**< The depth-stencil state of the graphics pipeline. */
@@ -110,6 +128,7 @@ bool init_gpu_renderer(RenderContext* render, SDL_GPUShader* vertex, SDL_GPUShad
 
     SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(render->device, &info);
     if (!pipeline) {
+        log_error("Failed to create graphics pipeline: %s", SDL_GetError());
         return false;
     }
 

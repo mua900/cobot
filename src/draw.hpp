@@ -32,12 +32,12 @@ using Texture = SDL_Texture;
 struct Vertex {
     float x;
     float y;
+    float uvx;
+    float uvy;
     float r;
     float g;
     float b;
     float a;
-    float padding1;
-    float padding2;
 };
 
 struct Mesh {
@@ -69,7 +69,7 @@ struct Shader {
 };
 
 bool initialize_render_context(RenderContext* render, SDL_Window* window);
-bool init_gpu_renderer(RenderContext* render, SDL_GPUShader* vertex, SDL_GPUShader* fragment);
+bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment);
 void clear_render_state(RenderContext& render);
 
 void start_render(RenderContext& context);
