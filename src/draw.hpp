@@ -7,6 +7,8 @@
 #include "template.hpp"
 #include "text.hpp"
 
+static const ColorF DEBUG_COLOR =  ColorF(0.6, 0.5, 0.4, 1.0);
+
 #define GRAPHICS_DEBUG 0
 
 #ifdef _WIN32
@@ -17,14 +19,14 @@
 
 struct FrameRenderContext {
     SDL_GPUCommandBuffer* command_buffer = nullptr;
+    SDL_GPURenderPass* render_pass = nullptr;
 };
 
 struct RenderContext {
     vec2 render_size = {};
     SDL_Renderer* renderer = nullptr;
-    SDL_Texture* render_target = nullptr;
+    SDL_GPUTexture* render_target = nullptr;
     SDL_GPUDevice* device = nullptr;
-    SDL_GPURenderState* render_state = nullptr;
 
     SDL_GPUBuffer* buffer = nullptr;
     SDL_GPUSampler* sampler = nullptr;
@@ -78,13 +80,11 @@ struct Shader {
 
 bool initialize_render_context(RenderContext* render, SDL_Window* window);
 bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment);
-void clear_render_state(RenderContext& render);
 
 void start_render(RenderContext& context);
 void end_render(RenderContext& context);
 
 bool loadShader(RenderContext& context, Shader& shader, const char* path);
-bool setShader(RenderContext& render, const Shader* shader);
 
 void draw_circle(const RenderContext& context, vec2 center, float radius);
 void draw_quadratic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, float thick, ColorF color);

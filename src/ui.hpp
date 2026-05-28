@@ -9,8 +9,8 @@
 #include "asset.hpp"
 #include "text.hpp"
 
-#define INIT_WINDOW_WIDTH  1440.0f
-#define INIT_WINDOW_HEIGHT 810.0f
+#define INIT_WINDOW_WIDTH  1440
+#define INIT_WINDOW_HEIGHT 810
 
 #define DEFAULT_BACKGROUND_COLOR Color{ 0x88, 0x33, 0x66, 0xff }
 

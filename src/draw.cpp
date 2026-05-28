@@ -14,13 +14,44 @@
 
 void start_render(RenderContext& context) {
     SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(context.device);
-    context.frame.command_buffer = command_buffer;
     if (!command_buffer) {
         return;
     }
+
+    // if we wanted to render directly to the window
+    // u32 swapchain_width = 0;
+    // u32 swapchain_height = 0;
+    // SDL_WaitAndAcquireGPUSwapchainTexture(command_buffer, window, &swapchain, &swapchain_width, &swapchain_height);
+
+    // render to the target texture
+    SDL_GPUColorTargetInfo color_targets[1] = {};
+    color_targets[0].texture = context.render_target;
+    color_targets[0].mip_level = 0;
+    color_targets[0].layer_or_depth_plane = 0;
+    color_targets[0].clear_color = SDL_FColor { DEBUG_COLOR.r, DEBUG_COLOR.g, DEBUG_COLOR.b, DEBUG_COLOR.a };
+    color_targets[0].load_op = SDL_GPU_LOADOP_CLEAR;
+    color_targets[0].store_op = SDL_GPU_STOREOP_STORE;
+    color_targets[0].resolve_texture = nullptr;
+    color_targets[0].resolve_mip_level = 0;
+    color_targets[0].resolve_layer = 0;
+    color_targets[0].cycle = false;
+    color_targets[0].cycle_resolve_texture = false;
+    
+    SDL_GPURenderPass* render_pass = SDL_BeginGPURenderPass(command_buffer, color_targets, ARRAY_SIZE(color_targets), nullptr);
+    if (!render_pass) {
+        return;
+    }
+
+    context.frame.command_buffer = command_buffer;
+    context.frame.render_pass = render_pass;
 }
 
 void end_render(RenderContext& context) {
+    if (context.frame.render_pass)
+    {
+        SDL_EndGPURenderPass(context.frame.render_pass);
+    }
+
     if (context.frame.command_buffer)
     {
         SDL_SubmitGPUCommandBuffer(context.frame.command_buffer);
@@ -49,7 +80,19 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
     int render_size_x, render_size_y;
     SDL_GetRenderOutputSize(renderer, &render_size_x, &render_size_y);
 
-    SDL_Texture* target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR32, SDL_TEXTUREACCESS_TARGET, render_size_x, render_size_y);
+    SDL_GPUTextureFormat format = SDL_GetGPUSwapchainTextureFormat(device, window);
+    SDL_PixelFormat pixel_format = SDL_GetPixelFormatFromGPUTextureFormat(format);
+    log_info("Swapchain pixel format: %s", SDL_GetPixelFormatName(pixel_format));
+    SDL_GPUTextureCreateInfo textureInfo = {};
+    textureInfo.type = SDL_GPU_TEXTURETYPE_2D;
+    textureInfo.format = format;
+    textureInfo.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    textureInfo.width = render_size_x;
+    textureInfo.height = render_size_y;
+    textureInfo.layer_count_or_depth = 1;
+    textureInfo.num_levels = 1;
+    textureInfo.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    SDL_GPUTexture* target = SDL_CreateGPUTexture(device, &textureInfo);
 
     render->device = device;
     render->renderer = renderer;
@@ -156,43 +199,6 @@ bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader*
     }
 
     render->graphics = pipeline;
-
-    return true;
-}
-
-void clear_render_state(RenderContext& render)
-{
-    if (render.render_state)
-    {
-        SDL_DestroyGPURenderState(render.render_state);
-        SDL_SetGPURenderState(render.renderer, nullptr);
-        render.render_state = nullptr;
-    }
-}
-
-bool setShader(RenderContext& render, const Shader* shader)
-{
-    if (shader->stage != ShaderStageFragment)
-    {
-        return false;
-    }
-
-    clear_render_state(render);
-
-    SDL_GPURenderStateCreateInfo state_info = {};
-    state_info.fragment_shader = shader->shader;
-    SDL_GPURenderState* state = SDL_CreateGPURenderState(render.renderer, &state_info);
-    if (!state)
-    {
-        return false;
-    }
-
-    if (!SDL_SetGPURenderState(render.renderer, state))
-    {
-        return false;
-    }
-
-    render.render_state = state;
 
     return true;
 }
