@@ -3,6 +3,15 @@
 #include "common.hpp"
 #include "log.hpp"
 
+#ifdef GRAPHICS_DEBUG_DX
+
+#pragma comment(lib, "d3d12.lib")
+
+#define Rectangle d3dRectangle
+#include <d3d12.h>
+#undef Rectangle
+#endif
+
 void start_render(RenderContext& context) {
     SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(context.device);
     context.frame.command_buffer = command_buffer;
@@ -20,6 +29,14 @@ void end_render(RenderContext& context) {
 
 bool initialize_render_context(RenderContext* render, SDL_Window* window)
 {
+#ifdef GRAPHICS_DEBUG_DX
+    ID3D12Debug* debugController = nullptr;
+    if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+        debugController->EnableDebugLayer();
+        debugController->Release();
+    }
+#endif
+
     SDL_GPUDevice* device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, false, nullptr);
 
     SDL_Renderer* renderer = SDL_CreateGPURenderer(device, window);

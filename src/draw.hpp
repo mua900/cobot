@@ -7,6 +7,14 @@
 #include "template.hpp"
 #include "text.hpp"
 
+#define GRAPHICS_DEBUG 0
+
+#ifdef _WIN32
+#if GRAPHICS_DEBUG
+#define GRAPHICS_DEBUG_DX
+#endif
+#endif
+
 struct FrameRenderContext {
     SDL_GPUCommandBuffer* command_buffer = nullptr;
 };
