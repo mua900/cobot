@@ -39,6 +39,12 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
     render->render_size = vec2(render_size_x, render_size_y);
     render->render_target = target;
 
+    if (!SDL_ClaimWindowForGPUDevice(device, window))
+    {
+        log_error("Could not claim window for gpu device");
+        return false;
+    }
+
     return true;
 }
 
@@ -59,12 +65,12 @@ bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader*
     vertex_attributes[1].location = 1;                    /**< The shader input location index. */
     vertex_attributes[1].buffer_slot = 0;                 /**< The binding slot of the associated vertex buffer. */
     vertex_attributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;  /**< The size and type of the attribute data. */
-    vertex_attributes[1].offset = 8;                      /**< The byte offset of this attribute relative to the start of the vertex element. */
+    vertex_attributes[1].offset = sizeof(float) * 2;                      /**< The byte offset of this attribute relative to the start of the vertex element. */
 
     vertex_attributes[2].location = 2;                    /**< The shader input location index. */
     vertex_attributes[2].buffer_slot = 0;                 /**< The binding slot of the associated vertex buffer. */
     vertex_attributes[2].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;  /**< The size and type of the attribute data. */
-    vertex_attributes[2].offset = 16;                      /**< The byte offset of this attribute relative to the start of the vertex element. */
+    vertex_attributes[2].offset = sizeof(float) * 4;                      /**< The byte offset of this attribute relative to the start of the vertex element. */
 
     SDL_GPUVertexInputState vertex_input = {
         vertex_buffer_description,  /**< A pointer to an array of vertex buffer descriptions. */
@@ -74,7 +80,6 @@ bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader*
     };
     SDL_GPURasterizerState rasterizer = {};
     rasterizer.fill_mode = SDL_GPU_FILLMODE_FILL;         /**< Whether polygons will be filled in or drawn as lines. */
-    // @todo this may need to change
     rasterizer.cull_mode = SDL_GPU_CULLMODE_NONE;         /**< The facing direction in which triangles will be culled. */
     rasterizer.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;       /**< The vertex winding that will cause a triangle to be determined as front-facing. */
     // rasterizer.depth_bias_constant_factor;  /**< A scalar factor controlling the depth value added to each fragment. */
@@ -89,10 +94,11 @@ bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader*
     multisample.enable_mask = false;                 /**< Reserved for future use. Must be set to false. */
     multisample.enable_alpha_to_coverage = false;    /**< true enables the alpha-to-coverage feature. */
 
-    // we don't need it for now
     SDL_GPUDepthStencilState stencil = {};
+    stencil.enable_depth_test = false;                     /**< true enables the depth test. */
+    stencil.enable_depth_write = false;                    /**< true enables depth writes. Depth writes are always disabled when enable_depth_test is false. */
+    stencil.enable_stencil_test = false;                   /**< true enables the stencil test. */
 
-    // @todo test this
     SDL_GPUColorTargetBlendState blend_state = {};
     blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;     /**< The value to be multiplied by the source RGB value. */
     blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;     /**< The value to be multiplied by the destination RGB value. */
@@ -116,17 +122,17 @@ bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader*
     target_info.depth_stencil_format = {};                       /**< The pixel format of the depth-stencil target. Ignored if has_depth_stencil_target is false. */
     target_info.has_depth_stencil_target = false;                                   /**< true specifies that the pipeline uses a depth-stencil target. */
 
-    SDL_GPUGraphicsPipelineCreateInfo info = {};
-    info.vertex_shader = vertex;
-    info.fragment_shader = fragment;
-    info.vertex_input_state = vertex_input;
-    info.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;            /**< The primitive topology of the graphics pipeline. */
-    info.rasterizer_state = rasterizer;        /**< The rasterizer state of the graphics pipeline. */
-    info.multisample_state = multisample;      /**< The multisample state of the graphics pipeline. */
-    info.depth_stencil_state = stencil;   /**< The depth-stencil state of the graphics pipeline. */
-    info.target_info = target_info;  /**< Formats and blend modes for the render targets of the graphics pipeline. */
+    SDL_GPUGraphicsPipelineCreateInfo pipelineInfo = {};
+    pipelineInfo.vertex_shader = vertex;
+    pipelineInfo.fragment_shader = fragment;
+    pipelineInfo.vertex_input_state = vertex_input;
+    pipelineInfo.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+    pipelineInfo.rasterizer_state = rasterizer;
+    pipelineInfo.multisample_state = multisample,
+    pipelineInfo.depth_stencil_state = stencil;
+    pipelineInfo.target_info = target_info;
 
-    SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(render->device, &info);
+    SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(render->device, &pipelineInfo);
     if (!pipeline) {
         log_error("Failed to create graphics pipeline: %s", SDL_GetError());
         return false;
