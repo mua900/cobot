@@ -21,14 +21,20 @@ using Texture = SDL_Texture;
 using Viewport = SDL_GPUViewport;
 
 struct Vertex {
-    float x;
-    float y;
-    float uvx;
-    float uvy;
-    float r;
-    float g;
-    float b;
-    float a;
+    float x = 0;
+    float y = 0;
+    float uvx = 0;
+    float uvy = 0;
+    float r = 0;
+    float g = 0;
+    float b = 0;
+    float a = 0;
+
+    Vertex() {}
+    Vertex(float x, float y, float uvx, float uvy, float r, float g, float b, float a)
+        :
+        x(x), y(y), uvx(uvx), uvy(uvy), r(r), g(g), b(b), a(a)
+    {}
 };
 
 struct GPUTexture {
@@ -69,6 +75,8 @@ struct RenderContext {
     vec2 render_size = {};
     SDL_Renderer* renderer = nullptr;
     SDL_GPUDevice* device = nullptr;
+
+    mat4x4 mvp = {};
 
     GPUBuffer vertex_buffer = {};
     GPUBuffer index_buffer = {};

@@ -120,6 +120,10 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
         return false;
     }
 
+    mat4x4 orthographic = orthographic_projection_matrix(-1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
+    mat4x4 camera = camera_matrix(vec2(0, 0), vec2(1,1));
+    mat4mul(&render->mvp, &orthographic, &camera);
+
     return true;
 }
 

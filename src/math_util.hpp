@@ -87,6 +87,33 @@ vec2 lerp2(vec2 a, vec2 b, float t);
 vec2 reflect2(vec2 incident, vec2 normal);
 vec2 get_direction_vector(float angle);
 
+struct vec3 {
+    float x = 0;
+    float y = 0;
+    float z = 0;
+};
+
+struct vec4
+{
+    float x = 0;
+    float y = 0;
+    float z = 0;
+    float w = 0;
+};
+
+struct mat4x4 {
+    float m00, m01, m02, m03 = {};
+    float m10, m11, m12, m13 = {};
+    float m20, m21, m22, m23 = {};
+    float m30, m31, m32, m33 = {};
+};
+
+void mat4mul(mat4x4* dst, mat4x4* left, mat4x4* right);
+
+mat4x4 identity_matrix();
+mat4x4 orthographic_projection_matrix(float left, float right, float bottom, float top, float near, float far);
+mat4x4 camera_matrix(vec2 position, vec2 scale);
+
 struct ColorF;
 
 struct Color {

@@ -58,6 +58,64 @@ vec2 get_direction_vector(float angle)
     return vec2(c, s);
 }
 
+
+mat4x4 identity_matrix()
+{
+    return mat4x4 {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    };
+}
+
+void mat4mul(mat4x4* dst, mat4x4* left, mat4x4* right)
+{
+    mat4x4 result = {
+        left->m00 * right->m00 + left->m01 * right->m10 + left->m02 * right->m20 + left->m03 * right->m30,
+        left->m00 * right->m01 + left->m01 * right->m11 + left->m02 * right->m21 + left->m03 * right->m31,
+        left->m00 * right->m02 + left->m01 * right->m12 + left->m02 * right->m22 + left->m03 * right->m32,
+        left->m00 * right->m03 + left->m01 * right->m13 + left->m02 * right->m23 + left->m03 * right->m33,
+
+        left->m10 * right->m00 + left->m11 * right->m10 + left->m12 * right->m20 + left->m13 * right->m30,
+        left->m10 * right->m01 + left->m11 * right->m11 + left->m12 * right->m21 + left->m13 * right->m31,
+        left->m10 * right->m02 + left->m11 * right->m12 + left->m12 * right->m22 + left->m13 * right->m32,
+        left->m10 * right->m03 + left->m11 * right->m13 + left->m12 * right->m23 + left->m13 * right->m33,
+
+        left->m20 * right->m00 + left->m21 * right->m10 + left->m22 * right->m20 + left->m23 * right->m30,
+        left->m20 * right->m01 + left->m21 * right->m11 + left->m22 * right->m21 + left->m23 * right->m31,
+        left->m20 * right->m02 + left->m21 * right->m12 + left->m22 * right->m22 + left->m23 * right->m32,
+        left->m20 * right->m03 + left->m21 * right->m13 + left->m22 * right->m23 + left->m23 * right->m33,
+
+        left->m30 * right->m00 + left->m31 * right->m10 + left->m32 * right->m20 + left->m33 * right->m30,
+        left->m30 * right->m01 + left->m31 * right->m11 + left->m32 * right->m21 + left->m33 * right->m31,
+        left->m30 * right->m02 + left->m31 * right->m12 + left->m32 * right->m22 + left->m33 * right->m32,
+        left->m30 * right->m03 + left->m31 * right->m13 + left->m32 * right->m23 + left->m33 * right->m33,
+    };
+
+    *dst = result;
+}
+
+mat4x4 orthographic_projection_matrix(float left, float right, float bottom, float top, float near, float far)
+{
+    return mat4x4 {
+        2.0f / (right - left),  0,                      0,                      - (right + left) / (right - left),
+        0,                      2.0f / (top - bottom),  0,                      - (top + bottom) / (top - bottom),
+        0,                      0,                      -2.0f / (far - near),   - (far + near) / (far - near),
+        0,                      0,                      0,                      1.0
+    };
+}
+
+mat4x4 camera_matrix(vec2 position, vec2 scale)
+{
+    return mat4x4 {
+        scale.x, 0,       0, position.x,
+        0,       scale.y, 0, position.y,
+        0,       0,       1, 0,
+        0,       0,       0, 1
+    };
+}
+
 Rectangle merge_volumes(Rectangle v1, Rectangle v2)
 {
     Rectangle res = {};

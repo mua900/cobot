@@ -112,6 +112,8 @@ private:
 
     bool init_game_state();
 
+    bool init_render();
+
     bool init_ui();
     bool init_game_ui();
     bool init_mission_ui();

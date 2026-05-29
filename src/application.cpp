@@ -53,28 +53,14 @@ bool Application::initialize()
         // minimum aspect ratio of 1 and maximum aspect ratio of 2 default 1.6
         SDL_SetWindowAspectRatio(window, 1.0, 2.0);
 
-        if (!initialize_render_context(&m_render, window))
-        {
-            return false;
-        }
+        m_window = { window };
 
-        AssetId vertex_id = get_asset(String("VertexShader"), m_catalog);
-        AssetId fragment_id = get_asset(String("FragmentShader"), m_catalog);
-        SDL_GPUShader* vertex = m_catalog.get_shader(vertex_id);
-        SDL_GPUShader* fragment = m_catalog.get_shader(fragment_id);
-        if (!(vertex && fragment))
+        if (!init_render())
         {
-            return false;
-        }
-
-        if (!init_gpu_renderer(&m_render, window, vertex, fragment)) {
-            log_error("Couldn't initialize gpu renderer");
             return false;
         }
 
         SDL_ShowWindow(window);
-
-        m_window = { window };
     }
 
     if (!load_assets())
@@ -865,6 +851,47 @@ void Application::add_label(UiId ui, UiElementId id, Label label) {
     m_ui[ui].label.add(label);
 }
 
+bool Application::init_render()
+{
+    if (!initialize_render_context(&m_render, m_window.window))
+    {
+        return false;
+    }
+
+    AssetId vertex_id = get_asset(String("VertexShader"), m_catalog);
+    AssetId fragment_id = get_asset(String("FragmentShader"), m_catalog);
+    SDL_GPUShader* vertex = m_catalog.get_shader(vertex_id);
+    SDL_GPUShader* fragment = m_catalog.get_shader(fragment_id);
+    if (!(vertex && fragment))
+    {
+        return false;
+    }
+
+    if (!init_gpu_renderer(&m_render, m_window.window, vertex, fragment)) {
+        log_error("Couldn't initialize gpu renderer");
+        return false;
+    }
+
+    m_render.start_copy_pass();
+
+    Mesh mesh = {};
+    MeshData quad = {};
+    quad.vertices.add(Vertex(-0.5, -0.5, 0, 0, 1.0, 1.0, 1.0, 1.0));
+    quad.vertices.add(Vertex(-0.5,  0.5, 0, 0, 1.0, 1.0, 1.0, 1.0));
+    quad.vertices.add(Vertex( 0.5, -0.5, 0, 0, 1.0, 1.0, 1.0, 1.0));
+    quad.vertices.add(Vertex( 0.5,  0.5, 0, 0, 1.0, 1.0, 1.0, 1.0));
+    quad.indices.add(0);
+    quad.indices.add(1);
+    quad.indices.add(2);
+    quad.indices.add(1);
+    quad.indices.add(3);
+    quad.indices.add(2);
+    m_render.add_mesh(quad, mesh);
+
+    m_render.end_copy_pass();
+
+    return true;
+}
 
 bool Application::init_ui()
 {
@@ -995,7 +1022,9 @@ void Application::draw()
     SDL_RenderClear(renderer);
 
     start_render(m_render, m_window.window);
+
     m_render.start_render_pass();
+
 
     switch (m_mode)
     {
