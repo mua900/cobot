@@ -9,7 +9,7 @@
 
 static const ColorF DEBUG_COLOR =  ColorF(0.6, 0.5, 0.4, 1.0);
 
-#define GRAPHICS_DEBUG 0
+#define GRAPHICS_DEBUG 1
 
 #ifdef _WIN32
 #if GRAPHICS_DEBUG
@@ -48,9 +48,16 @@ struct MeshData {
     DArray<u16> indices = {};
 };
 
-struct Mesh {
+struct MeshReference {
+    u32 numVertices = 0;
+    u32 numIndices = 0;
     u32 vertex_offset = 0;
     u32 index_offset = 0;
+};
+
+struct Mesh {
+    MeshData data = {};
+    MeshReference ref = {};
 };
 
 struct GPUBuffer {
@@ -87,16 +94,16 @@ struct RenderContext {
 
     FrameContext frame = {};
 
-    void start_render_pass();
+    bool start_render_pass();
     void end_render_pass();
-    void start_copy_pass();
+    bool start_copy_pass();
     void end_copy_pass();
 
     void set_viewport(Viewport viewport);
 
-    bool add_mesh(MeshData& meshData, Mesh& mesh);
+    bool add_mesh(MeshData& meshData, MeshReference& mesh);
 
-    void draw_mesh(Mesh mesh);
+    void draw_mesh(MeshReference mesh);
 };
 
 enum ShaderStage {
@@ -120,8 +127,8 @@ struct Shader {
 bool initialize_render_context(RenderContext* render, SDL_Window* window);
 bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment);
 
-void start_render(RenderContext& context, SDL_Window* window);
-void end_render(RenderContext& context);
+void start_frame(RenderContext& context, SDL_Window* window);
+void end_frame(RenderContext& context);
 
 bool loadShader(RenderContext& context, Shader& shader, const char* path);
 

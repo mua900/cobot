@@ -69,6 +69,11 @@ struct ApplicationMessage {
     ApplicationMessage(vec2 w, vec2 s, const char* m, Color color) : where(w), scale(s), message(m), background(color) {}
 };
 
+enum MeshType {
+    Quad,
+    Count,
+};
+
 class Application {
 public:
     ApplicationMode m_mode = ModeMenu;
@@ -91,6 +96,8 @@ public:
 
     AssetId m_font = {};
     AssetId m_editor_font = {};
+
+    Mesh meshes[MeshType::Count] = {};
 
     GameState game = {};
     VehicleEditor editor = {};

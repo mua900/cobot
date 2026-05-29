@@ -12,7 +12,10 @@
 #undef Rectangle
 #endif
 
-void start_render(RenderContext& context, SDL_Window* window) {
+void start_frame(RenderContext& context, SDL_Window* window) {
+    context.frame.command_buffer = nullptr;
+    context.frame.swapchain = {};
+    
     SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(context.device);
     if (!command_buffer) {
         return;
@@ -21,20 +24,20 @@ void start_render(RenderContext& context, SDL_Window* window) {
     SDL_GPUTexture* swapchain = nullptr;
     u32 swapchain_width = 0;
     u32 swapchain_height = 0;
-    SDL_WaitAndAcquireGPUSwapchainTexture(context.frame.command_buffer, window, &swapchain, &swapchain_width, &swapchain_height);
+    SDL_WaitAndAcquireGPUSwapchainTexture(command_buffer, window, &swapchain, &swapchain_width, &swapchain_height);
 
     context.frame.command_buffer = command_buffer;
     context.frame.swapchain = { swapchain, swapchain_width, swapchain_height };
 }
 
-void end_render(RenderContext& context) {
+void end_frame(RenderContext& context) {
     if (context.frame.command_buffer)
     {
         SDL_SubmitGPUCommandBuffer(context.frame.command_buffer);
     }
 }
 
-void RenderContext::start_render_pass() {
+bool RenderContext::start_render_pass() {
     SDL_GPURenderPass* render_pass = nullptr;
 
     if (frame.swapchain.texture)
@@ -58,7 +61,10 @@ void RenderContext::start_render_pass() {
         SDL_BindGPUGraphicsPipeline(render_pass, graphics);
     }
 
+    SDL_PushGPUVertexUniformData(frame.command_buffer, 0, &mvp, sizeof(mat4x4));
+
     frame.render_pass = render_pass;
+    return render_pass ? true : false;
 }
 
 void RenderContext::end_render_pass() {
@@ -69,8 +75,9 @@ void RenderContext::end_render_pass() {
     }
 }
 
-void RenderContext::start_copy_pass() {
-    SDL_BeginGPUCopyPass(frame.command_buffer);
+bool RenderContext::start_copy_pass() {
+    frame.copy_pass = SDL_BeginGPUCopyPass(frame.command_buffer);
+    return frame.copy_pass ? true : false;
 }
 
 void RenderContext::end_copy_pass() {
@@ -113,12 +120,6 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
     render->device = device;
     render->renderer = renderer;
     render->render_size = vec2(render_size_x, render_size_y);
-
-    if (!SDL_ClaimWindowForGPUDevice(device, window))
-    {
-        log_error("Could not claim window for gpu device");
-        return false;
-    }
 
     mat4x4 orthographic = orthographic_projection_matrix(-1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
     mat4x4 camera = camera_matrix(vec2(0, 0), vec2(1,1));
@@ -349,30 +350,34 @@ void RenderContext::set_viewport(Viewport viewport)
     SDL_SetGPUViewport(frame.render_pass, &viewport);
 }
 
-bool RenderContext::add_mesh(MeshData& meshData, Mesh& mesh)
+bool RenderContext::add_mesh(MeshData& meshData, MeshReference& mesh)
 {
-    u32 vBufferUsage = meshData.vertices.size() * sizeof(Vertex);
-    u32 iBufferUsage = meshData.indices.size() * sizeof(u16);
+    if (!frame.copy_pass)
+    {
+        return false;
+    }
 
-    if (vertex_buffer.used + vBufferUsage >= vertex_buffer.size)
-    {
-        return false;
-    }
-    if (index_buffer.used + iBufferUsage >= index_buffer.size)
-    {
-        return false;
-    }
+    u32 vBufferUsage = vertex_buffer.used;
+    u32 vMesh = meshData.vertices.size() * sizeof(Vertex);
+    u32 iBufferUsage = index_buffer.used;
+    u32 iMesh = meshData.indices.size() * sizeof(u16);
 
     u32 nVertices = meshData.vertices.size();
     u32 nIndices = meshData.indices.size();
 
+    if (vBufferUsage + vMesh >= vertex_buffer.size)
+    {
+        return false;
+    }
+    if (iBufferUsage + iMesh >= index_buffer.size)
+    {
+        return false;
+    }
+
     u8* memory = (u8*) SDL_MapGPUTransferBuffer(device, transfer_buffer.buffer, true);
 
-    u32 vertexSize = meshData.vertices.size() * sizeof(Vertex);
-    u32 indexSize = meshData.indices.size() * sizeof(u16);
-
-    memcpy(memory + 0, meshData.vertices.data(), vertexSize);
-    memcpy(memory + vertexSize, meshData.indices.data(), indexSize);
+    memcpy(memory + 0, meshData.vertices.data(), vMesh);
+    memcpy(memory + vMesh, meshData.indices.data(), iMesh);
 
     SDL_UnmapGPUTransferBuffer(device, transfer_buffer.buffer);
 
@@ -381,24 +386,48 @@ bool RenderContext::add_mesh(MeshData& meshData, Mesh& mesh)
     vertexSource.transfer_buffer = transfer_buffer.buffer;
     vertexSource.offset = 0;
     indexSource.transfer_buffer = transfer_buffer.buffer;
-    indexSource.offset = vertexSize;
+    indexSource.offset = vMesh;
 
     SDL_GPUBufferRegion vertexDestination = {};
     SDL_GPUBufferRegion indexDestination = {};
     vertexDestination.buffer = vertex_buffer.buffer;
-    vertexDestination.offset = vertex_buffer.used * sizeof(Vertex);
-    vertexDestination.size = (vertex_buffer.size - vertex_buffer.used) * sizeof(Vertex);
+    vertexDestination.offset = vBufferUsage;
+    vertexDestination.size = vMesh;
 
     indexDestination.buffer = index_buffer.buffer;
-    indexDestination.offset = index_buffer.used * sizeof(u16);
-    indexDestination.size = (index_buffer.size - index_buffer.used) * sizeof(u16);
+    indexDestination.offset = iBufferUsage;
+    indexDestination.size = iMesh;
 
     SDL_UploadToGPUBuffer(frame.copy_pass, &vertexSource, &vertexDestination, true);
     SDL_UploadToGPUBuffer(frame.copy_pass, &indexSource, &indexDestination, true);
 
-    vertex_buffer.used += vBufferUsage;
-    index_buffer.used += iBufferUsage;
+    mesh.numVertices = nVertices;
+    mesh.numIndices = nIndices;
+    mesh.vertex_offset = vertex_buffer.used;
+    mesh.index_offset = index_buffer.used;
+
+    vertex_buffer.used += nVertices;
+    index_buffer.used += nIndices;
+
     return true;
+}
+
+void RenderContext::draw_mesh(MeshReference mesh)
+{
+    if (frame.render_pass)
+    {
+        SDL_GPUBufferBinding vertexBinding;
+        vertexBinding.buffer = vertex_buffer.buffer;
+        vertexBinding.offset = 0;
+        SDL_GPUBufferBinding indexBinding;
+        indexBinding.buffer = index_buffer.buffer;
+        indexBinding.offset = 0;
+
+        SDL_BindGPUVertexBuffers(frame.render_pass, 0, &vertexBinding, 1);
+        SDL_BindGPUIndexBuffer(frame.render_pass, &indexBinding, SDL_GPU_INDEXELEMENTSIZE_16BIT);
+
+        SDL_DrawGPUIndexedPrimitives(frame.render_pass, mesh.numIndices, 1, mesh.index_offset, mesh.vertex_offset, 0);
+    }
 }
 
 // old code

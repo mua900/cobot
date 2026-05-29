@@ -872,24 +872,6 @@ bool Application::init_render()
         return false;
     }
 
-    m_render.start_copy_pass();
-
-    Mesh mesh = {};
-    MeshData quad = {};
-    quad.vertices.add(Vertex(-0.5, -0.5, 0, 0, 1.0, 1.0, 1.0, 1.0));
-    quad.vertices.add(Vertex(-0.5,  0.5, 0, 0, 1.0, 1.0, 1.0, 1.0));
-    quad.vertices.add(Vertex( 0.5, -0.5, 0, 0, 1.0, 1.0, 1.0, 1.0));
-    quad.vertices.add(Vertex( 0.5,  0.5, 0, 0, 1.0, 1.0, 1.0, 1.0));
-    quad.indices.add(0);
-    quad.indices.add(1);
-    quad.indices.add(2);
-    quad.indices.add(1);
-    quad.indices.add(3);
-    quad.indices.add(2);
-    m_render.add_mesh(quad, mesh);
-
-    m_render.end_copy_pass();
-
     return true;
 }
 
@@ -1021,10 +1003,22 @@ void Application::draw()
     SDL_SetRenderDrawColor(renderer, COLOR_ARG(background));
     SDL_RenderClear(renderer);
 
-    start_render(m_render, m_window.window);
+    start_frame(m_render, m_window.window);
+
+    m_render.start_copy_pass();
+
+    for (auto& mesh : meshes)
+    {
+        m_render.add_mesh(mesh.data, mesh.ref);
+    }
+
+    m_render.end_copy_pass();
 
     m_render.start_render_pass();
 
+    SDL_FlushRenderer(m_render.renderer);
+
+    // m_render.draw_mesh(meshes[MeshType::Quad].ref);
 
     switch (m_mode)
     {
@@ -1044,7 +1038,7 @@ void Application::draw()
     draw_messages();
     
     m_render.end_render_pass();
-    end_render(m_render);
+    end_frame(m_render);
     
     SDL_RenderPresent(renderer);
 }
