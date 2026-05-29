@@ -994,7 +994,8 @@ void Application::draw()
     SDL_SetRenderDrawColor(renderer, COLOR_ARG(background));
     SDL_RenderClear(renderer);
 
-    start_render(m_render);
+    start_render(m_render, m_window.window);
+    m_render.start_render_pass();
 
     switch (m_mode)
     {
@@ -1010,12 +1011,12 @@ void Application::draw()
         }
     }
 
-    
     draw_ui();
     draw_messages();
     
+    m_render.end_render_pass();
     end_render(m_render);
-
+    
     SDL_RenderPresent(renderer);
 }
 

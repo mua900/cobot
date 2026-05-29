@@ -12,50 +12,70 @@
 #undef Rectangle
 #endif
 
-void start_render(RenderContext& context) {
+void start_render(RenderContext& context, SDL_Window* window) {
     SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(context.device);
     if (!command_buffer) {
         return;
     }
 
-    // if we wanted to render directly to the window
-    // u32 swapchain_width = 0;
-    // u32 swapchain_height = 0;
-    // SDL_WaitAndAcquireGPUSwapchainTexture(command_buffer, window, &swapchain, &swapchain_width, &swapchain_height);
-
-    // render to the target texture
-    SDL_GPUColorTargetInfo color_targets[1] = {};
-    color_targets[0].texture = context.render_target;
-    color_targets[0].mip_level = 0;
-    color_targets[0].layer_or_depth_plane = 0;
-    color_targets[0].clear_color = SDL_FColor { DEBUG_COLOR.r, DEBUG_COLOR.g, DEBUG_COLOR.b, DEBUG_COLOR.a };
-    color_targets[0].load_op = SDL_GPU_LOADOP_CLEAR;
-    color_targets[0].store_op = SDL_GPU_STOREOP_STORE;
-    color_targets[0].resolve_texture = nullptr;
-    color_targets[0].resolve_mip_level = 0;
-    color_targets[0].resolve_layer = 0;
-    color_targets[0].cycle = false;
-    color_targets[0].cycle_resolve_texture = false;
-    
-    SDL_GPURenderPass* render_pass = SDL_BeginGPURenderPass(command_buffer, color_targets, ARRAY_SIZE(color_targets), nullptr);
-    if (!render_pass) {
-        return;
-    }
+    SDL_GPUTexture* swapchain = nullptr;
+    u32 swapchain_width = 0;
+    u32 swapchain_height = 0;
+    SDL_WaitAndAcquireGPUSwapchainTexture(context.frame.command_buffer, window, &swapchain, &swapchain_width, &swapchain_height);
 
     context.frame.command_buffer = command_buffer;
-    context.frame.render_pass = render_pass;
+    context.frame.swapchain = { swapchain, swapchain_width, swapchain_height };
 }
 
 void end_render(RenderContext& context) {
-    if (context.frame.render_pass)
-    {
-        SDL_EndGPURenderPass(context.frame.render_pass);
-    }
-
     if (context.frame.command_buffer)
     {
         SDL_SubmitGPUCommandBuffer(context.frame.command_buffer);
     }
+}
+
+void RenderContext::start_render_pass() {
+    SDL_GPURenderPass* render_pass = nullptr;
+
+    if (frame.swapchain.texture)
+    {
+        // render to the swapchain
+        SDL_GPUColorTargetInfo color_targets[1] = {};
+        color_targets[0].texture = frame.swapchain.texture;
+        color_targets[0].mip_level = 0;
+        color_targets[0].layer_or_depth_plane = 0;
+        color_targets[0].clear_color = SDL_FColor{ DEBUG_COLOR.r, DEBUG_COLOR.g, DEBUG_COLOR.b, DEBUG_COLOR.a };
+        color_targets[0].load_op = SDL_GPU_LOADOP_CLEAR;
+        color_targets[0].store_op = SDL_GPU_STOREOP_STORE;
+        color_targets[0].resolve_texture = nullptr;
+        color_targets[0].resolve_mip_level = 0;
+        color_targets[0].resolve_layer = 0;
+        color_targets[0].cycle = false;
+        color_targets[0].cycle_resolve_texture = false;
+
+        render_pass = SDL_BeginGPURenderPass(frame.command_buffer, color_targets, 1, nullptr);
+
+        SDL_BindGPUGraphicsPipeline(render_pass, graphics);
+    }
+
+    frame.render_pass = render_pass;
+}
+
+void RenderContext::end_render_pass() {
+    if (frame.render_pass)
+    {
+        SDL_EndGPURenderPass(frame.render_pass);
+        frame.render_pass = nullptr;
+    }
+}
+
+void RenderContext::start_copy_pass() {
+    SDL_BeginGPUCopyPass(frame.command_buffer);
+}
+
+void RenderContext::end_copy_pass() {
+    SDL_EndGPUCopyPass(frame.copy_pass);
+    frame.copy_pass = nullptr;
 }
 
 bool initialize_render_context(RenderContext* render, SDL_Window* window)
@@ -78,26 +98,21 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
     }
 
     int render_size_x, render_size_y;
-    SDL_GetRenderOutputSize(renderer, &render_size_x, &render_size_y);
+    if (!SDL_GetRenderOutputSize(renderer, &render_size_x, &render_size_y)) {
+        return false;
+    }
+
+    u32 render_width = u32(render_size_x);
+    u32 render_height = u32(render_size_y);
 
     SDL_GPUTextureFormat format = SDL_GetGPUSwapchainTextureFormat(device, window);
     SDL_PixelFormat pixel_format = SDL_GetPixelFormatFromGPUTextureFormat(format);
     log_info("Swapchain pixel format: %s", SDL_GetPixelFormatName(pixel_format));
-    SDL_GPUTextureCreateInfo textureInfo = {};
-    textureInfo.type = SDL_GPU_TEXTURETYPE_2D;
-    textureInfo.format = format;
-    textureInfo.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
-    textureInfo.width = render_size_x;
-    textureInfo.height = render_size_y;
-    textureInfo.layer_count_or_depth = 1;
-    textureInfo.num_levels = 1;
-    textureInfo.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    SDL_GPUTexture* target = SDL_CreateGPUTexture(device, &textureInfo);
+    log_info("Render size: %d %d", render_width, render_height);
 
     render->device = device;
     render->renderer = renderer;
     render->render_size = vec2(render_size_x, render_size_y);
-    render->render_target = target;
 
     if (!SDL_ClaimWindowForGPUDevice(device, window))
     {
@@ -198,11 +213,192 @@ bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader*
         return false;
     }
 
+    SDL_GPUBuffer* vertex_buffer = nullptr;
+    SDL_GPUBuffer* index_buffer = nullptr;
+
+    SDL_GPUBufferCreateInfo vertex_info = {};
+    vertex_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+    vertex_info.size = 1024;  // @todo
+    SDL_GPUBufferCreateInfo index_info = {};
+    index_info.usage = SDL_GPU_BUFFERUSAGE_INDEX;
+    index_info.size = 1024;  // @todo
+    vertex_buffer = SDL_CreateGPUBuffer(render->device, &vertex_info);
+    index_buffer = SDL_CreateGPUBuffer(render->device, &index_info);
+
+    if (!(vertex_buffer && index_buffer)) {
+        return false;
+    }
+
+    SDL_GPUTransferBufferCreateInfo transferInfo = {};
+    transferInfo.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+    transferInfo.size = 1024;  // @todo
+    SDL_GPUTransferBuffer* transfer_buffer = SDL_CreateGPUTransferBuffer(render->device, &transferInfo);
+
     render->graphics = pipeline;
+    render->vertex_buffer = { vertex_buffer, vertex_info.size, 0 };
+    render->index_buffer = { index_buffer, index_info.size, 0 };
+    render->transfer_buffer = { transfer_buffer, transferInfo.size };
 
     return true;
 }
 
+void draw_texture(const RenderContext& context, Rectangle area, SDL_Texture* texture)
+{
+    SDL_FRect dst = { area.x, area.y, area.w, area.h };
+    SDL_RenderTexture(context.renderer, texture, NULL, &dst);
+}
+
+SDL_Texture* render_text(SDL_Renderer* renderer, String text, Font font, Color color) {
+    SDL_Color sdl_color = { color.r, color.g, color.b, color.a };
+    SDL_Surface* surface = TTF_RenderText_Solid(font.font, text.data, text.size, sdl_color);
+
+    if (!surface) {
+        return nullptr;
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+    if (!texture) {
+        SDL_DestroySurface(surface);
+        return nullptr;
+    }
+
+    return texture;
+}
+
+Text create_text(SDL_Renderer* renderer, String text, Font font, Color color)
+{
+    SDL_Texture* texture = render_text(renderer, text, font, color);
+    if (!texture) return Text();
+    return Text(texture, text);
+}
+
+void render_text_size(SDL_Renderer* renderer, Text text, vec2 where, vec2 absolute_scale)
+{
+    float tex_w, tex_h;
+    SDL_GetTextureSize(text.texture, &tex_w, &tex_h);
+
+    if (!absolute_scale.x)
+    {
+        absolute_scale = vec2(tex_w, tex_h);
+    }
+
+    SDL_FRect src = { 0,0,tex_w,tex_h };
+    SDL_FRect dst = {where.x - absolute_scale.x/2, where.y - absolute_scale.y/2, absolute_scale.x, absolute_scale.y};
+
+    SDL_RenderTexture(renderer, text.texture, &src, &dst);
+}
+
+void render_text_scale(SDL_Renderer* renderer, Text text, vec2 where, vec2 scale_factor)
+{
+    float tex_w, tex_h;
+    SDL_GetTextureSize(text.texture, &tex_w, &tex_h);
+
+    if (!scale_factor.x)
+    {
+        scale_factor = vec2(1,1);
+    }
+
+    vec2 scale = vec2(tex_w * scale_factor.x, tex_h * scale_factor.y);
+
+    SDL_FRect src = { 0,0,tex_w,tex_h };
+    SDL_FRect dst = {where.x - scale.x/2, where.y - scale.y/2, scale.x, scale.y};
+
+    SDL_RenderTexture(renderer, text.texture, &src, &dst);
+}
+
+bool loadShader(RenderContext& context, Shader& shader, const char* path)
+{
+    SDL_GPUShaderFormat format = SDL_GPU_SHADERFORMAT_SPIRV;
+    SDL_GPUShaderStage shaderStage = SDL_GPUShaderStage(shader.stage);
+
+    BinaryData code = {};
+    if (!load_file(path, code)) {
+        log_error("Could not load shader %s", path);
+        return false;
+    }
+
+    SDL_GPUShaderCreateInfo info = {};
+    info.code_size = code.size;
+    info.code = code.data;
+    info.entrypoint = "main";
+    info.format = format;
+    info.stage = shaderStage;
+    info.num_samplers = shader.numSamplers;
+    info.num_storage_textures = shader.numStorageTextures;
+    info.num_storage_buffers = shader.numStorageBuffers;
+    info.num_uniform_buffers = shader.numUniformBuffers;
+    
+    SDL_GPUShader* shaderObj = SDL_CreateGPUShader(context.device, &info);
+    if (!shaderObj) {
+        log_error("%s", SDL_GetError());
+        return false;
+    }
+
+    shader.shader = shaderObj;
+
+    return true;
+}
+
+void RenderContext::set_viewport(Viewport viewport)
+{
+    SDL_SetGPUViewport(frame.render_pass, &viewport);
+}
+
+bool RenderContext::add_mesh(MeshData& meshData, Mesh& mesh)
+{
+    u32 vBufferUsage = meshData.vertices.size() * sizeof(Vertex);
+    u32 iBufferUsage = meshData.indices.size() * sizeof(u16);
+
+    if (vertex_buffer.used + vBufferUsage >= vertex_buffer.size)
+    {
+        return false;
+    }
+    if (index_buffer.used + iBufferUsage >= index_buffer.size)
+    {
+        return false;
+    }
+
+    u32 nVertices = meshData.vertices.size();
+    u32 nIndices = meshData.indices.size();
+
+    u8* memory = (u8*) SDL_MapGPUTransferBuffer(device, transfer_buffer.buffer, true);
+
+    u32 vertexSize = meshData.vertices.size() * sizeof(Vertex);
+    u32 indexSize = meshData.indices.size() * sizeof(u16);
+
+    memcpy(memory + 0, meshData.vertices.data(), vertexSize);
+    memcpy(memory + vertexSize, meshData.indices.data(), indexSize);
+
+    SDL_UnmapGPUTransferBuffer(device, transfer_buffer.buffer);
+
+    SDL_GPUTransferBufferLocation vertexSource = {};
+    SDL_GPUTransferBufferLocation indexSource = {};
+    vertexSource.transfer_buffer = transfer_buffer.buffer;
+    vertexSource.offset = 0;
+    indexSource.transfer_buffer = transfer_buffer.buffer;
+    indexSource.offset = vertexSize;
+
+    SDL_GPUBufferRegion vertexDestination = {};
+    SDL_GPUBufferRegion indexDestination = {};
+    vertexDestination.buffer = vertex_buffer.buffer;
+    vertexDestination.offset = vertex_buffer.used * sizeof(Vertex);
+    vertexDestination.size = (vertex_buffer.size - vertex_buffer.used) * sizeof(Vertex);
+
+    indexDestination.buffer = index_buffer.buffer;
+    indexDestination.offset = index_buffer.used * sizeof(u16);
+    indexDestination.size = (index_buffer.size - index_buffer.used) * sizeof(u16);
+
+    SDL_UploadToGPUBuffer(frame.copy_pass, &vertexSource, &vertexDestination, true);
+    SDL_UploadToGPUBuffer(frame.copy_pass, &indexSource, &indexDestination, true);
+
+    vertex_buffer.used += vBufferUsage;
+    index_buffer.used += iBufferUsage;
+    return true;
+}
+
+// old code
+/*
 void draw_segment(const RenderContext& context, vec2 start, vec2 end, float thick, ColorF color)
 {
     vec2 dir = (end - start).normalized();
@@ -426,119 +622,4 @@ void draw_cubic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, 
         prev = p;
     }
 }
-
-void draw_mesh(const RenderContext& context, Mesh mesh, float scale, vec2 translate, ColorF color)
-{
-    for (int i = 0; i < mesh.points.size(); i++)
-    {
-        mesh.points[i] *= scale;
-        mesh.points[i] += translate;
-
-        context.vertex_scratch[i].position.x = mesh.points[i].x;
-        context.vertex_scratch[i].position.y = mesh.points[i].y;
-        context.vertex_scratch[i].color = SDL_FColor {color.r, color.g, color.b, color.a};
-    }
-    for (int i = 0; i < mesh.indices.size(); i ++)
-    {
-        context.index_scratch[i] = mesh.indices[i];
-    }
-    SDL_RenderGeometry(context.renderer, nullptr, context.vertex_scratch.data(), context.vertex_scratch.size(), context.index_scratch.data(), context.index_scratch.size());
-}
-
-void draw_texture(const RenderContext& context, Rectangle area, SDL_Texture* texture)
-{
-    SDL_FRect dst = { area.x, area.y, area.w, area.h };
-    SDL_RenderTexture(context.renderer, texture, NULL, &dst);
-}
-
-SDL_Texture* render_text(SDL_Renderer* renderer, String text, Font font, Color color) {
-    SDL_Color sdl_color = { color.r, color.g, color.b, color.a };
-    SDL_Surface* surface = TTF_RenderText_Solid(font.font, text.data, text.size, sdl_color);
-
-    if (!surface) {
-        return nullptr;
-    }
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-    if (!texture) {
-        SDL_DestroySurface(surface);
-        return nullptr;
-    }
-
-    return texture;
-}
-
-Text create_text(SDL_Renderer* renderer, String text, Font font, Color color)
-{
-    SDL_Texture* texture = render_text(renderer, text, font, color);
-    if (!texture) return Text();
-    return Text(texture, text);
-}
-
-void render_text_size(SDL_Renderer* renderer, Text text, vec2 where, vec2 absolute_scale)
-{
-    float tex_w, tex_h;
-    SDL_GetTextureSize(text.texture, &tex_w, &tex_h);
-
-    if (!absolute_scale.x)
-    {
-        absolute_scale = vec2(tex_w, tex_h);
-    }
-
-    SDL_FRect src = { 0,0,tex_w,tex_h };
-    SDL_FRect dst = {where.x - absolute_scale.x/2, where.y - absolute_scale.y/2, absolute_scale.x, absolute_scale.y};
-
-    SDL_RenderTexture(renderer, text.texture, &src, &dst);
-}
-
-void render_text_scale(SDL_Renderer* renderer, Text text, vec2 where, vec2 scale_factor)
-{
-    float tex_w, tex_h;
-    SDL_GetTextureSize(text.texture, &tex_w, &tex_h);
-
-    if (!scale_factor.x)
-    {
-        scale_factor = vec2(1,1);
-    }
-
-    vec2 scale = vec2(tex_w * scale_factor.x, tex_h * scale_factor.y);
-
-    SDL_FRect src = { 0,0,tex_w,tex_h };
-    SDL_FRect dst = {where.x - scale.x/2, where.y - scale.y/2, scale.x, scale.y};
-
-    SDL_RenderTexture(renderer, text.texture, &src, &dst);
-}
-
-bool loadShader(RenderContext& context, Shader& shader, const char* path)
-{
-    SDL_GPUShaderFormat format = SDL_GPU_SHADERFORMAT_SPIRV;
-    SDL_GPUShaderStage shaderStage = SDL_GPUShaderStage(shader.stage);
-
-    BinaryData code = {};
-    if (!load_file(path, code)) {
-        log_error("Could not load shader %s", path);
-        return false;
-    }
-
-    SDL_GPUShaderCreateInfo info = {};
-    info.code_size = code.size;
-    info.code = code.data;
-    info.entrypoint = "main";
-    info.format = format;
-    info.stage = shaderStage;
-    info.num_samplers = shader.numSamplers;
-    info.num_storage_textures = shader.numStorageTextures;
-    info.num_storage_buffers = shader.numStorageBuffers;
-    info.num_uniform_buffers = shader.numUniformBuffers;
-    
-    SDL_GPUShader* shaderObj = SDL_CreateGPUShader(context.device, &info);
-    if (!shaderObj) {
-        log_error("%s", SDL_GetError());
-        return false;
-    }
-
-    shader.shader = shaderObj;
-
-    return true;
-}
+*/

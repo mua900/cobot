@@ -17,27 +17,8 @@ static const ColorF DEBUG_COLOR =  ColorF(0.6, 0.5, 0.4, 1.0);
 #endif
 #endif
 
-struct FrameRenderContext {
-    SDL_GPUCommandBuffer* command_buffer = nullptr;
-    SDL_GPURenderPass* render_pass = nullptr;
-};
-
-struct RenderContext {
-    vec2 render_size = {};
-    SDL_Renderer* renderer = nullptr;
-    SDL_GPUTexture* render_target = nullptr;
-    SDL_GPUDevice* device = nullptr;
-
-    SDL_GPUBuffer* buffer = nullptr;
-    SDL_GPUSampler* sampler = nullptr;
-    SDL_GPUGraphicsPipeline* graphics = nullptr;
-    FrameRenderContext frame = {};
-
-    DArray<SDL_Vertex> vertex_scratch;
-    DArray<int> index_scratch;
-};
-
 using Texture = SDL_Texture;
+using Viewport = SDL_GPUViewport;
 
 struct Vertex {
     float x;
@@ -50,14 +31,64 @@ struct Vertex {
     float a;
 };
 
-struct Mesh {
-    DArray<vec2> points;
-    DArray<int> indices;
+struct GPUTexture {
+    SDL_GPUTexture* texture = nullptr;
+    u32 width = 0;
+    u32 height = 0;
+};
 
-    ~Mesh() {
-        points.reset();
-        indices.reset();
-    }
+struct MeshData {
+    DArray<Vertex> vertices = {};
+    DArray<u16> indices = {};
+};
+
+struct Mesh {
+    u32 vertex_offset = 0;
+    u32 index_offset = 0;
+};
+
+struct GPUBuffer {
+    SDL_GPUBuffer* buffer = nullptr;
+    u32 size = 0;
+    u32 used = 0;
+};
+
+struct TransferBuffer {
+    SDL_GPUTransferBuffer* buffer = nullptr;
+    u32 size = 0;
+};
+
+struct FrameContext {
+    SDL_GPUCommandBuffer* command_buffer = nullptr;
+    SDL_GPURenderPass* render_pass = nullptr;
+    SDL_GPUCopyPass* copy_pass = nullptr;
+    GPUTexture swapchain = {};
+};
+
+struct RenderContext {
+    vec2 render_size = {};
+    SDL_Renderer* renderer = nullptr;
+    SDL_GPUDevice* device = nullptr;
+
+    GPUBuffer vertex_buffer = {};
+    GPUBuffer index_buffer = {};
+    SDL_GPUSampler* sampler = nullptr;
+    SDL_GPUGraphicsPipeline* graphics = nullptr;
+
+    TransferBuffer transfer_buffer = {};
+
+    FrameContext frame = {};
+
+    void start_render_pass();
+    void end_render_pass();
+    void start_copy_pass();
+    void end_copy_pass();
+
+    void set_viewport(Viewport viewport);
+
+    bool add_mesh(MeshData& meshData, Mesh& mesh);
+
+    void draw_mesh(Mesh mesh);
 };
 
 enum ShaderStage {
@@ -81,7 +112,7 @@ struct Shader {
 bool initialize_render_context(RenderContext* render, SDL_Window* window);
 bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment);
 
-void start_render(RenderContext& context);
+void start_render(RenderContext& context, SDL_Window* window);
 void end_render(RenderContext& context);
 
 bool loadShader(RenderContext& context, Shader& shader, const char* path);
