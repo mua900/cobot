@@ -81,6 +81,10 @@ struct FrameContext {
 struct RenderContext {
     vec2 render_size = {};
     SDL_Renderer* renderer = nullptr;
+
+    SDL_Texture* target_texture = nullptr;
+    SDL_GPUTexture* render_target = nullptr;
+
     SDL_GPUDevice* device = nullptr;
 
     mat4x4 mvp = {};

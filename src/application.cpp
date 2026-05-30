@@ -1003,22 +1003,7 @@ void Application::draw()
     SDL_SetRenderDrawColor(renderer, COLOR_ARG(background));
     SDL_RenderClear(renderer);
 
-    start_frame(m_render, m_window.window);
-
-    m_render.start_copy_pass();
-
-    for (auto& mesh : meshes)
-    {
-        m_render.add_mesh(mesh.data, mesh.ref);
-    }
-
-    m_render.end_copy_pass();
-
-    m_render.start_render_pass();
-
-    SDL_FlushRenderer(m_render.renderer);
-
-    // m_render.draw_mesh(meshes[MeshType::Quad].ref);
+    // SDL_FlushRenderer(m_render.renderer);
 
     switch (m_mode)
     {
@@ -1037,10 +1022,28 @@ void Application::draw()
     draw_ui();
     draw_messages();
     
+    SDL_RenderPresent(renderer);
+}
+
+void Application::do_gpu_frame()
+{
+    start_frame(m_render, m_window.window);
+   
+    m_render.start_copy_pass();
+
+    for (auto& mesh : meshes)
+    {
+        m_render.add_mesh(mesh.data, mesh.ref);
+    }
+
+    m_render.end_copy_pass();
+
+    m_render.start_render_pass();
+
+    // m_render.draw_mesh(meshes[MeshType::Quad].ref);
+
     m_render.end_render_pass();
     end_frame(m_render);
-    
-    SDL_RenderPresent(renderer);
 }
 
 bool Application::is_fullscreen() const

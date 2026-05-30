@@ -237,10 +237,12 @@ Vehicle get_default_vehicle()
         t.part.parent = chasis_id;
     }
 
-    tires[0].part.transform.position = vec2(-25, -25);
-    tires[1].part.transform.position = vec2(25, -25);
-    tires[2].part.transform.position = vec2(-25, 25);
-    tires[3].part.transform.position = vec2(25, 25);
+    int hDist = 36;
+    int vDist = 25;
+    tires[0].part.transform.position = vec2(-hDist, -vDist);
+    tires[1].part.transform.position = vec2( hDist, -vDist);
+    tires[2].part.transform.position = vec2(-hDist,  vDist);
+    tires[3].part.transform.position = vec2( hDist,  vDist);
 
     PartId fl = vehicle.add_tire(tires[0]);
     PartId fr = vehicle.add_tire(tires[1]);

@@ -126,6 +126,8 @@ private:
     bool init_mission_ui();
     bool init_editor_ui();
 
+    void do_gpu_frame();
+    
     bool load_assets();
 
     UiState& get_active_ui();

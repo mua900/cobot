@@ -15,7 +15,7 @@
 void start_frame(RenderContext& context, SDL_Window* window) {
     context.frame.command_buffer = nullptr;
     context.frame.swapchain = {};
-    
+
     SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(context.device);
     if (!command_buffer) {
         return;
@@ -42,9 +42,8 @@ bool RenderContext::start_render_pass() {
 
     if (frame.swapchain.texture)
     {
-        // render to the swapchain
         SDL_GPUColorTargetInfo color_targets[1] = {};
-        color_targets[0].texture = frame.swapchain.texture;
+        color_targets[0].texture = render_target;
         color_targets[0].mip_level = 0;
         color_targets[0].layer_or_depth_plane = 0;
         color_targets[0].clear_color = SDL_FColor{ DEBUG_COLOR.r, DEBUG_COLOR.g, DEBUG_COLOR.b, DEBUG_COLOR.a };
@@ -53,7 +52,7 @@ bool RenderContext::start_render_pass() {
         color_targets[0].resolve_texture = nullptr;
         color_targets[0].resolve_mip_level = 0;
         color_targets[0].resolve_layer = 0;
-        color_targets[0].cycle = false;
+        color_targets[0].cycle = true;
         color_targets[0].cycle_resolve_texture = false;
 
         render_pass = SDL_BeginGPURenderPass(frame.command_buffer, color_targets, 1, nullptr);
@@ -116,9 +115,25 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
     SDL_PixelFormat pixel_format = SDL_GetPixelFormatFromGPUTextureFormat(format);
     log_info("Swapchain pixel format: %s", SDL_GetPixelFormatName(pixel_format));
     log_info("Render size: %d %d", render_width, render_height);
+    SDL_GPUTextureCreateInfo targetCreateInfo = {};
+    targetCreateInfo.type = SDL_GPU_TEXTURETYPE_2D;
+    targetCreateInfo.format = format;
+    targetCreateInfo.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    targetCreateInfo.width = render_width;
+    targetCreateInfo.height = render_height;
+    targetCreateInfo.layer_count_or_depth = 1;
+    targetCreateInfo.num_levels = 1;
+    targetCreateInfo.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    SDL_GPUTexture* target = SDL_CreateGPUTexture(device, &targetCreateInfo);
+
+    SDL_PropertiesID texture_properties = SDL_CreateProperties();
+    SDL_SetPointerProperty(texture_properties, SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_POINTER, target);
+    SDL_Texture* target_texture = SDL_CreateTextureWithProperties(renderer, texture_properties);
 
     render->device = device;
     render->renderer = renderer;
+    render->render_target = target;
+    render->target_texture = target_texture;
     render->render_size = vec2(render_size_x, render_size_y);
 
     mat4x4 orthographic = orthographic_projection_matrix(-1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
@@ -333,7 +348,7 @@ bool loadShader(RenderContext& context, Shader& shader, const char* path)
     info.num_storage_textures = shader.numStorageTextures;
     info.num_storage_buffers = shader.numStorageBuffers;
     info.num_uniform_buffers = shader.numUniformBuffers;
-    
+
     SDL_GPUShader* shaderObj = SDL_CreateGPUShader(context.device, &info);
     if (!shaderObj) {
         log_error("%s", SDL_GetError());
