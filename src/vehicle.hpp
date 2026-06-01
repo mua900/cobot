@@ -126,11 +126,11 @@ enum ControllerKind {
 
 struct BasicController {
     u32 codeSizeLimit = 0;
-    int script = 0;
 };
 
 struct Controller {
     ControllerKind kind = ControllerSentinel;
+    int script = 0;
     VPartData part = {};
     union {
         BasicController basic;

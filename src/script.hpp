@@ -8,7 +8,7 @@
 #include "lua.hpp"
 
 
-enum ScriptLanguage {
+enum class ScriptLanguage {
     LUA,
     LANGUAGE,  // @todo find a name for this
 };
@@ -28,5 +28,7 @@ struct Script {
     }
     bool set_source(ScriptLanguage language, String source);
 };
+
+void run_script(Script& s);
 
 #endif // _SCRIPT_H

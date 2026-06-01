@@ -4,6 +4,12 @@
 void GameState::update(s64 dt, double dts)
 {
     vehicle.worldPosition += dts * vehicle.velocity;
+
+    for (auto& controller : vehicle.controller)
+    {
+        Script& s = scripts.get_ref(controller.script);
+        run_script(s);
+    }
 }
 
 
