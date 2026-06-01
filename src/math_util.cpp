@@ -43,7 +43,7 @@ ColorF::ColorF(const Color& color) {
 
 vec2 lerp2(vec2 a, vec2 b, float t)
 {
-    return vec2(std::lerp(a.x, b.x, t), std::lerp(a.y, b.y, t));
+    return vec2(cobot::lerp(a.x, b.x, t), cobot::lerp(a.y, b.y, t));
 }
 
 vec2 reflect2(vec2 incident, vec2 normal)
@@ -145,4 +145,20 @@ bool Rectangle::contains_centered(vec2 p) const
 {
     return p.x >= x - w / 2 && p.x <= x + w / 2 &&
         p.y >= y - h / 2 && p.y <= y + h / 2;
+}
+
+float cobot::lerp(float a, float b, float t)
+{
+    return a * (1.0f - t) + b * t;
+}
+
+float cobot::clamp(float a, float b, float x)
+{
+    return (a > x) ? a : (b < x) ? b : x;
+}
+
+float cobot::smoothstep(float a, float b, float x)
+{
+    float t = cobot::clamp((x - a) / (b - a), 0, 1);
+    return t * t * (3.0 - 2.0 * t);
 }

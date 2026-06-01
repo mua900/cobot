@@ -1,7 +1,7 @@
 #include "game.hpp"
 #include "draw.hpp"
 
-constexpr int fixedUpdateRate = 40;
+constexpr int fixedUpdateRate = 120;
 constexpr double fixedTimeStep = 1.0 / fixedUpdateRate;
 constexpr s64 fixedTimeStepNS = NANOSECONDS_PER_SECOND / fixedUpdateRate;
 constexpr s64 fixedTimeStepUS = MICROSECONDS_PER_SECOND / fixedUpdateRate;
@@ -9,27 +9,45 @@ constexpr s64 fixedTimeStepMS = MILLISECONDS_PER_SECOND / fixedUpdateRate;
 
 void GameState::update(TimeInfo time)
 {
-    double elapsed = ticks * fixedTimeStep;
+    double elapsed = updateState.ticks * fixedTimeStep;
     while (elapsed < time.timeSeconds + time.deltaTimeSeconds)
     {
-        fixedUpdate();
-        ticks += 1;
-        elapsed = ticks * fixedTimeStep;
+        updateState.fixedUpdate(this);
+        updateState.ticks += 1;
+        elapsed = updateState.ticks * fixedTimeStep;
     }
 
-    double dts = time.deltaTimeSeconds;
-    vehicle.worldPosition += dts * vehicle.velocity;
+    updateState.update(this, time);
+}
 
-    for (auto& controller : vehicle.controller)
+void idleUpdate(GameState* game, TimeInfo time) {}
+void idleFixedUpdate(GameState* game) {}
+
+void vehicleSimulationUpdate(GameState* game, TimeInfo time)
+{
+    double dts = time.deltaTimeSeconds;
+    game->vehicle.worldPosition += dts * game->vehicle.velocity;
+
+    for (auto& controller : game->vehicle.controller)
     {
-        Script& s = scripts.get_ref(controller.script);
+        Script& s = game->scripts.get_ref(controller.script);
         run_script(s);
     }
 }
 
-void GameState::fixedUpdate()
+void vehicleSimulationFixedUpdate(GameState* game)
 {
-    
+
+}
+
+void starSystemUpdate(GameState* game, TimeInfo time)
+{
+
+}
+
+void starSystemFixedUpdate(GameState* game)
+{
+    game->starSystem.simulation_step(fixedTimeStep);
 }
 
 
@@ -133,5 +151,29 @@ void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, con
         VPartData part_data = game.vehicle.getPartData(game.vehicle.rootParts[i]);
         part_data.transform.position += game.vehicle.worldPosition;
         draw_vehicle_part(game.vehicle.rootParts[i], part_data.transform, context, catalog, game);
+    }
+}
+
+void draw_game_state(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+{
+    draw_vehicle(context, catalog, game);
+}
+
+void draw_game_solar_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+{
+    vec2 render_size = context.render_size;
+
+    auto& system = game.starSystem;
+    
+    vec2 center = render_size / 2;
+    draw_circle(context, center, system.star.radius, ColorF(0.6, 0.5, 0.1));
+
+    float zrange_low = -10;
+    float zrange_high = 10;
+    for (auto& planet : system.planets)
+    {
+        vec2 pos = vec2(planet.body.position.x, planet.body.position.y);
+        float zdistance = cobot::smoothstep(zrange_low, zrange_high, planet.body.position.z);
+        draw_circle(context, center + pos, planet.body.radius, ColorF(planet.color, zdistance));
     }
 }

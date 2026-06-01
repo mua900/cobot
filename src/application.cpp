@@ -84,7 +84,16 @@ bool Application::initialize()
 
     // game state
     {
-        game.load_part_images(m_catalog);
+        if (!game.load_part_images(m_catalog))
+        {
+            return false;
+        }
+
+        m_update_states[UpdateStateId::Idle] = { idleUpdate, idleFixedUpdate, 0 };
+        m_update_states[UpdateStateId::VehicleSimulation] = { vehicleSimulationUpdate, vehicleSimulationFixedUpdate, 0 };
+        m_update_states[UpdateStateId::Idle] = { starSystemUpdate, starSystemFixedUpdate, 0 };
+
+        game.updateState = m_update_states[UpdateStateId::Idle];
     }
 
     initialize_libraries();
@@ -106,6 +115,7 @@ bool Application::init_game_state()
     }
     */
     game.vehicle = get_default_vehicle();
+    game.starSystem = get_default_star_system();
     game.scripts.add(Script(init_lua()));
 
     return true;
@@ -174,6 +184,9 @@ UiState& Application::get_active_ui()
         }
         case ModeEditor: {
             return m_ui[UiEditor];
+        }
+        case ModeSolarSystem: {
+            return m_ui[UiSolarSystem];
         }
         default: {
             panic("Invalid game mode");
@@ -652,7 +665,7 @@ bool Application::mouse_input_mission_select() {
                         break;
                     }
                     case MissionButton: {
-                        switch_modes(ModeGame);
+                        switch_modes(ModeSolarSystem);
                         break;
                     }
                 }
@@ -741,7 +754,14 @@ void Application::update()
     update_ui_pos();
     timeout();
 
-    game.update(m_time);
+    if (m_mode == ModeGame)
+    {
+        game.update(m_time);
+    }
+    else if (m_mode == ModeSolarSystem)
+    {
+
+    }
 }
 
 void Application::timeout()
@@ -898,7 +918,18 @@ bool Application::init_ui()
     if (!init_game_ui()) return false;
     if (!init_mission_ui()) return false;
     if (!init_editor_ui()) return false;
+    if (!init_solar_system_ui()) return false;
 
+    return true;
+}
+
+bool Application::init_solar_system_ui()
+{
+    vec2 ws = get_window_size();
+    Font font = m_catalog.get_font(m_font);
+    Color button_color = Color(0x66, 0x33, 0x22);
+    Color background = Color(0x44, 0x66, 0x22);
+    add_button(UiSolarSystem, BackButton, Button(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
     return true;
 }
 
@@ -1011,6 +1042,10 @@ void Application::draw()
             draw_game();
             break;
         }
+        case ModeSolarSystem: {
+            draw_solar_system();
+            break;
+        }
         case ModeMenu: {
             break;
         }
@@ -1060,13 +1095,12 @@ vec2 Application::get_window_size() const {
 
 void Application::draw_game()
 {
-    vec2 ws = get_window_size();
-    if (game.map.texture) {
-        SDL_FRect dst = { 0, 0, ws.x, ws.y };
-        SDL_RenderTexture(m_render.renderer, game.map.texture, nullptr, &dst);
-    }
+    draw_game_state(m_render, m_catalog, game);
+}
 
-    draw_vehicle(m_render, m_catalog, game);
+void Application::draw_solar_system()
+{
+    draw_game_solar_system(m_render, m_catalog, game);
 }
 
 void Application::draw_ui()
@@ -1119,6 +1153,18 @@ void Application::draw_ui_state(const UiState& state)
 }
 
 void Application::switch_modes(ApplicationMode mode) {
+    if (mode == ModeGame)
+    {
+        game.updateState = m_update_states[UpdateStateId::VehicleSimulation];
+    }
+    else if (mode == ModeSolarSystem)
+    {
+        game.updateState = m_update_states[UpdateStateId::StarSystem];
+    }
+    else {
+        game.updateState = m_update_states[UpdateStateId::Idle];
+    }
+
     m_mode = mode;
 }
 

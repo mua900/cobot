@@ -14,6 +14,7 @@
 enum ApplicationMode {
     ModeMenu,
     ModeEditor,
+    ModeSolarSystem,
     ModeGame,
 
     ModeCount,
@@ -30,6 +31,7 @@ enum UiId {
     UiSettings,
     UiEditor,
     UiMissionSelect,
+    UiSolarSystem,
     UiGame,
     UiCount,
 };
@@ -64,6 +66,13 @@ enum MeshType {
     Count,
 };
 
+enum UpdateStateId {
+    Idle,
+    VehicleSimulation,
+    StarSystem,
+    UpdateStateCount,
+};
+
 class Application {
 public:
     ApplicationMode m_mode = ModeMenu;
@@ -83,6 +92,8 @@ public:
     Event_Timeout m_events[EVENT_COUNT] = {};
 
     DArray<Text> m_rendered_text = {};
+
+    UpdateState m_update_states[UpdateStateCount];
 
     AssetId m_font = {};
     AssetId m_editor_font = {};
@@ -115,6 +126,7 @@ private:
     bool init_game_ui();
     bool init_mission_ui();
     bool init_editor_ui();
+    bool init_solar_system_ui();
 
     void do_gpu_frame();
     
@@ -132,6 +144,7 @@ private:
     int display_message(vec2 where, vec2 scale, const char* message, float duration, Color color, Color background);
 
     void draw_game();
+    void draw_solar_system();
 	void draw_ui();
     void draw_messages();
 

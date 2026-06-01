@@ -23,6 +23,7 @@ add_executable(game
 	src/audio.cpp
 	src/input.hpp
 	src/input.cpp
+	src/time.hpp
 	src/ui.hpp
 	src/ui.cpp
 	src/text.hpp
@@ -42,6 +43,8 @@ add_executable(game
 	src/vehicle.cpp
 	src/map.hpp
 	src/map.cpp
+	src/space.hpp
+	src/space.cpp
 	src/editor.hpp
 	src/editor.cpp
 	src/template.hpp

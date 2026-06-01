@@ -5,6 +5,7 @@
 #include "math_util.hpp"
 #include "template.hpp"
 
+// @todo a way to convert between position + velocity and orbital elements which are more intuative
 // Keplerian orbit (in 2 dimensions)
 // distance(trueAnomaly) = semiMajorAxis*(1-eccentricity**2) / (1 + eccentricity*cos(semiMajorAxis))
 
@@ -13,23 +14,24 @@ struct Body {
     float mass = 0;
     float radius = 0;
 
-    float semiMajorAxis = 0;
-    float eccentricity = 0;
-    float trueAnomaly = 0;  // angular distance to periapsis
-    float inclination = 0;  // angle between the orbital plane of the body and the reference plane
-    float periapsisArgument = 0;  // the angle between the reference direction and the periapsis
-    float ascendingNodeLongtitude = 0;  // the angle between the reference direction and the ascending node
+    vec3 position = {};
+    vec3 velocity = {};
+    vec3 acceleration = {};
 
-    double calculateDistance()
-    {
-        return semiMajorAxis * (1.0 - eccentricity * eccentricity) / (1.0 + eccentricity * std::cos(trueAnomaly));
-    }
+    Body() {}
+    Body(float mass, float radius, vec3 init_position, vec3 init_velocity)
+        : mass(mass), radius(radius), position(init_position), velocity(init_velocity)
+    {}
 };
 
 struct Planet {
     // @todo planetary parameters
 
+    ColorF color = {};
     Body body = {};
+
+    Planet() {}
+    Planet(ColorF color, Body body) : color(color), body(body) {}
 };
 
 struct Star {
@@ -45,6 +47,8 @@ struct StarSystem {
 
     void simulation_step(double dt);
 };
+
+StarSystem get_default_star_system();
 
 void draw_star_system();
 

@@ -18,9 +18,18 @@ struct Camera {
     float zoom = 0;
 };
 
-struct GameState {
-    s64 ticks = 0;
+struct GameState;
 
+typedef void (*UpdateFunction)(GameState* game, TimeInfo time);
+typedef void (*FixedUpdateFunction)(GameState* game);
+
+struct UpdateState {
+    UpdateFunction update = nullptr;
+    FixedUpdateFunction fixedUpdate = nullptr;
+    s64 ticks = 0;
+};
+
+struct GameState {
     Camera camera = {};
     Vehicle vehicle = {};
     Map map = {};
@@ -29,16 +38,24 @@ struct GameState {
     DArray<Script> scripts = {};
 
     AssetId partImages [PART_KIND_COUNT][MaxPartCount] = {};
+    UpdateState updateState = {};
 
     void update(TimeInfo time);
-    void fixedUpdate();
 
     bool load_part_images(AssetCatalog& catalog);
 };
 
-// @todo
-void draw_game_state(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
+void idleUpdate(GameState* game, TimeInfo time);
+void idleFixedUpdate(GameState* game);
 
+void vehicleSimulationUpdate(GameState* game, TimeInfo time);
+void vehicleSimulationFixedUpdate(GameState* game);
+
+void starSystemUpdate(GameState* game, TimeInfo time);
+void starSystemFixedUpdate(GameState* game);
+
+void draw_game_state(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
+void draw_game_solar_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 
 #endif // _GAME_H

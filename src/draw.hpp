@@ -136,7 +136,7 @@ void end_frame(RenderContext& context);
 
 bool loadShader(RenderContext& context, Shader& shader, const char* path);
 
-void draw_circle(const RenderContext& context, vec2 center, float radius);
+void draw_circle(const RenderContext& context, vec2 position, float radius, ColorF color);
 void draw_quadratic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, float thick, ColorF color);
 void draw_cubic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, vec2 p3, float thick, ColorF color);
 

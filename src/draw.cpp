@@ -445,8 +445,6 @@ void RenderContext::draw_mesh(MeshReference mesh)
     }
 }
 
-// old code
-/*
 void draw_segment(const RenderContext& context, vec2 start, vec2 end, float thick, ColorF color)
 {
     vec2 dir = (end - start).normalized();
@@ -670,4 +668,3 @@ void draw_cubic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, 
         prev = p;
     }
 }
-*/

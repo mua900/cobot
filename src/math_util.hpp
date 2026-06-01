@@ -91,7 +91,91 @@ struct vec3 {
     float x = 0;
     float y = 0;
     float z = 0;
+
+    vec3() {}
+    vec3(float p_x, float p_y, float p_z) : x(p_x), y(p_y), z(p_z) {}
+    explicit vec3(float p) : x(p), y(p), z(p) {}
+
+    vec2 normalized() const
+    {
+        float mag = sqrt(x*x+y*y+z*z);
+        return vec2(x/mag,y/mag);
+    }
+
+    float magnitude() const {
+        return sqrtf(x * x + y * y + z * z);
+    }
+
+    void operator+=(const vec3 other)
+    {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+    }
+
+    void operator-=(const vec3 other)
+    {
+        x -= other.x;
+        y -= other.y;
+        y -= other.z;
+    }
+
+    void operator/=(float s)
+    {
+        x /= s;
+        y /= s;
+        z /= s;
+    }
+
+    void operator*=(float s)
+    {
+        x *= s;
+        y *= s;
+        z *= s;
+    }
 };
+
+inline float dot3(vec3 a, vec3 b)
+{
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+inline vec3 cross3(vec3 a, vec3 b)
+{
+    return vec3(
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    );
+}
+
+inline vec3 operator-(const vec3 v)
+{ return vec3(-v.x, -v.y, -v.z); }
+
+inline vec3 operator+(const vec3 a, const vec3 b)
+{
+    return vec3(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+inline vec3 operator-(const vec3 a, const vec3 b)
+{
+    return vec3(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+inline vec3 operator*(vec3 v, float s)
+{
+    return vec3(v.x * s, v.y * s, v.z * s);
+}
+inline vec3 operator*(float s, vec3 v)
+{
+    return vec3(v.x * s, v.y * s, v.z * s);
+}
+inline vec3 operator/(vec3 v, float s)
+{
+    return vec3(v.x / s, v.y / s, v.z / s);
+}
+inline vec3 operator*(vec3 a, vec3 b)
+{
+    return vec3(a.x * b.x, a.y * b.y, a.z * b.z);
+}
 
 struct vec4
 {
@@ -136,6 +220,7 @@ struct ColorF {
     ColorF(float r, float g, float b) : r(r), g(g), b(b), a(1.0) {}
     ColorF(float r, float g, float b, float a) : r(r), g(g), b(b), a(a) {}
     ColorF(const Color& color);
+    explicit ColorF(ColorF col, float nalpha) : r(col.r), g(col.g), b(col.b), a(nalpha) {}
 };
 
 // simple custom complex number
@@ -221,6 +306,10 @@ Rectangle merge_volumes(Rectangle v1, Rectangle v2);
 namespace cobot {
     constexpr int max(int x, int y) { return x > y ? x : y; }
     constexpr int min(int x, int y) { return x > y ? y : x; }
+
+    float lerp(float a, float b, float t);
+    float clamp(float a, float b, float x);
+    float smoothstep(float a, float b, float x);
 }
 
 #endif // _MATH_UTIL_H
