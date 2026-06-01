@@ -257,9 +257,9 @@ Vehicle get_default_vehicle()
 
     Controller con = {};
     con.kind = ControllerBasic;
+    con.script = {};
     con.part.transform.scale = 1;
     con.basic.codeSizeLimit = 128;
-    con.basic.script = {};
     vehicle.add_controller(con);
 
     vehicle.add_root(chasis_id);

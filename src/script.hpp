@@ -20,11 +20,15 @@ struct Script {
     union {
         lua_State* lua;
         Interp* interp;
-    };
+    } data = {};
 
-    Script() {
-        // because you can't default initialize unions in C++.
-        memset(this, 0, sizeof(*this));
+    Script() : language(ScriptLanguage::LUA), data{} {}
+    Script(lua_State* lua) : language(ScriptLanguage::LUA)
+    {
+        data.lua = lua;
+    }
+    Script(Interp* interpreter) : language(ScriptLanguage::LANGUAGE) {
+        data.interp = interpreter;
     }
     bool set_source(ScriptLanguage language, String source);
 };

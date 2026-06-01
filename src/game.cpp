@@ -1,8 +1,23 @@
 #include "game.hpp"
 #include "draw.hpp"
 
-void GameState::update(s64 dt, double dts)
+constexpr int fixedUpdateRate = 40;
+constexpr double fixedTimeStep = 1.0 / fixedUpdateRate;
+constexpr s64 fixedTimeStepNS = NANOSECONDS_PER_SECOND / fixedUpdateRate;
+constexpr s64 fixedTimeStepUS = MICROSECONDS_PER_SECOND / fixedUpdateRate;
+constexpr s64 fixedTimeStepMS = MILLISECONDS_PER_SECOND / fixedUpdateRate;
+
+void GameState::update(TimeInfo time)
 {
+    double elapsed = ticks * fixedTimeStep;
+    while (elapsed < time.timeSeconds + time.deltaTimeSeconds)
+    {
+        fixedUpdate();
+        ticks += 1;
+        elapsed = ticks * fixedTimeStep;
+    }
+
+    double dts = time.deltaTimeSeconds;
     vehicle.worldPosition += dts * vehicle.velocity;
 
     for (auto& controller : vehicle.controller)
@@ -10,6 +25,11 @@ void GameState::update(s64 dt, double dts)
         Script& s = scripts.get_ref(controller.script);
         run_script(s);
     }
+}
+
+void GameState::fixedUpdate()
+{
+    
 }
 
 

@@ -9,6 +9,7 @@
 #include "draw.hpp"
 #include "game.hpp"
 #include "editor.hpp"
+#include "time.hpp"
 
 enum ApplicationMode {
     ModeMenu,
@@ -38,23 +39,12 @@ struct Event_Timeout {
     bool active = false;
 };
 
-#define NANOSECONDS_PER_SECOND  1'000'000'000
-#define MICROSECONDS_PER_SECOND 1'000'000
-#define MILLISECONDS_PER_SECOND 1'000
-
 // about 11 and a half days
 #define EVENT_TIMEOUT_LONG 1000000.0
 
 enum Events {
     EVENT_DUMMY,
     EVENT_COUNT,
-};
-
-struct Time {
-    s64 time = 0;  // miliseconds
-    s64 deltaTime = 0;
-    double timeSeconds = 0;
-    double deltaTimeSeconds = 0;
 };
 
 struct ApplicationMessage {
@@ -88,7 +78,7 @@ public:
     UiState m_ui[UiCount];
     Color m_background_color = DEFAULT_BACKGROUND_COLOR;
 
-    Time m_time = {};
+    TimeInfo m_time = {};
 
     Event_Timeout m_events[EVENT_COUNT] = {};
 

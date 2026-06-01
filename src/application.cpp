@@ -84,7 +84,6 @@ bool Application::initialize()
 
     // game state
     {
-        game.scripts.add(Script());
         game.load_part_images(m_catalog);
     }
 
@@ -107,6 +106,7 @@ bool Application::init_game_state()
     }
     */
     game.vehicle = get_default_vehicle();
+    game.scripts.add(Script(init_lua()));
 
     return true;
 }
@@ -540,7 +540,7 @@ bool Application::mouse_input_game()
                     return true;
                 }
 
-                int result = luaL_dostring(script.lua, script.script.c_string());
+                int result = luaL_dostring(script.data.lua, script.script.c_string());
 
                 if (result == LUA_OK) {
                     log_info("Okay program");
@@ -741,7 +741,7 @@ void Application::update()
     update_ui_pos();
     timeout();
 
-    game.update(m_time.deltaTime, m_time.deltaTimeSeconds);
+    game.update(m_time);
 }
 
 void Application::timeout()
@@ -1353,11 +1353,11 @@ bool Script::set_source(ScriptLanguage language, String source) {
         lua_State* state = init_lua();
 
 
-        if (lua) {
-            lua_close(lua);
+        if (data.lua) {
+            lua_close(data.lua);
         }
         
-        lua = state;
+        data.lua = state;
 
         script.clear_and_append(source);
         return true;
