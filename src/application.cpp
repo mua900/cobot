@@ -89,9 +89,9 @@ bool Application::initialize()
             return false;
         }
 
-        m_update_states[UpdateStateId::Idle] = { idleUpdate, idleFixedUpdate, 0 };
-        m_update_states[UpdateStateId::VehicleSimulation] = { vehicleSimulationUpdate, vehicleSimulationFixedUpdate, 0 };
-        m_update_states[UpdateStateId::StarSystem] = { starSystemUpdate, starSystemFixedUpdate, 0 };
+        m_update_states[UpdateStateId::Idle] = { idleUpdate, idleFixedUpdate, 0, 0, 1 };
+        m_update_states[UpdateStateId::VehicleSimulation] = { vehicleSimulationUpdate, vehicleSimulationFixedUpdate, 0, 0, 1 };
+        m_update_states[UpdateStateId::StarSystem] = { starSystemUpdate, starSystemFixedUpdate, 0, 0, 1e5 };
 
         game.updateState = m_update_states[UpdateStateId::Idle];
     }

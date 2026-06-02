@@ -27,6 +27,8 @@ struct UpdateState {
     UpdateFunction update = nullptr;
     FixedUpdateFunction fixedUpdate = nullptr;
     s64 ticks = 0;
+    double elapsed = 0;
+    double timeScale = 0;
 };
 
 struct GameState {

@@ -10,13 +10,12 @@ constexpr s64 fixedTimeStepMS = MILLISECONDS_PER_SECOND / fixedUpdateRate;
 void GameState::update(TimeInfo time)
 {
     constexpr int maxIterationsPerFrame = 50;
-    double elapsed = updateState.ticks * fixedTimeStep;
     int iterations = 0;
-    while ((elapsed < time.timeSeconds + time.deltaTimeSeconds) && iterations < maxIterationsPerFrame)
+    while ((updateState.elapsed < time.timeSeconds + time.deltaTimeSeconds) && iterations < maxIterationsPerFrame)
     {
         updateState.fixedUpdate(this);
+        updateState.elapsed += fixedTimeStep;
         updateState.ticks += 1;
-        elapsed = updateState.ticks * fixedTimeStep;
 
         iterations += 1;
     }
@@ -40,21 +39,14 @@ void vehicleSimulationUpdate(GameState* game, TimeInfo time)
 }
 
 void vehicleSimulationFixedUpdate(GameState* game)
-{
-
-}
+{}
 
 void starSystemUpdate(GameState* game, TimeInfo time)
-{
-    for (auto& planet : game->starSystem.planets)
-    {
-        planet.body.determine_orbit(game->starSystem.star.mass);
-    }
-}
+{}
 
 void starSystemFixedUpdate(GameState* game)
 {
-    game->starSystem.simulation_step(fixedTimeStep);
+    game->starSystem.simulation_step(fixedTimeStep * game->updateState.timeScale);
 }
 
 
@@ -196,8 +188,7 @@ void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset
 {
     Body body = planet.body;
 
-    // 125
-    constexpr float stepSize = 0.05;
+    constexpr float stepSize = 0.01;
     constexpr int numSteps = CONSTANT_TAU / stepSize;
     vec2 points[numSteps];
 
