@@ -245,6 +245,8 @@ struct ColorF {
     explicit ColorF(ColorF col, float nalpha) : r(col.r), g(col.g), b(col.b), a(nalpha) {}
 };
 
+ColorF mixColors(ColorF a, ColorF b, float t);
+
 // simple custom complex number
 struct Complex {
 	float real = 0.0;

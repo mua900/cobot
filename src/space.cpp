@@ -26,13 +26,15 @@ StarSystem get_default_star_system()
     StarSystem system = {};
     system.star.mass = 1000;
     system.star.radius = 100;
-    system.planets.add(Planet(ColorF(0.5, 0.3, 0.6), Body(1, 50, vec3(200, 0, 0), vec3(0, 300, 0))));
+    Body body = Body(1, 60, 300, 0.8, 0, 0, 0, 0);
+    body.determine_state_vector(system.star.mass);
+    system.planets.add(Planet(ColorF(0.5, 0.3, 0.6), body));
     return system;
 }
 
-// https://en.wikipedia.org/wiki/Orbit_determination#Methods
 void Body::determine_orbit(double centralBodyMass)
 {
+    // https://en.wikipedia.org/wiki/Orbit_determination#Methods
     double gravitationalParameter = G * centralBodyMass;
     vec3 specificOrbitalMomentum = cross3(position, velocity);
     double orbitalMomentum = specificOrbitalMomentum.magnitude();
@@ -60,9 +62,9 @@ void Body::determine_orbit(double centralBodyMass)
     this->trueAnomaly = trueAnomaly;
 }
 
-// https://en.wikipedia.org/wiki/Perifocal_coordinate_system
 void Body::determine_state_vector(double centralBodyMass)
 {
+    // https://en.wikipedia.org/wiki/Perifocal_coordinate_system
     double gravitationalParameter = centralBodyMass * G;
     double r = semiMajorAxis * (1.0 - eccentricity * eccentricity) / (1.0 + eccentricity * std::cos(trueAnomaly));
     double p = semiMajorAxis * (1.0 - eccentricity * eccentricity);  // semi parameter

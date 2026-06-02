@@ -98,6 +98,9 @@ struct RenderContext {
 
     FrameContext frame = {};
 
+    DArray<SDL_Vertex> vertex_scratch = {};
+    DArray<int> index_scratch = {};
+
     bool start_render_pass();
     void end_render_pass();
     bool start_copy_pass();
@@ -137,6 +140,10 @@ void end_frame(RenderContext& context);
 bool loadShader(RenderContext& context, Shader& shader, const char* path);
 
 void draw_circle(const RenderContext& context, vec2 position, float radius, ColorF color);
+void draw_capsule(const RenderContext& context, vec2 center0, vec2 center1, float radius, ColorF color);
+void draw_polygon(RenderContext& context, vec2 points[], int numPoints, ColorF color);
+void draw_path(RenderContext& context, vec2 points[], int numPoints, float thick, ColorF color);
+void draw_closed_path(RenderContext& context, vec2 points[], int numPoints, float thick, ColorF color);
 void draw_quadratic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, float thick, ColorF color);
 void draw_cubic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, vec2 p3, float thick, ColorF color);
 

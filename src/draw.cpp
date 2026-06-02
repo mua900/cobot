@@ -637,6 +637,55 @@ void draw_capsule(const RenderContext& context, vec2 center0, vec2 center1, floa
     #undef NVERTICES
 }
 
+// it needs to be a convex polygon and the points need to be in order they are supposed to be rendered in
+void draw_polygon(RenderContext& context, vec2 points[], int numPoints, ColorF color)
+{
+    context.vertex_scratch.ensure_size(numPoints + 1);
+    context.index_scratch.ensure_size(numPoints * 3);
+
+    vec2 average = vec2();
+    for (int i = 0; i < numPoints; i++)
+    {
+        SDL_Vertex vertex = {};
+        vertex.position = {points[i].x, points[i].y};
+        vertex.color = SDL_FColor { COLOR_ARG(color) };
+        context.vertex_scratch.add(vertex);
+        average += points[i];
+    }
+
+    average /= numPoints;
+
+    SDL_Vertex vertex = {};
+    vertex.position = { average.x, average.y };
+    vertex.color = SDL_FColor { COLOR_ARG(color) };
+    int averageIndex = context.vertex_scratch.add(vertex);
+
+    for (int i = 0; i < numPoints; i++)
+    {
+        context.index_scratch.add(averageIndex);
+        context.index_scratch.add(i);
+        context.index_scratch.add((i + 1) % numPoints);
+    }
+
+    SDL_RenderGeometry(context.renderer, nullptr, context.vertex_scratch.data(), context.vertex_scratch.size(), context.index_scratch.data(), context.index_scratch.size());
+}
+
+void draw_path(RenderContext& context, vec2 points[], int numPoints, float thick, ColorF color)
+{
+    for (int i = 0; i < numPoints - 1; i++)
+    {
+        draw_segment(context, points[i], points[i + 1], thick, color);
+    }
+}
+
+void draw_closed_path(RenderContext& context, vec2 points[], int numPoints, float thick, ColorF color)
+{
+    for (int i = 0; i < numPoints; i++)
+    {
+        draw_segment(context, points[i], points[(i + 1) % numPoints], thick, color);
+    }
+}
+
 void draw_quadratic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, float thick, ColorF color)
 {
     vec2 prev = p0;

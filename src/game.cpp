@@ -1,7 +1,7 @@
 #include "game.hpp"
 #include "draw.hpp"
 
-constexpr int fixedUpdateRate = 120;
+constexpr int fixedUpdateRate = 20;
 constexpr double fixedTimeStep = 1.0 / fixedUpdateRate;
 constexpr s64 fixedTimeStepNS = NANOSECONDS_PER_SECOND / fixedUpdateRate;
 constexpr s64 fixedTimeStepUS = MICROSECONDS_PER_SECOND / fixedUpdateRate;
@@ -9,12 +9,16 @@ constexpr s64 fixedTimeStepMS = MILLISECONDS_PER_SECOND / fixedUpdateRate;
 
 void GameState::update(TimeInfo time)
 {
+    constexpr int maxIterationsPerFrame = 50;
     double elapsed = updateState.ticks * fixedTimeStep;
-    while (elapsed < time.timeSeconds + time.deltaTimeSeconds)
+    int iterations = 0;
+    while ((elapsed < time.timeSeconds + time.deltaTimeSeconds) && iterations < maxIterationsPerFrame)
     {
         updateState.fixedUpdate(this);
         updateState.ticks += 1;
         elapsed = updateState.ticks * fixedTimeStep;
+
+        iterations += 1;
     }
 
     updateState.update(this, time);
@@ -159,7 +163,7 @@ void draw_game_state(const RenderContext& context, const AssetCatalog& catalog, 
     draw_vehicle(context, catalog, game);
 }
 
-void draw_game_solar_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+void draw_game_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
     vec2 render_size = context.render_size;
 
@@ -176,4 +180,34 @@ void draw_game_solar_system(const RenderContext& context, const AssetCatalog& ca
         float zdistance = cobot::smoothstep(zrange_low, zrange_high, planet.body.position.z);
         draw_circle(context, center + pos, planet.body.radius, ColorF(planet.color, zdistance));
     }
+}
+
+void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game, ColorF color)
+{
+    for (int i = 0; i < game.starSystem.planets.size(); i++)
+    {
+        draw_planet_orbit(context, game.starSystem.planets.get_ref(i), context.render_size / 2, game.starSystem.star.mass, color);
+    }
+}
+
+void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset, double centralBodyMass, ColorF color)
+{
+    Body body = planet.body;
+
+    constexpr float stepSize = 0.05;
+    constexpr int numSteps = CONSTANT_TAU / stepSize;
+    vec2 points[numSteps];
+
+    float angle = 0;
+    for (int index = 0; index < numSteps; index += 1)
+    {
+        body.trueAnomaly = angle;
+        body.determine_state_vector(centralBodyMass);
+        vec3 p = body.position;
+
+        points[index] = offset + vec2(p.x, p.y);
+        angle += stepSize;
+    }
+
+    draw_closed_path(context, points, numSteps, 6, color);
 }

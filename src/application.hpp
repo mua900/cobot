@@ -160,6 +160,7 @@ private:
     bool mouse_input_main_menu();
     bool mouse_input_settings();
     bool mouse_input_editor();
+    bool mouse_input_solar_system();
 
     void update_keyboard_state();
     bool keyboard_input_down(KeyboardEvent keyboard);

@@ -41,6 +41,16 @@ ColorF::ColorF(const Color& color) {
     a = (float)color.a * coef;
 }
 
+ColorF mixColors(ColorF a, ColorF b, float t)
+{
+    return ColorF(
+        cobot::lerp(a.r, b.r, t),
+        cobot::lerp(a.g, b.g, t),
+        cobot::lerp(a.b, b.b, t),
+        cobot::lerp(a.a, b.a, t)
+    );
+}
+
 vec2 lerp2(vec2 a, vec2 b, float t)
 {
     return vec2(cobot::lerp(a.x, b.x, t), cobot::lerp(a.y, b.y, t));
@@ -214,6 +224,6 @@ float cobot::clamp(float a, float b, float x)
 
 float cobot::smoothstep(float a, float b, float x)
 {
-    float t = cobot::clamp((x - a) / (b - a), 0, 1);
+    float t = cobot::clamp(0, 1, (x - a) / (b - a));
     return t * t * (3.0 - 2.0 * t);
 }

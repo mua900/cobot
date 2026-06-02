@@ -31,9 +31,14 @@ struct Body {
     Body(float mass, float radius, vec3 init_position, vec3 init_velocity)
         : mass(mass), radius(radius), position(init_position), velocity(init_velocity)
     {}
+    Body(float mass, float radius, float a, float e, float mu, float loan, float ap, float i)
+        : mass(mass), radius(radius), semiMajorAxis(a), eccentricity(e), trueAnomaly(mu), longitudeOfAscendingNode(loan), argumentOfPeriapsis(ap), inclination(i)
+    {}
 
     void determine_orbit(double centralBodyMass);
     void determine_state_vector(double centralBodyMass);
+    vec3 calculatePosition(double centralBodyMass);
+    vec3 calculateVelocity(double centralBodyMass);
 };
 
 struct Planet {
@@ -61,7 +66,5 @@ struct StarSystem {
 };
 
 StarSystem get_default_star_system();
-
-void draw_star_system();
 
 #endif // _SPACE_H

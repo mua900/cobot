@@ -55,7 +55,9 @@ void starSystemUpdate(GameState* game, TimeInfo time);
 void starSystemFixedUpdate(GameState* game);
 
 void draw_game_state(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
-void draw_game_solar_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
+void draw_game_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
+void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset, double centralBodyMass, ColorF color);
+void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game, ColorF color);
 void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 
 #endif // _GAME_H

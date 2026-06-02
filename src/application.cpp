@@ -91,7 +91,7 @@ bool Application::initialize()
 
         m_update_states[UpdateStateId::Idle] = { idleUpdate, idleFixedUpdate, 0 };
         m_update_states[UpdateStateId::VehicleSimulation] = { vehicleSimulationUpdate, vehicleSimulationFixedUpdate, 0 };
-        m_update_states[UpdateStateId::Idle] = { starSystemUpdate, starSystemFixedUpdate, 0 };
+        m_update_states[UpdateStateId::StarSystem] = { starSystemUpdate, starSystemFixedUpdate, 0 };
 
         game.updateState = m_update_states[UpdateStateId::Idle];
     }
@@ -452,6 +452,10 @@ bool Application::on_mouse_down()
     {
         return mouse_input_editor();
     }
+    else if (m_mode == ModeSolarSystem)
+    {
+        return mouse_input_solar_system();
+    }
     else {
         panic("Invalid application mode");
     }
@@ -462,7 +466,7 @@ bool Application::mouse_input_editor()
     UiState& ui = m_ui[UiEditor];
     vec2 mouse_pos = m_input.mouse.pos;
 
-    if (m_input.mouse.buttonFlags & MOUSE_LEFT) {
+    if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) {
         for (Panel& panel : ui.panels) {
             if (panel.area.contains_top_left(mouse_pos))
             {
@@ -481,6 +485,32 @@ bool Application::mouse_input_editor()
                 if (panel.get_tab_header_area(i).contains_centered(mouse_pos)) {
                     panel.activeTab = i;
                     return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool Application::mouse_input_solar_system()
+{
+    vec2 mouse_pos = m_input.mouse.pos;
+    UiState& ui = m_ui[UiSolarSystem];
+
+    if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
+    {
+        for (auto& button : ui.button)
+        {
+            Rectangle area = Rectangle(button.position, button.scale);
+            if (area.contains_centered(mouse_pos))
+            {
+                switch (button.id)
+                {
+                case BackButton:
+                    switch_modes(ModeMenu);
+                    switch_menu(MenuMain);
+                    break;
                 }
             }
         }
@@ -653,7 +683,7 @@ bool Application::mouse_input_mission_select() {
     vec2 mouse_pos = m_input.mouse.pos;
     UiState& ui = m_ui[UiMissionSelect];
 
-    if (m_input.mouse.buttonFlags & MOUSE_LEFT)
+    if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
     {
         for (auto& button : ui.button) {
             Rectangle area = Rectangle(button.position, button.scale);
@@ -681,7 +711,7 @@ bool Application::mouse_input_main_menu()
     vec2 mouse_pos = m_input.mouse.pos;
     UiState& ui = m_ui[UiMainMenu];
 
-    if (m_input.mouse.buttonFlags & MOUSE_LEFT)
+    if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
     {
         for (auto& button : ui.button) {
             Rectangle area = Rectangle(button.position, button.scale);
@@ -712,7 +742,7 @@ bool Application::mouse_input_settings()
     vec2 mouse_pos = m_input.mouse.pos;
     UiState& ui = m_ui[UiSettings];
 
-    if (m_input.mouse.buttonFlags & MOUSE_LEFT)
+    if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
     {
         for (auto& button : ui.button) {
             Rectangle area = Rectangle(button.position, button.scale);
@@ -754,14 +784,7 @@ void Application::update()
     update_ui_pos();
     timeout();
 
-    if (m_mode == ModeGame)
-    {
-        game.update(m_time);
-    }
-    else if (m_mode == ModeSolarSystem)
-    {
-
-    }
+    game.update(m_time);
 }
 
 void Application::timeout()
@@ -817,7 +840,7 @@ void Application::update_ui_pos()
 
 void Application::on_mouse_up(int button)
 {
-    if (button == MOUSE_LEFT)
+    if (button == MOUSE_LEFT_MASK)
     {
         // @todo maybe button interactions should take action on button up
 
@@ -1100,7 +1123,8 @@ void Application::draw_game()
 
 void Application::draw_solar_system()
 {
-    draw_game_solar_system(m_render, m_catalog, game);
+    draw_game_star_system(m_render, m_catalog, game);
+    draw_orbits(m_render, m_catalog, game, ColorF(0.5,0.3,0.6));
 }
 
 void Application::draw_ui()
