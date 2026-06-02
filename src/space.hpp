@@ -5,9 +5,11 @@
 #include "math_util.hpp"
 #include "template.hpp"
 
-// @todo a way to convert between position + velocity and orbital elements which are more intuative
 // Keplerian orbit (in 2 dimensions)
-// distance(trueAnomaly) = semiMajorAxis*(1-eccentricity**2) / (1 + eccentricity*cos(semiMajorAxis))
+// distance(trueAnomaly) = semiMajorAxis*(1-eccentricity**2) / (1 + eccentricity*cos(trueAnomaly))
+
+// vis viva
+// velocity**2 = G * mass * ((2 / distance) - (1 / semiMajorAxis))
 
 // orbitting body
 struct Body {
@@ -18,10 +20,20 @@ struct Body {
     vec3 velocity = {};
     vec3 acceleration = {};
 
+    float semiMajorAxis = 0;
+    float eccentricity = 0;
+    float trueAnomaly = 0;
+    float longitudeOfAscendingNode = 0;
+    float argumentOfPeriapsis = 0;
+    float inclination = 0;
+
     Body() {}
     Body(float mass, float radius, vec3 init_position, vec3 init_velocity)
         : mass(mass), radius(radius), position(init_position), velocity(init_velocity)
     {}
+
+    void determine_orbit(double centralBodyMass);
+    void determine_state_vector(double centralBodyMass);
 };
 
 struct Planet {

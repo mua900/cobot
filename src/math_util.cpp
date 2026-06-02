@@ -69,6 +69,61 @@ mat4x4 identity_matrix()
     };
 }
 
+vec3 mat3apply(mat3x3* mat, vec3 v)
+{
+    return vec3(
+        mat->m00 * v.x + mat->m01 * v.y + mat->m02 * v.z,
+        mat->m10 * v.x + mat->m11 * v.y + mat->m12 * v.z,
+        mat->m20 * v.x + mat->m21 * v.y + mat->m22 * v.z
+    );
+}
+
+void mat3mul(mat3x3* dst, mat3x3* left, mat3x3* right)
+{
+    mat3x3 result = {
+        left->m00 * right->m00 + left->m01 * right->m10 + left->m02 * right->m20,
+        left->m00 * right->m01 + left->m01 * right->m11 + left->m02 * right->m21,
+        left->m00 * right->m02 + left->m01 * right->m12 + left->m02 * right->m22,
+
+        left->m10 * right->m00 + left->m11 * right->m10 + left->m12 * right->m20,
+        left->m10 * right->m01 + left->m11 * right->m11 + left->m12 * right->m21,
+        left->m10 * right->m02 + left->m11 * right->m12 + left->m12 * right->m22,
+
+        left->m20 * right->m00 + left->m21 * right->m10 + left->m22 * right->m20,
+        left->m20 * right->m01 + left->m21 * right->m11 + left->m22 * right->m21,
+        left->m20 * right->m02 + left->m21 * right->m12 + left->m22 * right->m22,
+    };
+
+    *dst = result;
+}
+
+void get_rotation_x(mat3x3* mat, float angle)
+{
+    *mat = {
+        1, 0,               0,
+        0, std::cos(angle), std::sin(angle),
+        0,-std::sin(angle), std::cos(angle),
+    };
+}
+
+void get_rotation_y(mat3x3* mat, float angle)
+{
+    *mat = {
+        std::cos(angle), 0,-std::sin(angle),
+        0,               1, 0,
+        std::sin(angle), 0, std::cos(angle),
+    };
+}
+
+void get_rotation_z(mat3x3* mat, float angle)
+{
+    *mat = {
+        std::cos(angle), std::sin(angle), 0,
+       -std::sin(angle), std::cos(angle), 0,
+        0,               0,               1,
+    };
+}
+
 void mat4mul(mat4x4* dst, mat4x4* left, mat4x4* right)
 {
     mat4x4 result = {

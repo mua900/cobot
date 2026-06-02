@@ -9,6 +9,13 @@ struct ivec2 {
     int x, y;
 };
 
+enum Axis {
+    AXIS_X,
+    AXIS_Y,
+    AXIS_Z,
+    AXIS_W,
+};
+
 struct vec2 {
     float x = 0, y = 0;
     vec2() {}
@@ -96,10 +103,10 @@ struct vec3 {
     vec3(float p_x, float p_y, float p_z) : x(p_x), y(p_y), z(p_z) {}
     explicit vec3(float p) : x(p), y(p), z(p) {}
 
-    vec2 normalized() const
+    vec3 normalized() const
     {
         float mag = sqrt(x*x+y*y+z*z);
-        return vec2(x/mag,y/mag);
+        return vec3(x/mag,y/mag,z/mag);
     }
 
     float magnitude() const {
@@ -177,6 +184,19 @@ inline vec3 operator*(vec3 a, vec3 b)
     return vec3(a.x * b.x, a.y * b.y, a.z * b.z);
 }
 
+struct mat3x3 {
+    float m00, m01, m02 = {};
+    float m10, m11, m12 = {};
+    float m20, m21, m22 = {};
+};
+
+vec3 mat3apply(mat3x3* mat, vec3 v);
+void mat3mul(mat3x3* dst, mat3x3* left, mat3x3* right);
+
+void get_rotation_x(mat3x3* mat, float angle);
+void get_rotation_y(mat3x3* mat, float angle);
+void get_rotation_z(mat3x3* mat, float angle);
+
 struct vec4
 {
     float x = 0;
@@ -197,6 +217,8 @@ void mat4mul(mat4x4* dst, mat4x4* left, mat4x4* right);
 mat4x4 identity_matrix();
 mat4x4 orthographic_projection_matrix(float left, float right, float bottom, float top, float near, float far);
 mat4x4 camera_matrix(vec2 position, vec2 scale);
+
+// @todo quaternions
 
 struct ColorF;
 
@@ -252,6 +274,7 @@ inline Complex operator*(const Complex lhs, const Complex rhs)
 	return Complex(lhs.real * rhs.real - lhs.imaginary * rhs.imaginary, lhs.real * rhs.imaginary + lhs.imaginary * rhs.real);
 }
 
+#define CONSTANT_HALF_PI  1.57079632679
 #define CONSTANT_PI  3.14159265359
 #define CONSTANT_E   2.71828182846
 #define CONSTANT_TAU (CONSTANT_PI * 2.0)
