@@ -46,7 +46,10 @@ void vehicleSimulationFixedUpdate(GameState* game)
 
 void starSystemUpdate(GameState* game, TimeInfo time)
 {
-
+    for (auto& planet : game->starSystem.planets)
+    {
+        planet.body.determine_orbit(game->starSystem.star.mass);
+    }
 }
 
 void starSystemFixedUpdate(GameState* game)
@@ -172,12 +175,11 @@ void draw_game_star_system(const RenderContext& context, const AssetCatalog& cat
     vec2 center = render_size / 2;
     draw_circle(context, center, system.star.radius, ColorF(0.6, 0.5, 0.1));
 
-    float zrange_low = -10;
-    float zrange_high = 10;
+    float maxDepth = 10;
     for (auto& planet : system.planets)
     {
         vec2 pos = vec2(planet.body.position.x, planet.body.position.y);
-        float zdistance = cobot::smoothstep(zrange_low, zrange_high, planet.body.position.z);
+        float zdistance = cobot::smoothstep(-maxDepth, maxDepth, planet.body.position.z + maxDepth / 2);
         draw_circle(context, center + pos, planet.body.radius, ColorF(planet.color, zdistance));
     }
 }
@@ -186,14 +188,15 @@ void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const Game
 {
     for (int i = 0; i < game.starSystem.planets.size(); i++)
     {
-        draw_planet_orbit(context, game.starSystem.planets.get_ref(i), context.render_size / 2, game.starSystem.star.mass, color);
+        draw_planet_orbit(context, game.starSystem.planets.get_ref(i), context.render_size / 2, game.starSystem.star.mass, 4, color);
     }
 }
 
-void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset, double centralBodyMass, ColorF color)
+void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset, double centralBodyMass, float thick, ColorF color)
 {
     Body body = planet.body;
 
+    // 125
     constexpr float stepSize = 0.05;
     constexpr int numSteps = CONSTANT_TAU / stepSize;
     vec2 points[numSteps];
@@ -209,5 +212,5 @@ void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset
         angle += stepSize;
     }
 
-    draw_closed_path(context, points, numSteps, 6, color);
+    draw_closed_path(context, points, numSteps, thick, color);
 }

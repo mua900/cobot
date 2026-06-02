@@ -1059,6 +1059,8 @@ void Application::draw()
 
     // SDL_FlushRenderer(m_render.renderer);
 
+    SDL_SetRenderDrawBlendMode(m_render.renderer, SDL_BLENDMODE_BLEND);
+
     switch (m_mode)
     {
         case ModeGame: {
@@ -1076,6 +1078,8 @@ void Application::draw()
             break;
         }
     }
+
+    SDL_SetRenderDrawBlendMode(m_render.renderer, SDL_BLENDMODE_NONE);
 
     draw_ui();
     draw_messages();

@@ -103,6 +103,8 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
         return false;
     }
 
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
     int render_size_x, render_size_y;
     if (!SDL_GetRenderOutputSize(renderer, &render_size_x, &render_size_y)) {
         return false;

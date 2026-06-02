@@ -11,8 +11,8 @@ enum PartKind : u16 {
     PART_TIRE = 0,
     PART_CHASIS = 1,
     PART_CONTROLLER = 2,
-    PART_KIND_COUNT = 2,
-    PART_KIND_SENTINEL = 3,
+    PART_KIND_COUNT = 3,
+    PART_KIND_SENTINEL = 4,
 };
 
 struct PartId {

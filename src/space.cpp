@@ -48,7 +48,7 @@ void Body::determine_orbit(double centralBodyMass)
     // https://en.wikipedia.org/wiki/Longitude_of_the_ascending_node#Calculation_from_state_vectors
     double ascendingNodeLongtitude = (ascendingNodeMagnitude == 0) ? 0 : std::acos(ascendingNodeVector.x / ascendingNodeMagnitude);
     if (ascendingNodeVector.y < 0) ascendingNodeLongtitude = CONSTANT_TAU - ascendingNodeLongtitude;
-    double periapsisArgument = (eccentricity == 0) ? 0 : std::acos(dot3(ascendingNodeVector, eccentricityVector) / (ascendingNodeMagnitude * eccentricity));
+    double periapsisArgument = (eccentricity == 0 || ascendingNodeMagnitude == 0) ? 0 : std::acos(dot3(ascendingNodeVector, eccentricityVector) / (ascendingNodeMagnitude * eccentricity));
 
     double dir = dot3(velocity, position);
     double trueAnomaly = (eccentricity == 0) ? 0 : std::acos(dot3(eccentricityVector, position) / (eccentricity * position.magnitude()));
