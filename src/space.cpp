@@ -26,7 +26,7 @@ StarSystem get_default_star_system()
     StarSystem system = {};
     system.star.mass = 1000;
     system.star.radius = 100;
-    Body body = Body(1, 60, 300, 0.8, 0, 0, 0, 0);
+    Body body = Body(1, 60, 300, 0, 0, 0, 0, 0.2);
     body.determine_state_vector(system.star.mass);
     system.planets.add(Planet(ColorF(0.5, 0.3, 0.6), body));
     return system;

@@ -27,6 +27,7 @@ enum UiElementId {
     MainEditor,
     PartsPanel,
     MissionButton,
+    TimeScale,
 };
 
 struct DragInfo {
@@ -487,6 +488,27 @@ struct ControlMenu {
     }
 };
 
+struct DiscreteSlider {
+    UiElementId id = {};
+
+    vec2 position = vec2();
+    vec2 element_scale = {};
+    int element_count = 0;
+    int selected = 0;
+    float element_gap = 0;
+    bool vertical = false;
+    Texture* texture = nullptr;
+    ColorF outlineColor = {};
+    ColorF buttonColor = {};
+    ColorF inactiveColor = {};
+    ColorF startColor = {};
+    ColorF endColor = {};
+
+    Rectangle get_bounds() const;
+    int get_item(vec2 pos) const;
+    float get_long_axis() const;
+};
+
 #define TEXT_INPUT_TARGET_IS_VALID     BIT(0)
 #define TEXT_INPUT_TARGET_IS_EDITOR    BIT(1)
 
@@ -503,6 +525,7 @@ struct UiState {
     DArray<Label> label = {};
     DArray<Panel> panels = {};
     DArray<ControlMenu> control = {};
+    DArray<DiscreteSlider> discrete_slider = {};
 
     TextInputTarget text_input_target = {};
     vec2 assumed_window_size = {};

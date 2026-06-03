@@ -514,3 +514,34 @@ Rectangle Panel::get_tab_header_area(int index) const {
                      area.y + tabHeaderSize / 2 + row * tabHeaderSize * 2,
                      tabHeaderSize, tabHeaderSize);
 }
+
+Rectangle DiscreteSlider::get_bounds() const
+{
+    float elem = vertical ? element_scale.y : element_scale.x;
+    float long_axis = element_count * (elem + element_gap);
+    vec2 scale = vertical ? vec2(element_scale.x, long_axis) : vec2(long_axis, element_scale.y);
+    return Rectangle(position - scale / 2, scale);
+}
+
+int DiscreteSlider::get_item(vec2 pos) const
+{
+    pos -= position;
+
+    float elem = (vertical ? element_scale.y : element_scale.x);
+    float long_axis = element_count * (elem + element_gap);
+
+    float axis = (vertical ? pos.y : pos.x) + long_axis / 2;
+
+    if (axis >= long_axis)
+    {
+        return -1;
+    }
+
+    return std::floor(axis / (elem + element_gap));
+}
+
+float DiscreteSlider::get_long_axis() const
+{
+    float elem = (vertical ? element_scale.y : element_scale.x);
+    return element_count * (elem + element_gap);
+}

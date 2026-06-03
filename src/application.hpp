@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _APPLICATION_H
+#define _APPLICATION_H
 
 #include "common.hpp"
 #include "template.hpp"
@@ -174,6 +175,7 @@ private:
 
     bool read_asset_catalog(String_Builder& path);
 
+    void render_rectangle_outline(Rectangle rect, Color color, bool center = true) const;
     void render_rectangle(Rectangle rect, Color color, bool center = true) const;
 
     Icon create_icon(AssetId image, Color background);
@@ -184,8 +186,7 @@ private:
     void render_dropdown(const Drop_Down_List& list) const;
     void render_panel(const Panel& panel) const;
     void render_control_menu(const ControlMenu& menu) const;
-
-    void clear_text_input_selection();
+    void render_discrete_slider(const DiscreteSlider& slider) const;
 
     void switch_modes(ApplicationMode mode);
     void switch_menu(MenuName menu);
@@ -201,3 +202,5 @@ void get_base_path(String_Builder& builder);
 lua_State* init_lua();
 
 void initialize_libraries();
+
+#endif // _APPLICATION_H

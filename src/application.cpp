@@ -514,6 +514,29 @@ bool Application::mouse_input_solar_system()
                 }
             }
         }
+
+        for (auto& slider : ui.discrete_slider)
+        {
+            Rectangle bounds = slider.get_bounds();
+            if (bounds.contains_top_left(mouse_pos))
+            {
+                int item = slider.get_item(mouse_pos);
+                if (item == -1) continue;
+
+                slider.selected = item;
+
+                switch(slider.id)
+                {
+                    case TimeScale:
+                    {
+                        m_update_states[StarSystem].timeScale = (item + 1) * 1e3;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        }
     }
 
     return false;
@@ -949,10 +972,39 @@ bool Application::init_ui()
 bool Application::init_solar_system_ui()
 {
     vec2 ws = get_window_size();
+    UiState& ui = m_ui[UiSolarSystem];
+
     Font font = m_catalog.get_font(m_font);
     Color button_color = Color(0x66, 0x33, 0x22);
     Color background = Color(0x44, 0x66, 0x22);
     add_button(UiSolarSystem, BackButton, Button(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
+
+    DiscreteSlider timescaleControl = {};
+    // 1e3, 1e4, 1e5, 1e6
+    timescaleControl.element_count = 4;
+    timescaleControl.id = TimeScale;
+    timescaleControl.position = vec2(ws.x / 2, 50);
+    timescaleControl.element_gap = 50;
+    timescaleControl.vertical = false;
+    timescaleControl.inactiveColor = ColorF(0.6, 0.3, 0.2);
+    timescaleControl.startColor = ColorF(0.4, 0.7, 0.3);
+    timescaleControl.endColor = ColorF(0.7, 0.4, 0.2);
+    timescaleControl.outlineColor = ColorF(0.3, 0.7, 0.3);
+    timescaleControl.buttonColor = ColorF(0.8, 0.3, 0.2);
+    timescaleControl.element_scale = vec2(40, 50);
+    AssetId tsIconId = get_asset(String("timescaleIcon"), m_catalog);
+    if (tsIconId.is_valid())
+    {
+        SDL_Texture* texture = m_catalog.get_image(tsIconId);
+        float w, h = {};
+        SDL_GetTextureSize(texture, &w, &h);
+        float aspectRatio = w / h;
+        timescaleControl.texture = texture;
+        timescaleControl.element_scale = 50 * vec2(aspectRatio, 1.0f);
+    }
+
+    ui.discrete_slider.add(timescaleControl);
+
     return true;
 }
 
@@ -992,7 +1044,6 @@ bool Application::init_mission_ui() {
     
     add_button(UiMissionSelect, BackButton, Button(create_text(m_render.renderer, String("Back"), m_catalog.get_font(m_font), button_color), ws * 0.05, ws * 0.1, background));
     
-    // @todo layouts would be useful here
     float buttonY = ws.y * 0.2;
     float buttonX = ws.x * 0.1;
     vec2 buttonScale = vec2(ws.x * 0.1, ws.y * 0.1);
@@ -1178,6 +1229,11 @@ void Application::draw_ui_state(const UiState& state)
     {
         render_control_menu(menu);
     }
+
+    for (const DiscreteSlider& slider : state.discrete_slider)
+    {
+        render_discrete_slider(slider);
+    }
 }
 
 void Application::switch_modes(ApplicationMode mode) {
@@ -1207,6 +1263,45 @@ void Application::render_rectangle(Rectangle rect, Color color, bool center) con
                     SDL_FRect { rect.x - rect.w / 2, rect.y - rect.h / 2, rect.w, rect.h } :
                     SDL_FRect { rect.x, rect.y, rect.w, rect.h };
     SDL_RenderFillRect(m_render.renderer, &area);
+}
+
+void Application::render_rectangle_outline(Rectangle rect, Color color, bool center) const
+{
+    SDL_SetRenderDrawColor(m_render.renderer, COLOR_ARG(color));
+    SDL_FRect area = center ?
+                    SDL_FRect { rect.x - rect.w / 2, rect.y - rect.h / 2, rect.w, rect.h } :
+                    SDL_FRect { rect.x, rect.y, rect.w, rect.h };
+    SDL_RenderRect(m_render.renderer, &area);
+}
+
+void Application::render_discrete_slider(const DiscreteSlider& slider) const
+{
+    float elem = slider.vertical ? slider.element_scale.y + slider.element_gap : slider.element_scale.x + slider.element_gap;
+    vec2 step = slider.vertical ? vec2(0, elem) : vec2(elem, 0);
+    float long_axis = slider.element_count * elem;
+    vec2 offset = slider.vertical ? vec2(0, long_axis / 2) : vec2(long_axis / 2, 0);
+    vec2 start = slider.position - offset + step / 2;
+
+    Rectangle area = slider.get_bounds();
+    render_rectangle_outline(area, slider.outlineColor, false);
+
+    for (int i = 0; i < slider.element_count; i++)
+    {
+        Rectangle area (start + i * step, slider.element_scale);
+        float t = float (i) / slider.element_count;
+        ColorF color = i < slider.selected ? mixColors(slider.startColor, slider.endColor, t) : slider.inactiveColor;
+
+        if (slider.texture)
+        {
+            render_texture_with_tint(m_render.renderer, area, slider.texture, color, true);
+        }
+        else
+        {
+            render_rectangle(area, Color(color));
+        }
+
+        render_rectangle_outline(area, Color(slider.buttonColor));
+    }
 }
 
 void Application::render_slider(Rectangle area, vec2 knob_scale, float value, Color slider_color, Color knob_color, const Text& text) const
@@ -1344,33 +1439,6 @@ void Application::render_dropdown(const Drop_Down_List& list) const {
 Icon Application::create_icon(AssetId image, Color background) {
     SDL_Texture* texture = m_catalog.get_image(image);
     return Icon(texture, background);
-}
-
-void render_texture(SDL_Renderer* renderer, Rectangle area, Texture* texture, bool strech)
-{
-    float tex_w, tex_h;
-    SDL_GetTextureSize(texture, &tex_w, &tex_h);
-    SDL_FRect src = { 0, 0, tex_w, tex_h };
-    float width = strech ? area.w : tex_w;
-    float height = strech ? area.h : tex_h;
-    SDL_FRect dst = { area.x - width / 2, area.y - height / 2, width, height };
-    SDL_RenderTexture(renderer, texture, &src, &dst);
-}
-
-void render_textured_rectangle(SDL_Renderer* renderer, Rectangle rect, SDL_Texture* texture, Color color, bool strech, bool center) {
-    SDL_SetRenderDrawColor(renderer, COLOR_ARG(color));
-    SDL_FRect area = center ?
-        SDL_FRect { rect.x - rect.w / 2, rect.y - rect.h / 2, rect.w, rect.h } :
-        SDL_FRect { rect.x, rect.y, rect.w, rect.h };
-    SDL_RenderFillRect(renderer, &area);
-
-    float tex_w, tex_h;
-    SDL_GetTextureSize(texture, &tex_w, &tex_h);
-    SDL_FRect src = { 0, 0, tex_w, tex_h};
-    float width = strech ? area.w : tex_w;
-    float height = strech ? area.h : tex_h;
-    SDL_FRect dst = { area.x, area.y, width, height };
-    SDL_RenderTexture(renderer, texture, &src, &dst);
 }
 
 void Application::text_input_stop()

@@ -688,6 +688,47 @@ void draw_closed_path(RenderContext& context, vec2 points[], int numPoints, floa
     }
 }
 
+void render_texture(SDL_Renderer* renderer, Rectangle area, Texture* texture, bool strech)
+{
+    float tex_w, tex_h;
+    SDL_GetTextureSize(texture, &tex_w, &tex_h);
+    SDL_FRect src = { 0, 0, tex_w, tex_h };
+    float width = strech ? area.w : tex_w;
+    float height = strech ? area.h : tex_h;
+    SDL_FRect dst = { area.x - width / 2, area.y - height / 2, width, height };
+    SDL_RenderTexture(renderer, texture, &src, &dst);
+}
+
+void render_textured_rectangle(SDL_Renderer* renderer, Rectangle rect, SDL_Texture* texture, Color color, bool strech, bool center) {
+    SDL_SetRenderDrawColor(renderer, COLOR_ARG(color));
+    SDL_FRect area = center ?
+        SDL_FRect { rect.x - rect.w / 2, rect.y - rect.h / 2, rect.w, rect.h } :
+        SDL_FRect { rect.x, rect.y, rect.w, rect.h };
+    SDL_RenderFillRect(renderer, &area);
+
+    float tex_w, tex_h;
+    SDL_GetTextureSize(texture, &tex_w, &tex_h);
+    SDL_FRect src = { 0, 0, tex_w, tex_h};
+    float width = strech ? area.w : tex_w;
+    float height = strech ? area.h : tex_h;
+    SDL_FRect dst = { area.x, area.y, width, height };
+    SDL_RenderTexture(renderer, texture, &src, &dst);
+}
+
+void render_texture_with_tint(SDL_Renderer* renderer, Rectangle area, Texture* texture, ColorF tint, bool strech)
+{
+    float tex_w, tex_h;
+    SDL_GetTextureSize(texture, &tex_w, &tex_h);
+    SDL_FRect src = { 0, 0, tex_w, tex_h };
+    float width = strech ? area.w : tex_w;
+    float height = strech ? area.h : tex_h;
+    SDL_FRect dst = { area.x - width / 2, area.y - height / 2, width, height };
+
+    SDL_SetTextureColorModFloat(texture, tint.r, tint.g, tint.b);
+    SDL_SetTextureAlphaModFloat(texture, tint.a);
+    SDL_RenderTexture(renderer, texture, &src, &dst);
+}
+
 void draw_quadratic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, float thick, ColorF color)
 {
     vec2 prev = p0;

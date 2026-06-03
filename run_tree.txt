@@ -8,6 +8,7 @@ image file Rover vehicle/rover.svg
 
 # icons
 image folder Icons icon
+image timescaleIcon icon/timescaleIcon.svg optional
 
 # parts
 image folder Parts parts

@@ -171,7 +171,9 @@ void draw_game_star_system(const RenderContext& context, const AssetCatalog& cat
     for (auto& planet : system.planets)
     {
         vec2 pos = vec2(planet.body.position.x, planet.body.position.y);
-        float zdistance = cobot::smoothstep(-maxDepth, maxDepth, planet.body.position.z + maxDepth / 2);
+        float zdistance = cobot::smoothstep(-maxDepth / 2, maxDepth / 2, planet.body.position.z);
+        // remap to 0.5 - 1.0 range
+        zdistance = (zdistance + 1.0f) / 2;
         draw_circle(context, center + pos, planet.body.radius, ColorF(planet.color, zdistance));
     }
 }
