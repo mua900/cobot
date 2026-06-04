@@ -179,17 +179,18 @@ void draw_game_star_system(const RenderContext& context, const AssetCatalog& cat
     }
 }
 
-void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game, ColorF color)
+void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
     for (int i = 0; i < game.starSystem.planets.size(); i++)
     {
-        draw_planet_orbit(context, game.starSystem.planets.get_ref(i), context.render_size / 2, game.starSystem.star.mass, 4, color);
+        draw_planet_orbit(context, game.starSystem.planets.get_ref(i), context.render_size / 2, game.starSystem.star.mass, 2);
     }
 }
 
-void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset, double centralBodyMass, float thick, ColorF color)
+void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset, double centralBodyMass, float thick)
 {
     Body body = planet.body;
+    ColorF color = planet.color;
 
     constexpr float stepSize = 0.01;
     constexpr int numSteps = CONSTANT_TAU / stepSize;

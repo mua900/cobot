@@ -1227,7 +1227,7 @@ void Application::draw_game()
 void Application::draw_solar_system()
 {
     draw_game_star_system(m_render, m_catalog, game);
-    draw_orbits(m_render, m_catalog, game, ColorF(0.5,0.3,0.6));
+    draw_orbits(m_render, m_catalog, game);
 }
 
 void Application::draw_ui()
