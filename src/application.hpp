@@ -74,6 +74,10 @@ enum UpdateStateId {
     UpdateStateCount,
 };
 
+struct GameInfo {
+    int selectedTimescale = 0;
+};
+
 class Application {
 public:
     ApplicationMode m_mode = ModeMenu;
@@ -91,18 +95,21 @@ public:
     TimeInfo m_time = {};
 
     Event_Timeout m_events[EVENT_COUNT] = {};
-
+    
     DArray<Text> m_rendered_text = {};
-
+    
     UpdateState m_update_states[UpdateStateCount];
-
+    
+    
     AssetId m_font = {};
     AssetId m_editor_font = {};
-
+    
     Mesh meshes[MeshType::Count] = {};
-
+    
     GameState game = {};
     VehicleEditor editor = {};
+    GameInfo gameInfo = {};
+    GameInfo oldGameInfo = {};
 
     DArray<ApplicationMessage> messages = {};
 
@@ -128,6 +135,8 @@ private:
     bool init_mission_ui();
     bool init_editor_ui();
     bool init_solar_system_ui();
+
+    void update_game_state();
 
     void do_gpu_frame();
     
@@ -194,6 +203,8 @@ private:
     void add_button(UiId ui, UiElementId id, Button button);
     void add_label(UiId ui, UiElementId id, Label label);
 
+    bool is_minimized() const;
+    bool is_maximized() const;
     bool is_fullscreen() const;
     vec2 get_window_size() const;
 };

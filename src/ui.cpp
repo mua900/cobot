@@ -375,6 +375,31 @@ void UiState::update_state(vec2 window_size, SDL_Renderer* renderer, const Asset
         lbl.scale.y *= y_factor;
     }
 
+    for (auto& p : panels)
+    {
+        p.area.x *= x_factor;
+        p.area.y *= y_factor;
+        p.area.w *= x_factor;
+        p.area.h *= y_factor;
+    }
+
+    for (auto& c : control)
+    {
+        c.position.x *= x_factor;
+        c.position.y *= y_factor;
+        c.scale.x *= x_factor;
+        c.scale.y *= y_factor;
+    }
+
+    for (auto& ds : discrete_slider)
+    {
+        ds.position.x *= x_factor;
+        ds.position.y *= y_factor;
+        ds.element_scale.x *= x_factor;
+        ds.element_scale.y *= y_factor;
+        ds.element_gap *= ds.vertical ? y_factor : x_factor;
+    }
+
     assumed_window_size = window_size;
 }
 
@@ -523,25 +548,23 @@ Rectangle DiscreteSlider::get_bounds() const
     return Rectangle(position - scale / 2, scale);
 }
 
-int DiscreteSlider::get_item(vec2 pos) const
+vec2 DiscreteSlider::get_start() const
 {
-    pos -= position;
-
-    float elem = (vertical ? element_scale.y : element_scale.x);
-    float long_axis = element_count * (elem + element_gap);
-
-    float axis = (vertical ? pos.y : pos.x) + long_axis / 2;
-
-    if (axis >= long_axis)
-    {
-        return -1;
-    }
-
-    return std::floor(axis / (elem + element_gap));
+    float elem = vertical ? element_scale.y + element_gap : element_scale.x + element_gap;
+    vec2 step = vertical ? vec2(0, elem) : vec2(elem, 0);
+    float long_axis = element_count * elem;
+    vec2 offset = vertical ? vec2(0, long_axis / 2) : vec2(long_axis / 2, 0);
+    return position - offset + step / 2;
 }
 
-float DiscreteSlider::get_long_axis() const
+vec2 DiscreteSlider::get_step() const
 {
-    float elem = (vertical ? element_scale.y : element_scale.x);
-    return element_count * (elem + element_gap);
+    float elem = vertical ? element_scale.y + element_gap : element_scale.x + element_gap;
+    return vertical ? vec2(0, elem) : vec2(elem, 0);
+}
+
+vec2 DiscreteSlider::get_button_scale() const
+{
+    vec2 extraButtonSpace = vertical ? vec2(0, element_gap) : vec2(element_gap, 0);
+    return element_scale + extraButtonSpace;
 }

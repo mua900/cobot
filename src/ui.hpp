@@ -505,8 +505,9 @@ struct DiscreteSlider {
     ColorF endColor = {};
 
     Rectangle get_bounds() const;
-    int get_item(vec2 pos) const;
-    float get_long_axis() const;
+    vec2 get_start() const;
+    vec2 get_step() const;
+    vec2 get_button_scale() const;
 };
 
 #define TEXT_INPUT_TARGET_IS_VALID     BIT(0)

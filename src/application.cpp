@@ -91,11 +91,14 @@ bool Application::initialize()
 
         m_update_states[UpdateStateId::Idle] = { idleUpdate, idleFixedUpdate, 0, 0, 1 };
         m_update_states[UpdateStateId::VehicleSimulation] = { vehicleSimulationUpdate, vehicleSimulationFixedUpdate, 0, 0, 1 };
-        m_update_states[UpdateStateId::StarSystem] = { starSystemUpdate, starSystemFixedUpdate, 0, 0, 1e5 };
+        m_update_states[UpdateStateId::StarSystem] = { starSystemUpdate, starSystemFixedUpdate, 0, 0, 1e6 };
 
-        game.updateState = m_update_states[UpdateStateId::Idle];
+        game.updateState = &m_update_states[UpdateStateId::Idle];
     }
-
+    
+    gameInfo.selectedTimescale = game.updateState->timeScale;
+    oldGameInfo = gameInfo;
+    
     initialize_libraries();
 
     if (!init_game_state()) {
@@ -119,6 +122,23 @@ bool Application::init_game_state()
     game.scripts.add(Script(init_lua()));
 
     return true;
+}
+
+void Application::update_game_state()
+{
+    if (m_mode == ModeGame)
+    {
+        game.updateState = &m_update_states[UpdateStateId::VehicleSimulation];
+    }
+    else if (m_mode == ModeSolarSystem)
+    {
+        game.updateState = &m_update_states[UpdateStateId::StarSystem];
+    }
+    else {
+        game.updateState = &m_update_states[UpdateStateId::Idle];
+    }
+
+    game.updateState->timeScale = gameInfo.selectedTimescale;
 }
 
 bool Application::read_asset_catalog(String_Builder& path)
@@ -520,21 +540,33 @@ bool Application::mouse_input_solar_system()
             Rectangle bounds = slider.get_bounds();
             if (bounds.contains_top_left(mouse_pos))
             {
-                int item = slider.get_item(mouse_pos);
-                if (item == -1) continue;
+                int index = 0;
+                vec2 start = slider.get_start();
+                vec2 step = slider.get_step();
+                for (int i = 0; i < slider.element_count; i++)
+                {
+                    Rectangle area = Rectangle(start + i * step, slider.get_button_scale());
 
-                slider.selected = item;
+                    if (area.contains_centered(mouse_pos))
+                    {
+                        index = i;
+                        break;
+                    }
+                }
 
                 switch(slider.id)
                 {
                     case TimeScale:
                     {
-                        m_update_states[StarSystem].timeScale = (item + 1) * 1e3;
+                        int ts = index + 4;
+                        gameInfo.selectedTimescale = pow(10, ts);
                         break;
                     }
                     default:
                         break;
                 }
+
+                slider.selected = index;
             }
         }
     }
@@ -807,6 +839,8 @@ void Application::update()
     update_ui_pos();
     timeout();
 
+    update_game_state();
+
     game.update(m_time);
 }
 
@@ -979,9 +1013,11 @@ bool Application::init_solar_system_ui()
     Color background = Color(0x44, 0x66, 0x22);
     add_button(UiSolarSystem, BackButton, Button(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
 
+    Text timescaleText = create_text(m_render.renderer, String("1e4"), font, Color(0x88, 0.55, 0.44));
+
     DiscreteSlider timescaleControl = {};
-    // 1e3, 1e4, 1e5, 1e6
-    timescaleControl.element_count = 4;
+    // 1e4, 1e5, 1e6
+    timescaleControl.element_count = 3;
     timescaleControl.id = TimeScale;
     timescaleControl.position = vec2(ws.x / 2, 50);
     timescaleControl.element_gap = 50;
@@ -1159,6 +1195,18 @@ void Application::do_gpu_frame()
     end_frame(m_render);
 }
 
+bool Application::is_minimized() const
+{
+    SDL_WindowFlags flags = SDL_GetWindowFlags(m_window.window);
+    return flags & SDL_WINDOW_MINIMIZED;
+}
+
+bool Application::is_maximized() const
+{
+    SDL_WindowFlags flags = SDL_GetWindowFlags(m_window.window);
+    return flags & SDL_WINDOW_MAXIMIZED;
+}
+
 bool Application::is_fullscreen() const
 {
     SDL_WindowFlags flags = SDL_GetWindowFlags(m_window.window);
@@ -1237,18 +1285,6 @@ void Application::draw_ui_state(const UiState& state)
 }
 
 void Application::switch_modes(ApplicationMode mode) {
-    if (mode == ModeGame)
-    {
-        game.updateState = m_update_states[UpdateStateId::VehicleSimulation];
-    }
-    else if (mode == ModeSolarSystem)
-    {
-        game.updateState = m_update_states[UpdateStateId::StarSystem];
-    }
-    else {
-        game.updateState = m_update_states[UpdateStateId::Idle];
-    }
-
     m_mode = mode;
 }
 
@@ -1276,11 +1312,8 @@ void Application::render_rectangle_outline(Rectangle rect, Color color, bool cen
 
 void Application::render_discrete_slider(const DiscreteSlider& slider) const
 {
-    float elem = slider.vertical ? slider.element_scale.y + slider.element_gap : slider.element_scale.x + slider.element_gap;
-    vec2 step = slider.vertical ? vec2(0, elem) : vec2(elem, 0);
-    float long_axis = slider.element_count * elem;
-    vec2 offset = slider.vertical ? vec2(0, long_axis / 2) : vec2(long_axis / 2, 0);
-    vec2 start = slider.position - offset + step / 2;
+    vec2 start = slider.get_start();
+    vec2 step = slider.get_step();
 
     Rectangle area = slider.get_bounds();
     render_rectangle_outline(area, slider.outlineColor, false);
@@ -1289,7 +1322,7 @@ void Application::render_discrete_slider(const DiscreteSlider& slider) const
     {
         Rectangle area (start + i * step, slider.element_scale);
         float t = float (i) / slider.element_count;
-        ColorF color = i < slider.selected ? mixColors(slider.startColor, slider.endColor, t) : slider.inactiveColor;
+        ColorF color = i <= slider.selected ? mixColors(slider.startColor, slider.endColor, t) : slider.inactiveColor;
 
         if (slider.texture)
         {

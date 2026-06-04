@@ -1,7 +1,8 @@
 #include "game.hpp"
 #include "draw.hpp"
+#include "log.hpp"
 
-constexpr int fixedUpdateRate = 20;
+constexpr int fixedUpdateRate = 40;
 constexpr double fixedTimeStep = 1.0 / fixedUpdateRate;
 constexpr s64 fixedTimeStepNS = NANOSECONDS_PER_SECOND / fixedUpdateRate;
 constexpr s64 fixedTimeStepUS = MICROSECONDS_PER_SECOND / fixedUpdateRate;
@@ -11,16 +12,16 @@ void GameState::update(TimeInfo time)
 {
     constexpr int maxIterationsPerFrame = 50;
     int iterations = 0;
-    while ((updateState.elapsed < time.timeSeconds + time.deltaTimeSeconds) && iterations < maxIterationsPerFrame)
+    while ((updateState->elapsed < time.timeSeconds + time.deltaTimeSeconds) && iterations < maxIterationsPerFrame)
     {
-        updateState.fixedUpdate(this);
-        updateState.elapsed += fixedTimeStep;
-        updateState.ticks += 1;
+        updateState->fixedUpdate(this);
+        updateState->elapsed += fixedTimeStep;
+        updateState->ticks += 1;
 
         iterations += 1;
     }
 
-    updateState.update(this, time);
+    updateState->update(this, time);
 }
 
 void idleUpdate(GameState* game, TimeInfo time) {}
@@ -46,7 +47,7 @@ void starSystemUpdate(GameState* game, TimeInfo time)
 
 void starSystemFixedUpdate(GameState* game)
 {
-    game->starSystem.simulation_step(fixedTimeStep * game->updateState.timeScale);
+    game->starSystem.simulation_step(fixedTimeStep * game->updateState->timeScale);
 }
 
 

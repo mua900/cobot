@@ -40,7 +40,7 @@ struct GameState {
     DArray<Script> scripts = {};
 
     AssetId partImages [PART_KIND_COUNT][MaxPartCount] = {};
-    UpdateState updateState = {};
+    UpdateState* updateState = nullptr;
 
     void update(TimeInfo time);
 
