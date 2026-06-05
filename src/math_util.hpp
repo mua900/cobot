@@ -103,6 +103,8 @@ struct vec3 {
     vec3(float p_x, float p_y, float p_z) : x(p_x), y(p_y), z(p_z) {}
     explicit vec3(float p) : x(p), y(p), z(p) {}
 
+    vec2 xy() const { return vec2(x, y); }
+
     vec3 normalized() const
     {
         float mag = sqrt(x*x+y*y+z*z);

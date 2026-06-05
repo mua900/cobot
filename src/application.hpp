@@ -68,9 +68,9 @@ enum MeshType {
 };
 
 enum UpdateStateId {
-    Idle,
-    VehicleSimulation,
-    StarSystem,
+    UpdateStateIdle,
+    UpdateStateVehicleSimulation,
+    UpdateStateSolarSystem,
     UpdateStateCount,
 };
 
@@ -99,8 +99,7 @@ public:
     DArray<Text> m_rendered_text = {};
     
     UpdateState m_update_states[UpdateStateCount];
-    
-    
+
     AssetId m_font = {};
     AssetId m_editor_font = {};
     
@@ -109,7 +108,6 @@ public:
     GameState game = {};
     VehicleEditor editor = {};
     GameInfo gameInfo = {};
-    GameInfo oldGameInfo = {};
 
     DArray<ApplicationMessage> messages = {};
 
@@ -175,8 +173,6 @@ private:
     void update_keyboard_state();
     bool keyboard_input_down(KeyboardEvent keyboard);
     bool keyboard_input_up(KeyboardEvent keyboard);
-
-    bool gen_static_text(Color color);
 
     void text_input_start();
     void text_input_stop();

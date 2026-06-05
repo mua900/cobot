@@ -337,6 +337,7 @@ struct Entry {
     union {
         void* data;
         int index;
+        float number;
     };
 
     Entry() : label(), data(nullptr) {}
@@ -452,6 +453,7 @@ struct Panel {
 
 struct ControlMenu {
     DragInfo drag = {};
+    vec2* anchorPosition = nullptr;
     vec2 position = {};
     vec2 scale = {};
     DArray<Entry> buttons = {};

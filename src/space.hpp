@@ -37,18 +37,17 @@ struct Body {
 
     void determine_orbit(double centralBodyMass);
     void determine_state_vector(double centralBodyMass);
-    vec3 calculatePosition(double centralBodyMass);
-    vec3 calculateVelocity(double centralBodyMass);
 };
 
 struct Planet {
     // @todo planetary parameters
 
+    String name = {};
     ColorF color = {};
     Body body = {};
 
     Planet() {}
-    Planet(ColorF color, Body body) : color(color), body(body) {}
+    Planet(String name, ColorF color, Body body) : name(name), color(color), body(body) {}
 };
 
 struct Star {

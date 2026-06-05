@@ -139,6 +139,7 @@ void end_frame(RenderContext& context);
 
 bool loadShader(RenderContext& context, Shader& shader, const char* path);
 
+void draw_segment(const RenderContext& context, vec2 start, vec2 end, float thick, ColorF color);
 void draw_circle(const RenderContext& context, vec2 position, float radius, ColorF color);
 void draw_capsule(const RenderContext& context, vec2 center0, vec2 center1, float radius, ColorF color);
 void draw_polygon(RenderContext& context, vec2 points[], int numPoints, ColorF color);

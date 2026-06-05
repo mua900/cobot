@@ -68,6 +68,28 @@ bool Application::initialize()
         return false;
     }
 
+    // game state
+    {
+        if (!game.load_part_images(m_catalog))
+        {
+            return false;
+        }
+
+        m_update_states[UpdateStateIdle] = { idleUpdate, idleFixedUpdate, 0, 0, 1 };
+        m_update_states[UpdateStateVehicleSimulation] = { vehicleSimulationUpdate, vehicleSimulationFixedUpdate, 0, 0, 1 };
+        m_update_states[UpdateStateSolarSystem] = { starSystemUpdate, starSystemFixedUpdate, 0, 0, 1e6 };
+
+        game.updateState = &m_update_states[UpdateStateIdle];
+    }
+    
+    gameInfo.selectedTimescale = game.updateState->timeScale;
+
+    initialize_libraries();
+
+    if (!init_game_state()) {
+        return false;
+    }
+
     AssetId fontId = get_asset(String("FiraSans"), m_catalog);
     AssetId editorFontId = get_asset(String("FiraCode"), m_catalog);
     if (!(fontId.is_valid() && editorFontId.is_valid()))
@@ -79,29 +101,6 @@ bool Application::initialize()
 
     if (!init_ui()) {
         log_error("Couldn't initialize user interface.");
-        return false;
-    }
-
-    // game state
-    {
-        if (!game.load_part_images(m_catalog))
-        {
-            return false;
-        }
-
-        m_update_states[UpdateStateId::Idle] = { idleUpdate, idleFixedUpdate, 0, 0, 1 };
-        m_update_states[UpdateStateId::VehicleSimulation] = { vehicleSimulationUpdate, vehicleSimulationFixedUpdate, 0, 0, 1 };
-        m_update_states[UpdateStateId::StarSystem] = { starSystemUpdate, starSystemFixedUpdate, 0, 0, 1e6 };
-
-        game.updateState = &m_update_states[UpdateStateId::Idle];
-    }
-    
-    gameInfo.selectedTimescale = game.updateState->timeScale;
-    oldGameInfo = gameInfo;
-    
-    initialize_libraries();
-
-    if (!init_game_state()) {
         return false;
     }
 
@@ -128,14 +127,14 @@ void Application::update_game_state()
 {
     if (m_mode == ModeGame)
     {
-        game.updateState = &m_update_states[UpdateStateId::VehicleSimulation];
+        game.updateState = &m_update_states[UpdateStateVehicleSimulation];
     }
     else if (m_mode == ModeSolarSystem)
     {
-        game.updateState = &m_update_states[UpdateStateId::StarSystem];
+        game.updateState = &m_update_states[UpdateStateSolarSystem];
     }
     else {
-        game.updateState = &m_update_states[UpdateStateId::Idle];
+        game.updateState = &m_update_states[UpdateStateIdle];
     }
 
     game.updateState->timeScale = gameInfo.selectedTimescale;
@@ -530,7 +529,7 @@ bool Application::mouse_input_solar_system()
                 case BackButton:
                     switch_modes(ModeMenu);
                     switch_menu(MenuMain);
-                    break;
+                    return true;
                 }
             }
         }
@@ -567,7 +566,50 @@ bool Application::mouse_input_solar_system()
                 }
 
                 slider.selected = index;
+
+                return true;
             }
+        }
+
+        for (auto& control : ui.control)
+        {
+            if (control.visible)
+            {
+                bool hit = false;
+                for (int i = 0; i < control.buttons.size(); i++)
+                {
+                    if (Rectangle(control.position + vec2(0, control.scale.y * i), control.scale).contains_centered(mouse_pos))
+                    {
+                        hit = true;
+                        break;
+                    }
+                }
+
+                if (!hit)
+                {
+                    control.anchorPosition = nullptr;
+                    control.visible = false;
+                }
+            }
+        }
+    }
+    else if (m_input.mouse.buttonFlags & MOUSE_RIGHT_MASK)
+    {
+        int index = 0;
+        for (Planet& planet : game.starSystem.planets)
+        {
+            vec2 origin = get_window_size() / 2;
+            vec2 pos = origin + planet.body.position.xy();
+            Rectangle boundingBox = Rectangle(pos, vec2(planet.body.radius));
+            if (boundingBox.contains_centered(mouse_pos))
+            {
+                ControlMenu& control = ui.control.get_ref(index);
+                control.position = pos;
+                control.visible = true;
+                break;
+            }
+
+            index += 1;
         }
     }
 
@@ -1041,6 +1083,17 @@ bool Application::init_solar_system_ui()
 
     ui.discrete_slider.add(timescaleControl);
 
+    int planetIndex = 0;
+    for (auto& planet : game.starSystem.planets)
+    {
+        ControlMenu menu = {};
+        menu.scale = vec2(120, 80);
+        menu.add_button(create_text(m_render.renderer, planet.name, font, Color(0x66, 0x33, 0x44)), planetIndex);
+        ui.control.add(menu);
+
+        planetIndex += 1;
+    }
+
     return true;
 }
 
@@ -1383,6 +1436,11 @@ void Application::render_control_menu(const ControlMenu& menu) const
 {
     if (menu.visible)
     {
+        if (menu.anchorPosition)
+        {
+            draw_segment(m_render, *menu.anchorPosition, menu.position, 2, menu.background);
+        }
+
         int index = 0;
         for (auto& button : menu.buttons)
         {
