@@ -147,6 +147,17 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
 
 bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment)
 {
+    SDL_GPURenderStateCreateInfo renderStateInfo = {};
+    renderStateInfo.fragment_shader = fragment;
+    SDL_GPURenderState* render_state = SDL_CreateGPURenderState(render->renderer, &renderStateInfo);
+    if (!render_state)
+    {
+        return false;
+    }
+    render->render_state = render_state;
+
+    SDL_SetGPURenderState(render->renderer, nullptr);
+
     SDL_GPUVertexBufferDescription vertex_buffer_description[1] = {};
     SDL_GPUVertexAttribute vertex_attributes[3] = {};
     vertex_buffer_description[0].slot = 0;                        /**< The binding slot of the vertex buffer. */
@@ -527,6 +538,51 @@ void draw_arrow(const RenderContext& context, vec2 start, vec2 end, float thickn
     SDL_RenderGeometry(context.renderer, nullptr, vertices, 7, indices, ARRAY_SIZE(indices));
 }
 
+void draw_arc(const RenderContext& context, vec2 center, float inner_radius, float outer_radius, float start_angle, float arc, ColorF color)
+{
+    // resolution
+    #define NVERTICES 16
+    SDL_Vertex vertices[NVERTICES];
+
+    // the angle between vertices and it's sin and cos
+    const float angle = arc / float(NVERTICES / 2 - 1);
+    const float c = std::cosf(angle);
+    const float s = std::sinf(angle);
+
+    float xcomp = std::cosf(start_angle);
+    float ycomp = std::sinf(start_angle);
+    for (int i = 0; i < NVERTICES; i += 2)
+    {
+        vertices[i + 0].position.x = center.x + xcomp * inner_radius;
+        vertices[i + 0].position.y = center.y + ycomp * inner_radius;
+        vertices[i + 0].color = SDL_FColor { color.r, color.g, color.b, color.a };
+
+        vertices[i + 1].position.x = center.x + xcomp * outer_radius;
+        vertices[i + 1].position.y = center.y + ycomp * outer_radius;
+        vertices[i + 1].color = SDL_FColor { color.r, color.g, color.b, color.a };
+
+        // rotate the vector
+        float n_xcomp = xcomp * c - ycomp * s;
+        float n_ycomp = xcomp * s + ycomp * c;
+        xcomp = n_xcomp;
+        ycomp = n_ycomp;
+    }
+
+    int indices[(NVERTICES / 2 - 1) * 6];
+    for (int i = 0; i < NVERTICES - 2; i += 2)
+    {
+        indices[i * 3 + 0] = i + 0;
+        indices[i * 3 + 1] = i + 1;
+        indices[i * 3 + 2] = i + 2;
+        indices[i * 3 + 3] = i + 1;
+        indices[i * 3 + 4] = i + 3;
+        indices[i * 3 + 5] = i + 2;
+    }
+
+    SDL_RenderGeometry(context.renderer, NULL, vertices, ARRAY_SIZE(vertices), indices, ARRAY_SIZE(indices));
+    #undef NVERTICES
+}
+
 void draw_circle(const RenderContext& context, vec2 position, float radius, ColorF color)
 {
     // change the number of vertices to use to configure how fine of an approximation we get
@@ -534,7 +590,7 @@ void draw_circle(const RenderContext& context, vec2 position, float radius, Colo
     SDL_Vertex vertices[NVERTICES + 1];
 
     SDL_Vertex center;
-    center.position = SDL_FPoint {.x = position.x, .y = position.y};
+    center.position = SDL_FPoint { position.x, position.y};
     center.color = SDL_FColor { COLOR_ARG(color) };
 
     vertices[0] = center;

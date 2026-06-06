@@ -330,6 +330,11 @@ Rectangle merge_volumes(Rectangle v1, Rectangle v2);
 
 #define COLOR_ARG(color) color.r,color.g,color.b,color.a
 
+constexpr float RADIAN_TO_DEGREE_F = 360.0f / CONSTANT_TAU;
+constexpr float DEGREE_TO_RADIAN_F = CONSTANT_TAU / 360.0f;
+constexpr double RADIAN_TO_DEGREE = 360.0 / CONSTANT_TAU;
+constexpr double DEGREE_TO_RADIAN = CONSTANT_TAU / 360.0;
+
 namespace cobot {
     constexpr int max(int x, int y) { return x > y ? x : y; }
     constexpr int min(int x, int y) { return x > y ? y : x; }
@@ -337,6 +342,11 @@ namespace cobot {
     float lerp(float a, float b, float t);
     float clamp(float a, float b, float x);
     float smoothstep(float a, float b, float x);
+
+    constexpr float radian_to_degree_f(float angle) { return angle * RADIAN_TO_DEGREE_F; }
+    constexpr float degree_to_radian_f(float angle) { return angle * DEGREE_TO_RADIAN_F; }
+    constexpr double radian_to_degree(double angle) { return angle * RADIAN_TO_DEGREE; }
+    constexpr double degree_to_radian(double angle) { return angle * DEGREE_TO_RADIAN; }
 }
 
 #endif // _MATH_UTIL_H

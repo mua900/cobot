@@ -28,6 +28,7 @@ enum UiElementId {
     PartsPanel,
     MissionButton,
     TimeScale,
+    LaunchButton,
 };
 
 struct DragInfo {
@@ -46,7 +47,7 @@ struct Label {
     Label(Text p_text, vec2 pos, vec2 sca, Color back) : text(p_text), position(pos), scale(sca), background(back) {}
 };
 
-struct Button {
+struct TextButton {
     UiElementId id = {};
     UserData data = {};
     Text text = {};
@@ -54,8 +55,20 @@ struct Button {
     vec2 scale = {};
     Color background = {};
 
-    Button() {}
-    Button(Text p_text, vec2 pos, vec2 sca, Color back) : text(p_text), position(pos), scale(sca), background(back) {}
+    TextButton() {}
+    TextButton(Text p_text, vec2 pos, vec2 sca, Color back) : text(p_text), position(pos), scale(sca), background(back) {}
+};
+
+struct ImageButton {
+    UiElementId id = {};
+    UserData data = {};
+    SDL_Texture* image = {};
+    vec2 position = {};
+    vec2 scale = {};
+    Color background = {};
+
+    ImageButton() {}
+    ImageButton(SDL_Texture* image, vec2 pos, vec2 sca, Color back) : image(image), position(pos), scale(sca), background(back) {}
 };
 
 struct GapBuffer {
@@ -524,7 +537,8 @@ struct UiState {
     DArray<TextEditor> editor = {};
     DArray<Text_Field> text_field = {};
     DArray<Drop_Down_List> drop_down = {};
-    DArray<Button> button = {};
+    DArray<TextButton> button = {};
+    DArray<ImageButton> image_button = {};
     DArray<Label> label = {};
     DArray<Panel> panels = {};
     DArray<ControlMenu> control = {};
@@ -540,7 +554,7 @@ struct UiState {
     TextEditor* get_editor(UiElementId id);
     Text_Field* get_text_field(UiElementId id);
     Drop_Down_List* get_drop_down(UiElementId id);
-    Button* get_button(UiElementId id);
+    TextButton* get_button(UiElementId id);
     Label* get_label(UiElementId id);
 
     ~UiState();

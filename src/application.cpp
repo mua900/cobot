@@ -534,6 +534,14 @@ bool Application::mouse_input_solar_system()
             }
         }
 
+        for (auto& button : ui.image_button)
+        {
+            Rectangle area = Rectangle(button.position, button.scale);
+            if (area.contains_centered(mouse_pos))
+            {
+            }
+        }
+
         for (auto& slider : ui.discrete_slider)
         {
             Rectangle bounds = slider.get_bounds();
@@ -571,6 +579,24 @@ bool Application::mouse_input_solar_system()
             }
         }
 
+        vec2 ws = get_window_size();
+        bool found = false;
+        for (int i = 0; i < game.starSystem.planets.size(); i++)
+        {
+            Rectangle area = game.get_planet_screen_area(ws, i);
+            if (area.contains_centered(mouse_pos))
+            {
+                gameInfo.selectedPlanet = i;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            gameInfo.selectedPlanet = -1;
+        }
+
         for (auto& control : ui.control)
         {
             if (control.visible)
@@ -595,21 +621,17 @@ bool Application::mouse_input_solar_system()
     }
     else if (m_input.mouse.buttonFlags & MOUSE_RIGHT_MASK)
     {
-        int index = 0;
-        for (Planet& planet : game.starSystem.planets)
+        vec2 ws = get_window_size();
+        for (int index = 0; index < game.starSystem.planets.size(); index += 1)
         {
-            vec2 origin = get_window_size() / 2;
-            vec2 pos = origin + planet.body.position.xy();
-            Rectangle boundingBox = Rectangle(pos, vec2(planet.body.radius));
+            Rectangle boundingBox = game.get_planet_screen_area(ws, index);
             if (boundingBox.contains_centered(mouse_pos))
             {
                 ControlMenu& control = ui.control.get_ref(index);
-                control.position = pos;
+                control.position = boundingBox.get_position();
                 control.visible = true;
                 break;
             }
-
-            index += 1;
         }
     }
 
@@ -983,7 +1005,7 @@ void Application::cleanup()
     TTF_Quit();
 }
 
-void Application::add_button(UiId ui, UiElementId id, Button button) {
+void Application::add_button(UiId ui, UiElementId id, TextButton button) {
     button.id = id;
     m_ui[ui].button.add(button);
 }
@@ -1030,12 +1052,12 @@ bool Application::init_ui()
     Color background = Color(0x33, 0x55, 0x66);
 
     // main menu
-    add_button(UiMainMenu, PlayButton, Button(create_text(m_render.renderer, String("Play"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.2), button_scale, background));
-    add_button(UiMainMenu, SettingsButton, Button(create_text(m_render.renderer, String("Settings"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.5), button_scale, background));
-    add_button(UiMainMenu, QuitButton, Button(create_text(m_render.renderer, String("Quit"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.8), button_scale, background));
+    add_button(UiMainMenu, PlayButton, TextButton(create_text(m_render.renderer, String("Play"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.2), button_scale, background));
+    add_button(UiMainMenu, SettingsButton, TextButton(create_text(m_render.renderer, String("Settings"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.5), button_scale, background));
+    add_button(UiMainMenu, QuitButton, TextButton(create_text(m_render.renderer, String("Quit"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.8), button_scale, background));
 
     // settings
-    add_button(UiSettings, BackButton, Button(create_text(m_render.renderer, String("Back"), font, button_color), ws * 0.1, ws * 0.1, background));
+    add_button(UiSettings, BackButton, TextButton(create_text(m_render.renderer, String("Back"), font, button_color), ws * 0.1, ws * 0.1, background));
 
     if (!init_game_ui()) return false;
     if (!init_mission_ui()) return false;
@@ -1053,9 +1075,7 @@ bool Application::init_solar_system_ui()
     Font font = m_catalog.get_font(m_font);
     Color button_color = Color(0x66, 0x33, 0x22);
     Color background = Color(0x44, 0x66, 0x22);
-    add_button(UiSolarSystem, BackButton, Button(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
-
-    Text timescaleText = create_text(m_render.renderer, String("1e4"), font, Color(0x88, 0.55, 0.44));
+    add_button(UiSolarSystem, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
 
     DiscreteSlider timescaleControl = {};
     // 1e4, 1e5, 1e6
@@ -1105,7 +1125,7 @@ bool Application::init_game_ui() {
     Color button_color = Color(0x77, 0x55, 0x55);
     Color background = Color(0x33, 0x55, 0x66);
 
-    add_button(UiGame, BackButton, Button(create_text(m_render.renderer, String("Main Menu"), editor_font, button_color), ws * 0.05, ws * 0.1, background));
+    add_button(UiGame, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), editor_font, button_color), ws * 0.05, ws * 0.1, background));
 
     Color controlMenuButtonColor = Color(0x44, 0x66, 0x77);
     ControlMenu menus[PART_KIND_COUNT] = {};
@@ -1131,14 +1151,14 @@ bool Application::init_mission_ui() {
     Color button_color = Color(0x77, 0x55, 0x55);
     Color background = Color(0x33, 0x55, 0x66);
     
-    add_button(UiMissionSelect, BackButton, Button(create_text(m_render.renderer, String("Back"), m_catalog.get_font(m_font), button_color), ws * 0.05, ws * 0.1, background));
+    add_button(UiMissionSelect, BackButton, TextButton(create_text(m_render.renderer, String("Back"), m_catalog.get_font(m_font), button_color), ws * 0.05, ws * 0.1, background));
     
     float buttonY = ws.y * 0.2;
     float buttonX = ws.x * 0.1;
     vec2 buttonScale = vec2(ws.x * 0.1, ws.y * 0.1);
     Color missionBackground = Color(0x44, 0x55, 0x55);
     Color missionTextColor = Color(0x66, 0x33, 0x77);
-    Button testMission = Button(create_text(m_render.renderer, String("Test Mission"), m_catalog.get_font(m_font), missionTextColor), vec2(buttonX, buttonY), buttonScale, missionBackground);
+    TextButton testMission = TextButton(create_text(m_render.renderer, String("Test Mission"), m_catalog.get_font(m_font), missionTextColor), vec2(buttonX, buttonY), buttonScale, missionBackground);
     testMission.data.number = 0;  // the id of the mission this represents
     add_button(UiMissionSelect, MissionButton, testMission);
 
@@ -1223,7 +1243,7 @@ void Application::draw()
 
     draw_ui();
     draw_messages();
-    
+
     SDL_RenderPresent(renderer);
 }
 
@@ -1281,6 +1301,10 @@ void Application::draw_solar_system()
 {
     draw_game_star_system(m_render, m_catalog, game);
     draw_orbits(m_render, m_catalog, game);
+    if (gameInfo.selectedPlanet != -1)
+    {
+        draw_planet_outline(m_render, game, gameInfo.selectedPlanet);
+    }
 }
 
 void Application::draw_ui()
@@ -1311,9 +1335,14 @@ void Application::draw_ui_state(const UiState& state)
         render_dropdown(list);
     }
 
-    for (const Button& button : state.button)
+    for (const TextButton& button : state.button)
     {
         render_textured_rectangle(m_render.renderer, Rectangle(button.position, button.scale), button.text.texture, button.background, true);
+    }
+
+    for (const ImageButton& button : state.image_button)
+    {
+        render_textured_rectangle(m_render.renderer, Rectangle(button.position, button.scale), button.image, button.background, true);
     }
 
     for (const Label& label : state.label)

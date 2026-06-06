@@ -494,7 +494,7 @@ Drop_Down_List* UiState::get_drop_down(UiElementId id) {
     return nullptr;
 }
 
-Button* UiState::get_button(UiElementId id) {
+TextButton* UiState::get_button(UiElementId id) {
     for (auto& element : button)
     {
         if (element.id == id)

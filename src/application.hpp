@@ -76,6 +76,7 @@ enum UpdateStateId {
 
 struct GameInfo {
     int selectedTimescale = 0;
+    int selectedPlanet = -1;
 };
 
 class Application {
@@ -97,7 +98,7 @@ public:
     Event_Timeout m_events[EVENT_COUNT] = {};
     
     DArray<Text> m_rendered_text = {};
-    
+
     UpdateState m_update_states[UpdateStateCount];
 
     AssetId m_font = {};
@@ -196,7 +197,7 @@ private:
     void switch_modes(ApplicationMode mode);
     void switch_menu(MenuName menu);
 
-    void add_button(UiId ui, UiElementId id, Button button);
+    void add_button(UiId ui, UiElementId id, TextButton button);
     void add_label(UiId ui, UiElementId id, Label label);
 
     bool is_minimized() const;

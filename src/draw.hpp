@@ -7,9 +7,9 @@
 #include "template.hpp"
 #include "text.hpp"
 
-static const ColorF DEBUG_COLOR =  ColorF(0.6, 0.5, 0.4, 1.0);
-
 #define GRAPHICS_DEBUG 1
+
+static const ColorF DEBUG_COLOR =  ColorF(0.6, 0.5, 0.4, 1.0);
 
 #ifdef _WIN32
 #if GRAPHICS_DEBUG
@@ -81,6 +81,7 @@ struct FrameContext {
 struct RenderContext {
     vec2 render_size = {};
     SDL_Renderer* renderer = nullptr;
+    SDL_GPURenderState* render_state = nullptr;
 
     SDL_Texture* target_texture = nullptr;
     SDL_GPUTexture* render_target = nullptr;
@@ -141,6 +142,7 @@ bool loadShader(RenderContext& context, Shader& shader, const char* path);
 
 void draw_segment(const RenderContext& context, vec2 start, vec2 end, float thick, ColorF color);
 void draw_circle(const RenderContext& context, vec2 position, float radius, ColorF color);
+void draw_arc(const RenderContext& context, vec2 center, float inner_radius, float outer_radius, float start_angle, float arc, ColorF color);
 void draw_capsule(const RenderContext& context, vec2 center0, vec2 center1, float radius, ColorF color);
 void draw_polygon(RenderContext& context, vec2 points[], int numPoints, ColorF color);
 void draw_path(RenderContext& context, vec2 points[], int numPoints, float thick, ColorF color);

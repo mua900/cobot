@@ -51,6 +51,14 @@ void starSystemFixedUpdate(GameState* game)
 }
 
 
+Rectangle GameState::get_planet_screen_area(vec2 ws, int planet) const
+{
+    vec2 origin = ws / 2;
+    const Planet& p = starSystem.planets.get_ref(planet);
+    vec2 pos = origin + p.body.position.xy();
+    return Rectangle(pos, vec2(p.body.radius));
+}
+
 bool GameState::load_part_images(AssetCatalog& catalog)
 {
     for (int i = 0; i < ChasisKindCount; i++) {
@@ -208,4 +216,14 @@ void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset
     }
 
     draw_closed_path(context, points, numSteps, thick, color);
+}
+
+void draw_planet_outline(RenderContext& context, const GameState& game, int planetIndex)
+{
+    vec2 origin = context.render_size / 2;
+    Planet& planet = game.starSystem.planets.get_ref(planetIndex);
+    draw_arc(context, origin + planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(10), cobot::degree_to_radian_f(70), planet.color);
+    draw_arc(context, origin + planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(100), cobot::degree_to_radian_f(70), planet.color);
+    draw_arc(context, origin + planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(190), cobot::degree_to_radian_f(70), planet.color);
+    draw_arc(context, origin + planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(280), cobot::degree_to_radian_f(70), planet.color);
 }
