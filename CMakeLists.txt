@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 4.0)
 
-project(game)
+project(cobot)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -14,7 +14,7 @@ endforeach()
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(game
+add_executable(cobot
 	src/application.hpp
 	src/application.cpp
 	src/game.hpp
@@ -131,14 +131,14 @@ add_library(lua STATIC
 	src/lua/src/lzio.h
 )
 
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT game)
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT cobot)
 
-target_link_libraries(game PRIVATE language)
-target_link_libraries(game PRIVATE lua)
+target_link_libraries(cobot PRIVATE language)
+target_link_libraries(cobot PRIVATE lua)
 
-target_include_directories(game PRIVATE src/)
+target_include_directories(cobot PRIVATE src/)
 target_include_directories(language PRIVATE src/)
-target_include_directories(game PRIVATE src/lua/src)
+target_include_directories(cobot PRIVATE src/lua/src)
 
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 
@@ -167,13 +167,13 @@ add_subdirectory(vendor/SDL_image EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/SDL_mixer EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/SDL_ttf EXCLUDE_FROM_ALL)
 
-target_include_directories(game PRIVATE vendor/SDL/include/)
-target_include_directories(game PRIVATE vendor/SDL_image/include/)
-target_include_directories(game PRIVATE vendor/SDL_mixer/include)
-target_include_directories(game PRIVATE vendor/SDL_ttf/include/)
+target_include_directories(cobot PRIVATE vendor/SDL/include/)
+target_include_directories(cobot PRIVATE vendor/SDL_image/include/)
+target_include_directories(cobot PRIVATE vendor/SDL_mixer/include)
+target_include_directories(cobot PRIVATE vendor/SDL_ttf/include/)
 
 target_link_libraries(
-	game
+	cobot
 	PRIVATE
 	SDL3::SDL3
 	SDL3_image::SDL3_image

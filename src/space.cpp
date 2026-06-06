@@ -60,34 +60,34 @@ void Body::determine_orbit(double centralBodyMass)
     double trueAnomaly = (eccentricity == 0) ? 0 : std::acos(dot3(eccentricityVector, position) / (eccentricity * position.magnitude()));
     if (dir < 0.0) trueAnomaly = CONSTANT_TAU - trueAnomaly;
 
-    this->semiMajorAxis = semiMajorAxis;
-    this->eccentricity = eccentricity;
-    this->inclination = inclination;
-    this->longitudeOfAscendingNode = ascendingNodeLongtitude;
-    this->argumentOfPeriapsis = periapsisArgument;
-    this->trueAnomaly = trueAnomaly;
+    this->parameters.semiMajorAxis = semiMajorAxis;
+    this->parameters.eccentricity = eccentricity;
+    this->parameters.inclination = inclination;
+    this->parameters.longitudeOfAscendingNode = ascendingNodeLongtitude;
+    this->parameters.argumentOfPeriapsis = periapsisArgument;
+    this->parameters.trueAnomaly = trueAnomaly;
 }
 
 void Body::determine_state_vector(double centralBodyMass)
 {
     // https://en.wikipedia.org/wiki/Perifocal_coordinate_system
     double gravitationalParameter = centralBodyMass * G;
-    double r = semiMajorAxis * (1.0 - eccentricity * eccentricity) / (1.0 + eccentricity * std::cos(trueAnomaly));
-    double p = semiMajorAxis * (1.0 - eccentricity * eccentricity);  // semi parameter
+    double r = parameters.semiMajorAxis * (1.0 - parameters.eccentricity * parameters.eccentricity) / (1.0 + parameters.eccentricity * std::cos(parameters.trueAnomaly));
+    double p = parameters.semiMajorAxis * (1.0 - parameters.eccentricity * parameters.eccentricity);  // semi parameter
     // https://en.wikipedia.org/wiki/Specific_angular_momentum#Third_law
     double specificOrbitalMomentum = std::sqrt(gravitationalParameter * p);
-    vec3 perifocalPosition = vec3(std::cos(trueAnomaly), std::sin(trueAnomaly), 0) * r;
-    vec3 perifocalVelocity = vec3(-std::sin(trueAnomaly), eccentricity + std::cos(trueAnomaly), 0) * (gravitationalParameter / specificOrbitalMomentum);
+    vec3 perifocalPosition = vec3(std::cos(parameters.trueAnomaly), std::sin(parameters.trueAnomaly), 0) * r;
+    vec3 perifocalVelocity = vec3(-std::sin(parameters.trueAnomaly), parameters.eccentricity + std::cos(parameters.trueAnomaly), 0) * (gravitationalParameter / specificOrbitalMomentum);
 
     // rotation from perifocal coordinate system to cartesian coordinate system
     // rot = rot_z(LOAN) * rot_x(inclination) * rot_z(AOP)
 
     mat3x3 rotation = {};
     mat3x3 rot = {};
-    get_rotation_z(&rotation, argumentOfPeriapsis);
-    get_rotation_x(&rot, inclination);
+    get_rotation_z(&rotation, parameters.argumentOfPeriapsis);
+    get_rotation_x(&rot, parameters.inclination);
     mat3mul(&rotation, &rot, &rotation);
-    get_rotation_z(&rot, longitudeOfAscendingNode);
+    get_rotation_z(&rot, parameters.longitudeOfAscendingNode);
     mat3mul(&rotation, &rot, &rotation);
 
     vec3 position = mat3apply(&rotation, perifocalPosition);

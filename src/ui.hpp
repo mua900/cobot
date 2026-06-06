@@ -29,6 +29,7 @@ enum UiElementId {
     MissionButton,
     TimeScale,
     LaunchButton,
+    PlanetPanel,
 };
 
 struct DragInfo {
@@ -439,6 +440,42 @@ struct Drop_Down_List {
     }
 };
 
+enum ValueType {
+    ValueInteger,
+    ValueNumber,
+    ValueString,
+    ValueSelection,
+};
+
+struct ValueField {
+    int identifier = 0;  // user data
+    ValueType type = {};
+    union {
+        String string;
+        u64 integer;
+        double number;
+        int selection;
+    } value = {};
+
+    ValueField() : value{} {}
+    ValueField(int ident, ValueType type) : identifier(ident), type(type), value{} {}
+};
+
+struct ValuePanelTab {
+    Icon tabIcon = {};
+    Color color = {};
+    vec2 position = {};
+    float field_height = 0;
+    DArray<ValueField> fields = {};
+};
+
+struct ValuePanel {
+    UiElementId id = {};
+    Rectangle area = {};
+    int activeTab = 0;
+    DArray<ValuePanelTab> tabs = {};
+};
+
 struct PanelTab {
     Icon tabIcon = {};
     DArray<IconButton> icons = {};
@@ -541,6 +578,7 @@ struct UiState {
     DArray<ImageButton> image_button = {};
     DArray<Label> label = {};
     DArray<Panel> panels = {};
+    DArray<ValuePanel> value_panel = {};
     DArray<ControlMenu> control = {};
     DArray<DiscreteSlider> discrete_slider = {};
 

@@ -11,6 +11,20 @@
 // vis viva
 // velocity**2 = G * mass * ((2 / distance) - (1 / semiMajorAxis))
 
+struct OrbitalParameters {
+    float semiMajorAxis = 0;
+    float eccentricity = 0;
+    float trueAnomaly = 0;
+    float longitudeOfAscendingNode = 0;
+    float argumentOfPeriapsis = 0;
+    float inclination = 0;
+
+    OrbitalParameters() {}
+    OrbitalParameters(float a, float e, float mu, float loan, float ap, float i)
+        : semiMajorAxis(a), eccentricity(e), trueAnomaly(mu), longitudeOfAscendingNode(loan), argumentOfPeriapsis(ap), inclination(i)
+    {}
+};
+
 // orbitting body
 struct Body {
     float mass = 0;
@@ -20,19 +34,14 @@ struct Body {
     vec3 velocity = {};
     vec3 acceleration = {};
 
-    float semiMajorAxis = 0;
-    float eccentricity = 0;
-    float trueAnomaly = 0;
-    float longitudeOfAscendingNode = 0;
-    float argumentOfPeriapsis = 0;
-    float inclination = 0;
+    OrbitalParameters parameters = {};
 
     Body() {}
     Body(float mass, float radius, vec3 init_position, vec3 init_velocity)
         : mass(mass), radius(radius), position(init_position), velocity(init_velocity)
     {}
-    Body(float mass, float radius, float a, float e, float mu, float loan, float ap, float i)
-        : mass(mass), radius(radius), semiMajorAxis(a), eccentricity(e), trueAnomaly(mu), longitudeOfAscendingNode(loan), argumentOfPeriapsis(ap), inclination(i)
+    Body(float mass, float radius, float semi_major_axis, float eccentricity, float true_anomaly, float longitude_of_ascending_node, float argument_of_periapsis, float inclination)
+        : mass(mass), radius(radius), parameters(semi_major_axis, eccentricity, true_anomaly, longitude_of_ascending_node, argument_of_periapsis, inclination)
     {}
 
     void determine_orbit(double centralBodyMass);

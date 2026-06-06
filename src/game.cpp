@@ -207,7 +207,7 @@ void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset
     float angle = 0;
     for (int index = 0; index < numSteps; index += 1)
     {
-        body.trueAnomaly = angle;
+        body.parameters.trueAnomaly = angle;
         body.determine_state_vector(centralBodyMass);
         vec3 p = body.position;
 

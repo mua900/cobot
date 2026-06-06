@@ -1114,6 +1114,11 @@ bool Application::init_solar_system_ui()
         planetIndex += 1;
     }
 
+    ValuePanel planet_panel = {};
+    ValuePanelTab planet_tab = {};
+    planet_tab.fields.add(ValueField(0, ValueNumber));
+    planet_panel.tabs.add(planet_tab);
+
     return true;
 }
 
