@@ -494,15 +494,17 @@ struct ValuePanel {
     UiElementId id = {};
     Rectangle area = {};
     int activeTab = 0;
+    float fieldSize = 0;
     float tabHeaderSize = 0;
     Direction direction = {};
     DArray<ValuePanelTab> tabs = {};
 
     ValuePanel() {}
-    ValuePanel(UiElementId ident, Rectangle area, float tab_header_size, Direction dir)
+    ValuePanel(UiElementId ident, Rectangle area, float field_size, float tab_header_size, Direction dir)
         :
         id(ident),
         area(area),
+        fieldSize(field_size),
         tabHeaderSize(tab_header_size),
         direction(dir)
     {}

@@ -1142,7 +1142,7 @@ bool Application::init_solar_system_ui()
     AssetId orbitalTabId = get_asset(String("orbit"), m_catalog);
     SDL_Texture* orbitalParameterTab = m_catalog.get_image(orbitalTabId);
 
-    ValuePanel planet_panel (PlanetPanel, Rectangle(ws.x * 0.9, ws.y * 0.5, ws.x * 0.2, ws.y), 50, DirLeft);
+    ValuePanel planet_panel (PlanetPanel, Rectangle(ws.x * 0.9, ws.y * 0.5, ws.x * 0.2, ws.y), 25, 50, DirLeft);
     ValuePanelTab planet_tab = {};
     planet_tab.field_height = 20;
     planet_tab.color = Color(0x44, 0x55, 0x33);
@@ -1155,6 +1155,8 @@ bool Application::init_solar_system_ui()
     planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, Color(0x99, 0x66, 0x77)), OrbitArgumentOfPeriapsis, ValueNumber));
     planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, Color(0x99, 0x66, 0x77)), OrbitInclination, ValueNumber));
 
+    planet_panel.tabs.add(planet_tab);
+    ui.value_panel.add(planet_panel);
 
     return true;
 }
@@ -1511,7 +1513,10 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
     {
         vec2 text_scale = {};
         SDL_GetTextureSize(value.text.texture, &text_scale.x, &text_scale.y);
-        render_texture(m_render.renderer, Rectangle(vec2(panel.area.x, panel.area.y - panel.area.h / 2 + height), text_scale), value.text.texture, true);
+        float factor = panel.fieldSize / text_scale.y;
+        text_scale.x *= factor;
+        text_scale.y = panel.fieldSize;
+        render_texture(m_render.renderer, Rectangle(vec2(panel.area.x, panel.area.y - panel.area.h / 2 + height + text_scale.y / 2), text_scale), value.text.texture, true);
         height += text_scale.y;
 
         switch (value.type)
