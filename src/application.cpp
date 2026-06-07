@@ -137,7 +137,10 @@ void Application::update_game_state()
         game.updateState = &m_update_states[UpdateStateIdle];
     }
 
-    game.updateState->timeScale = gameInfo.selectedTimescale;
+    game.updateState->timeScale = gameInfo.wantPause ? 0 : gameInfo.selectedTimescale;
+    if (gameInfo.wantPause) {
+        gameInfo.wantPause = false;
+    }
 }
 
 bool Application::read_asset_catalog(String_Builder& path)
@@ -315,6 +318,23 @@ bool Application::keyboard_input_up(SDL_KeyboardEvent keyboard)
 
 bool Application::keyboard_input_down(SDL_KeyboardEvent keyboard)
 {
+    if (keyboard_input_down_common(keyboard))
+    {
+        return true;
+    }
+    else
+    {
+        if (m_mode == ModeSolarSystem)
+        {
+            return keyboard_input_down_solar_system(keyboard);
+        }
+
+        return false;
+    }
+}
+
+bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
+{
     switch (keyboard.scancode)
     {
         case SDL_SCANCODE_ESCAPE:
@@ -447,6 +467,20 @@ bool Application::keyboard_input_down(SDL_KeyboardEvent keyboard)
         case SDL_SCANCODE_F11:
         {
             SDL_SetWindowFullscreen(m_window.window, !is_fullscreen());
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Application::keyboard_input_down_solar_system(KeyboardEvent keyboard)
+{
+    switch (keyboard.scancode)
+    {
+        case SDL_SCANCODE_SPACE:
+        {
+            gameInfo.wantPause = true;
             return true;
         }
     }
@@ -1077,19 +1111,10 @@ bool Application::init_solar_system_ui()
     Color background = Color(0x44, 0x66, 0x22);
     add_button(UiSolarSystem, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
 
-    DiscreteSlider timescaleControl = {};
     // 1e4, 1e5, 1e6
-    timescaleControl.element_count = 3;
-    timescaleControl.id = TimeScale;
-    timescaleControl.position = vec2(ws.x / 2, 50);
-    timescaleControl.element_gap = 50;
-    timescaleControl.vertical = false;
-    timescaleControl.inactiveColor = ColorF(0.6, 0.3, 0.2);
-    timescaleControl.startColor = ColorF(0.4, 0.7, 0.3);
-    timescaleControl.endColor = ColorF(0.7, 0.4, 0.2);
-    timescaleControl.outlineColor = ColorF(0.3, 0.7, 0.3);
-    timescaleControl.buttonColor = ColorF(0.8, 0.3, 0.2);
-    timescaleControl.element_scale = vec2(40, 50);
+    DiscreteSlider timescaleControl (TimeScale, vec2(ws.x / 2, 50), vec2(40, 50), 3,
+        50, false, ColorF(0.3, 0.7, 0.3), ColorF(0.8, 0.3, 0.2), ColorF(0.6, 0.3, 0.2), ColorF(0.4, 0.7, 0.3), ColorF(0.7, 0.4, 0.2));
+
     AssetId tsIconId = get_asset(String("timescaleIcon"), m_catalog);
     if (tsIconId.is_valid())
     {
@@ -1114,10 +1139,23 @@ bool Application::init_solar_system_ui()
         planetIndex += 1;
     }
 
-    ValuePanel planet_panel = {};
+    AssetId orbitalTabId = get_asset(String("orbit"), m_catalog);
+    SDL_Texture* orbitalParameterTab = m_catalog.get_image(orbitalTabId);
+
+    ValuePanel planet_panel (PlanetPanel, Rectangle(ws.x * 0.9, ws.y * 0.5, ws.x * 0.2, ws.y), 50, DirLeft);
     ValuePanelTab planet_tab = {};
-    planet_tab.fields.add(ValueField(0, ValueNumber));
+    planet_tab.field_height = 20;
+    planet_tab.color = Color(0x44, 0x55, 0x33);
+    planet_tab.tabIcon = Icon(orbitalParameterTab, Color(0x99, 0x55, 0x33));
+    planet_tab.fields.add(ValueField(OrbitSemiMajorAxis, ValueNumber));
+    planet_tab.fields.add(ValueField(OrbitEccentricity, ValueNumber));
+    planet_tab.fields.add(ValueField(OrbitTrueAnomaly, ValueNumber));
+    planet_tab.fields.add(ValueField(OrbitLongitudeOfTheAscendingNode, ValueNumber));
+    planet_tab.fields.add(ValueField(OrbitArgumentOfPeriapsis, ValueNumber));
+    planet_tab.fields.add(ValueField(OrbitInclination, ValueNumber));
+
     planet_panel.tabs.add(planet_tab);
+    ui.value_panel.add(planet_panel);
 
     return true;
 }
@@ -1369,6 +1407,11 @@ void Application::draw_ui_state(const UiState& state)
     {
         render_discrete_slider(slider);
     }
+
+    for (const ValuePanel& panel : state.value_panel)
+    {
+        render_value_panel(panel);
+    }
 }
 
 void Application::switch_modes(ApplicationMode mode) {
@@ -1447,6 +1490,18 @@ void Application::render_slider(Rectangle area, vec2 knob_scale, float value, Co
             vec2(slider.x + slider.w / 2, slider.y + slider.h * 2 + margin), vec2(0.6, 0.6));
     }
 }
+
+void Application::render_value_panel(const ValuePanel& panel) const
+{
+    auto& tab = panel.tabs.get_ref(panel.activeTab);
+    render_rectangle(panel.area, tab.color, true);
+
+    for (int i = 0; i < panel.tabs.size(); i++) {
+        Rectangle area = panel.get_tab_header_area(i);
+        render_textured_rectangle(m_render.renderer, area, panel.tabs.get(i).tabIcon.texture, panel.tabs.get(i).tabIcon.background, true);
+    }
+}
+
 
 void Application::render_panel(const Panel& panel) const
 {

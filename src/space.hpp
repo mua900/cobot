@@ -11,6 +11,15 @@
 // vis viva
 // velocity**2 = G * mass * ((2 / distance) - (1 / semiMajorAxis))
 
+enum OrbitalParameter {
+    OrbitSemiMajorAxis,
+    OrbitEccentricity,
+    OrbitTrueAnomaly,
+    OrbitLongitudeOfTheAscendingNode,
+    OrbitArgumentOfPeriapsis,
+    OrbitInclination,
+};
+
 struct OrbitalParameters {
     float semiMajorAxis = 0;
     float eccentricity = 0;
@@ -49,7 +58,7 @@ struct Body {
 };
 
 struct Planet {
-    // @todo planetary parameters
+
 
     String name = {};
     ColorF color = {};

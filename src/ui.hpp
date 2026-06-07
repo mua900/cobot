@@ -464,7 +464,6 @@ struct ValueField {
 struct ValuePanelTab {
     Icon tabIcon = {};
     Color color = {};
-    vec2 position = {};
     float field_height = 0;
     DArray<ValueField> fields = {};
 };
@@ -473,7 +472,20 @@ struct ValuePanel {
     UiElementId id = {};
     Rectangle area = {};
     int activeTab = 0;
+    float tabHeaderSize = 0;
+    Direction direction = {};
     DArray<ValuePanelTab> tabs = {};
+
+    ValuePanel() {}
+    ValuePanel(UiElementId ident, Rectangle area, float tab_header_size, Direction dir)
+        :
+        id(ident),
+        area(area),
+        tabHeaderSize(tab_header_size),
+        direction(dir)
+    {}
+
+    Rectangle get_tab_header_area(int index) const;
 };
 
 struct PanelTab {
@@ -555,6 +567,22 @@ struct DiscreteSlider {
     ColorF inactiveColor = {};
     ColorF startColor = {};
     ColorF endColor = {};
+
+    DiscreteSlider() {}
+    DiscreteSlider(UiElementId ident, vec2 pos, vec2 elem_scale, int elem_count, float elem_gap, bool vert, ColorF outline_color, ColorF button_color, ColorF inactive_color, ColorF start_color, ColorF end_color)
+        :
+        id(ident),
+        position(pos),
+        element_scale(elem_scale),
+        element_count(elem_count),
+        element_gap(elem_gap),
+        vertical(vert),
+        outlineColor(outline_color),
+        buttonColor(button_color),
+        inactiveColor(inactive_color),
+        startColor(start_color),
+        endColor(end_color)
+    {}
 
     Rectangle get_bounds() const;
     vec2 get_start() const;

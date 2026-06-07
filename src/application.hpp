@@ -75,6 +75,7 @@ enum UpdateStateId {
 };
 
 struct GameInfo {
+    bool wantPause = false;
     int selectedTimescale = 0;
     int selectedPlanet = -1;
 };
@@ -175,6 +176,9 @@ private:
     bool keyboard_input_down(KeyboardEvent keyboard);
     bool keyboard_input_up(KeyboardEvent keyboard);
 
+    bool keyboard_input_down_common(KeyboardEvent keyboard);
+    bool keyboard_input_down_solar_system(KeyboardEvent keyboard);
+
     void text_input_start();
     void text_input_stop();
     void toggle_text_input();
@@ -193,6 +197,7 @@ private:
     void render_panel(const Panel& panel) const;
     void render_control_menu(const ControlMenu& menu) const;
     void render_discrete_slider(const DiscreteSlider& slider) const;
+    void render_value_panel(const ValuePanel& panel) const;
 
     void switch_modes(ApplicationMode mode);
     void switch_menu(MenuName menu);

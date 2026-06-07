@@ -9,6 +9,13 @@ struct ivec2 {
     int x, y;
 };
 
+enum Direction {
+    DirRight,
+    DirLeft,
+    DirDown,
+    DirUp,
+};
+
 enum Axis {
     AXIS_X,
     AXIS_Y,
