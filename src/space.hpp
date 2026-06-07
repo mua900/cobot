@@ -18,6 +18,8 @@ enum OrbitalParameter {
     OrbitLongitudeOfTheAscendingNode,
     OrbitArgumentOfPeriapsis,
     OrbitInclination,
+
+    OrbitParameterCount,
 };
 
 struct OrbitalParameters {

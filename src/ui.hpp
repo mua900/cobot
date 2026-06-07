@@ -32,6 +32,10 @@ enum UiElementId {
     PlanetPanel,
 };
 
+struct UiElementInfo {
+    bool visible = false;
+};
+
 struct DragInfo {
     vec2 start = vec2();
     bool drag = false;
@@ -70,6 +74,20 @@ struct ImageButton {
 
     ImageButton() {}
     ImageButton(SDL_Texture* image, vec2 pos, vec2 sca, Color back) : image(image), position(pos), scale(sca), background(back) {}
+};
+
+struct ButtonGroup {
+    UiElementId id = {};
+    UiElementInfo info = {};
+    UserData user = {};
+    DArray<SDL_Texture*> texture = {};
+    vec2 button_scale = {};
+    vec2 position = {};
+    vec2 scale = {};
+    Color background = {};
+
+    ButtonGroup() {}
+    ButtonGroup(UiElementId ident, vec2 pos, vec2 sca, Color back) : id(ident), position(pos), scale(sca), background(back) {}
 };
 
 struct GapBuffer {
@@ -133,9 +151,12 @@ enum Text_Input_Target : u8 {
     NO_TARGET,
 };
 
+constexpr Color TextCursorColor (0x33, 0x56, 0x74, 0xaa);
+
 struct Text_Field
 {
     UiElementId id = {};
+    UiElementInfo info = {};
 
     Rectangle m_area = {};
     Color background = {};
@@ -448,17 +469,18 @@ enum ValueType {
 };
 
 struct ValueField {
+    Text text = {};
     int identifier = 0;  // user data
     ValueType type = {};
     union {
         String string;
         u64 integer;
         double number;
-        int selection;
+        int selection = 0;
     } value = {};
 
     ValueField() : value{} {}
-    ValueField(int ident, ValueType type) : identifier(ident), type(type), value{} {}
+    ValueField(Text text, int ident, ValueType type) : text(text), identifier(ident), type(type), value{} {}
 };
 
 struct ValuePanelTab {
@@ -609,6 +631,7 @@ struct UiState {
     DArray<ValuePanel> value_panel = {};
     DArray<ControlMenu> control = {};
     DArray<DiscreteSlider> discrete_slider = {};
+    DArray<ButtonGroup> button_group = {};
 
     TextInputTarget text_input_target = {};
     vec2 assumed_window_size = {};
@@ -622,6 +645,8 @@ struct UiState {
     Drop_Down_List* get_drop_down(UiElementId id);
     TextButton* get_button(UiElementId id);
     Label* get_label(UiElementId id);
+
+    int add_value_field(int value_panel, int tab, ValueField field);
 
     ~UiState();
 };

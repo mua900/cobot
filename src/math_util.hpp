@@ -237,8 +237,8 @@ struct Color {
     unsigned char b = 0;
     unsigned char a = 0;
     Color() {}
-    Color(unsigned char r, unsigned char g, unsigned char b) : r(r), g(g), b(b), a(0xff) {}
-    Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {}
+    constexpr Color(unsigned char r, unsigned char g, unsigned char b) : r(r), g(g), b(b), a(0xff) {}
+    constexpr Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {}
     Color(const ColorF& color);
 };
 

@@ -1147,15 +1147,14 @@ bool Application::init_solar_system_ui()
     planet_tab.field_height = 20;
     planet_tab.color = Color(0x44, 0x55, 0x33);
     planet_tab.tabIcon = Icon(orbitalParameterTab, Color(0x99, 0x55, 0x33));
-    planet_tab.fields.add(ValueField(OrbitSemiMajorAxis, ValueNumber));
-    planet_tab.fields.add(ValueField(OrbitEccentricity, ValueNumber));
-    planet_tab.fields.add(ValueField(OrbitTrueAnomaly, ValueNumber));
-    planet_tab.fields.add(ValueField(OrbitLongitudeOfTheAscendingNode, ValueNumber));
-    planet_tab.fields.add(ValueField(OrbitArgumentOfPeriapsis, ValueNumber));
-    planet_tab.fields.add(ValueField(OrbitInclination, ValueNumber));
 
-    planet_panel.tabs.add(planet_tab);
-    ui.value_panel.add(planet_panel);
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("SemiMajorAxis"), font, Color(0x99, 0x66, 0x77)), OrbitSemiMajorAxis, ValueNumber));
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("Eccentricity"), font, Color(0x99, 0x66, 0x77)), OrbitEccentricity, ValueNumber));
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("TrueAnomaly"), font, Color(0x99, 0x66, 0x77)), OrbitTrueAnomaly, ValueNumber));
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("LongitudeOfTheAscendingNode"), font, Color(0x99, 0x66, 0x77)), OrbitLongitudeOfTheAscendingNode, ValueNumber));
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, Color(0x99, 0x66, 0x77)), OrbitArgumentOfPeriapsis, ValueNumber));
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, Color(0x99, 0x66, 0x77)), OrbitInclination, ValueNumber));
+
 
     return true;
 }
@@ -1370,7 +1369,10 @@ void Application::draw_ui_state(const UiState& state)
 
     for (const Text_Field& field : state.text_field)
     {
-        render_text_field(field);
+        if (field.info.visible)
+        {
+            render_text_field(field);
+        }
     }
 
     for (const Drop_Down_List& list : state.drop_down)
@@ -1410,7 +1412,15 @@ void Application::draw_ui_state(const UiState& state)
 
     for (const ValuePanel& panel : state.value_panel)
     {
-        render_value_panel(panel);
+        render_value_panel(state, panel);
+    }
+    
+    for (const ButtonGroup& group : state.button_group)
+    {
+        if (group.info.visible)
+        {
+            render_button_group(group);
+        }
     }
 }
 
@@ -1491,10 +1501,35 @@ void Application::render_slider(Rectangle area, vec2 knob_scale, float value, Co
     }
 }
 
-void Application::render_value_panel(const ValuePanel& panel) const
+void Application::render_value_panel(const UiState& ui, const ValuePanel& panel) const
 {
     auto& tab = panel.tabs.get_ref(panel.activeTab);
     render_rectangle(panel.area, tab.color, true);
+
+    float height = 0;
+    for (ValueField& value : tab.fields)
+    {
+        vec2 text_scale = {};
+        SDL_GetTextureSize(value.text.texture, &text_scale.x, &text_scale.y);
+        render_texture(m_render.renderer, Rectangle(vec2(panel.area.x, panel.area.y - panel.area.h / 2 + height), text_scale), value.text.texture, true);
+        height += text_scale.y;
+
+        switch (value.type)
+        {
+            case ValueInteger: {
+                // fallthrough
+            }
+            case ValueNumber: {
+                // fallthrough
+            }
+            case ValueString: {
+                break;
+            }
+            case ValueSelection: {
+                break;
+            }
+        }
+    }
 
     for (int i = 0; i < panel.tabs.size(); i++) {
         Rectangle area = panel.get_tab_header_area(i);
@@ -1502,6 +1537,10 @@ void Application::render_value_panel(const ValuePanel& panel) const
     }
 }
 
+void Application::render_button_group(const ButtonGroup& group) const
+{
+
+}
 
 void Application::render_panel(const Panel& panel) const
 {
@@ -1559,35 +1598,25 @@ void Application::render_text_editor(const TextEditor& editor) const
 
 void Application::render_text_field(const Text_Field& text_field) const
 {
-    SDL_FRect tf_area = { text_field.m_area.x - text_field.m_area.w / 2, text_field.m_area.y - text_field.m_area.h / 2, text_field.m_area.w, text_field.m_area.h };
-    SDL_SetRenderDrawColor(m_render.renderer, COLOR_ARG(text_field.background));
-    SDL_RenderFillRect(m_render.renderer, &tf_area);
+    Rectangle area = text_field.m_area;
+    render_rectangle(area, text_field.background);
 
     SDL_Texture* text_texture = text_field.m_texture;
-    float texture_width;
-    float texture_height;
-    SDL_GetTextureSize(text_texture, &texture_width, &texture_height);
 
     if (text_texture)
     {
+        vec2 top_left = area.get_top_left();
+        vec2 text_scale = {};
+        SDL_GetTextureSize(text_texture, &text_scale.x, &text_scale.y);
+
         int line_count = text_field.m_line_count;
         float font_size = text_field.m_font_size;
+        draw_texture(m_render, area, text_texture);
 
-        SDL_FRect string_area = { tf_area.x, tf_area.y, texture_width, texture_height };
-        SDL_FRect texture_area = { 0, 0, texture_width, texture_height };
-        SDL_RenderTexture(m_render.renderer, text_texture, &texture_area, &string_area);
-
-        if (doing_text_input) {
-            const u8 cursorAlpha = 0xaa;
-            SDL_SetRenderDrawColor(m_render.renderer, 0x33, 0x56, 0x74, cursorAlpha);
-
-            float cursor_width = tf_area.w / 1000;
-            SDL_FRect cursor = SDL_FRect{ tf_area.x + text_field.m_cursor_pixel_x - cursor_width / 2,
-                                            tf_area.y + text_field.m_cursor_pixel_y,
-                                            cursor_width,
-                                            font_size };
-
-            SDL_RenderFillRect(m_render.renderer, &cursor);
+        if (doing_text_input)
+        {
+            float cursor_width = area.w / 1000;
+            render_rectangle(Rectangle(vec2(top_left.x + text_field.m_cursor_pixel_x - cursor_width / 2, top_left.y + text_field.m_cursor_pixel_y), vec2(cursor_width, font_size)), TextCursorColor);
         }
     }
 }
