@@ -400,6 +400,16 @@ void UiState::update_state(vec2 window_size, SDL_Renderer* renderer, const Asset
         ds.element_gap *= ds.vertical ? y_factor : x_factor;
     }
 
+    for (auto& vp : value_panel)
+    {
+        vp.area.x *= x_factor;
+        vp.area.y *= y_factor;
+        vp.area.w *= x_factor;
+        vp.area.h *= y_factor;
+        vp.fieldSize *= direction_is_horizontal(vp.direction) ? y_factor : x_factor;
+        vp.tabHeaderSize *= direction_is_horizontal(vp.direction) ? y_factor : x_factor;
+    }
+
     assumed_window_size = window_size;
 }
 

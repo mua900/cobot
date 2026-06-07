@@ -1148,12 +1148,14 @@ bool Application::init_solar_system_ui()
     planet_tab.color = Color(0x44, 0x55, 0x33);
     planet_tab.tabIcon = Icon(orbitalParameterTab, Color(0x99, 0x55, 0x33));
 
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("SemiMajorAxis"), font, Color(0x99, 0x66, 0x77)), OrbitSemiMajorAxis, ValueNumber));
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("Eccentricity"), font, Color(0x99, 0x66, 0x77)), OrbitEccentricity, ValueNumber));
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("TrueAnomaly"), font, Color(0x99, 0x66, 0x77)), OrbitTrueAnomaly, ValueNumber));
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("LongitudeOfTheAscendingNode"), font, Color(0x99, 0x66, 0x77)), OrbitLongitudeOfTheAscendingNode, ValueNumber));
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, Color(0x99, 0x66, 0x77)), OrbitArgumentOfPeriapsis, ValueNumber));
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, Color(0x99, 0x66, 0x77)), OrbitInclination, ValueNumber));
+    Color valueBackground (0x77, 0x66, 0x44);
+    Color valueText (0x33, 0x44, 0x88);
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("SemiMajorAxis"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitSemiMajorAxis, ValueNumber));
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("Eccentricity"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitEccentricity, ValueNumber));
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("TrueAnomaly"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitTrueAnomaly, ValueNumber));
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("LongitudeOfTheAscendingNode"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitLongitudeOfTheAscendingNode, ValueNumber));
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitArgumentOfPeriapsis, ValueNumber));
+    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitInclination, ValueNumber));
 
     planet_panel.tabs.add(planet_tab);
     ui.value_panel.add(planet_panel);
@@ -1509,6 +1511,7 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
     render_rectangle(panel.area, tab.color, true);
 
     float height = 0;
+    float margin = 5;
     for (ValueField& value : tab.fields)
     {
         vec2 text_scale = {};
@@ -1516,9 +1519,11 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
         float factor = panel.fieldSize / text_scale.y;
         text_scale.x *= factor;
         text_scale.y = panel.fieldSize;
-        render_texture(m_render.renderer, Rectangle(vec2(panel.area.x, panel.area.y - panel.area.h / 2 + height + text_scale.y / 2), text_scale), value.text.texture, true);
+        vec2 text_position(panel.area.x, panel.area.y - panel.area.h / 2 + height + text_scale.y / 2);
+        render_texture(m_render.renderer, Rectangle(text_position, text_scale), value.text.texture, true);
         height += text_scale.y;
 
+        float width = panel.area.w * 0.95;
         switch (value.type)
         {
             case ValueInteger: {
@@ -1528,12 +1533,35 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
                 // fallthrough
             }
             case ValueString: {
+                Text_Field& text_field = ui.text_field.get_ref(value.ui_element);
+                int line_count = text_field.m_line_count;
+                float font_size = text_field.m_font_size;
+                float tf_height = (line_count == 0) ? font_size : font_size * line_count;
+                vec2 tf_scale = vec2(width, tf_height);
+                vec2 tf_pos = vec2(text_position.x, height + tf_height / 2);
+                Rectangle area = Rectangle(tf_pos, tf_scale);
+                text_field.m_area = area;
+                if (line_count == 0)
+                {
+                    render_rectangle(area, text_field.background);
+                }
+                else {
+                    render_text_field(text_field);
+                }
+
+                height += area.h;
                 break;
             }
             case ValueSelection: {
+                ButtonGroup& group = ui.button_group.get_ref(value.ui_element);
+                group.position = vec2(text_position.x, height);
+                group.scale = vec2(width, group.button_scale.y * group.buttons.size());
+                render_button_group(group);
                 break;
             }
         }
+
+        height += margin;
     }
 
     for (int i = 0; i < panel.tabs.size(); i++) {
@@ -1544,7 +1572,17 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
 
 void Application::render_button_group(const ButtonGroup& group) const
 {
-
+    render_rectangle(Rectangle(group.position, group.scale), group.background);
+    vec2 top_left = group.position - group.scale / 2;
+    int numColumns = std::floor(group.scale.x / group.button_scale.x);
+    int row = 0;
+    int column = 0;
+    for (auto& texture : group.buttons)
+    {
+        draw_texture(m_render, Rectangle(top_left + vec2(column * group.button_scale.x, row * group.button_scale.y) + group.button_scale / 2, group.button_scale), texture);
+        column += 1;
+        row = (column == numColumns) ? row + 1 : row;
+    }
 }
 
 void Application::render_panel(const Panel& panel) const

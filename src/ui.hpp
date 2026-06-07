@@ -80,7 +80,7 @@ struct ButtonGroup {
     UiElementId id = {};
     UiElementInfo info = {};
     UserData user = {};
-    DArray<SDL_Texture*> texture = {};
+    DArray<SDL_Texture*> buttons = {};
     vec2 button_scale = {};
     vec2 position = {};
     vec2 scale = {};
@@ -178,6 +178,15 @@ struct Text_Field
     SDL_Texture* m_texture = nullptr;  // cached texture the text is rendered on, updated every text input event
 
     Text_Field() {}
+
+    // height -> empty height
+    Text_Field(AssetId font, float height, Color background_color, Color textColor)
+    {
+        m_font_size = height;
+        fontId = font;
+        background = background_color;
+        text_color = textColor;
+    }
 
     Text_Field(Rectangle area, AssetId font, Color background_color, Color textColor)
     {
@@ -470,6 +479,7 @@ enum ValueType {
 
 struct ValueField {
     Text text = {};
+    int ui_element = 0;
     int identifier = 0;  // user data
     ValueType type = {};
     union {
@@ -480,7 +490,7 @@ struct ValueField {
     } value = {};
 
     ValueField() : value{} {}
-    ValueField(Text text, int ident, ValueType type) : text(text), identifier(ident), type(type), value{} {}
+    ValueField(Text text, int ui, int ident, ValueType type) : text(text), ui_element(ui), identifier(ident), type(type), value{} {}
 };
 
 struct ValuePanelTab {

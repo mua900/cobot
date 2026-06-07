@@ -16,6 +16,9 @@ enum Direction {
     DirUp,
 };
 
+constexpr bool direction_is_vertical(Direction dir) { return dir == DirUp || dir == DirDown; }
+constexpr bool direction_is_horizontal(Direction dir) { return dir == DirLeft || dir == DirRight; }
+
 enum Axis {
     AXIS_X,
     AXIS_Y,
