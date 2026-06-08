@@ -1,7 +1,7 @@
 #ifndef _OPEN_SIMPLEX_H
 #define _OPEN_SIMPLEX_H
 
-// Adopted from https://github.com/KdotJPG/OpenSimplex2/blob/master/java/OpenSimplex2.java
+// Adapted from https://github.com/KdotJPG/OpenSimplex2/blob/master/java/OpenSimplex2.java
 
 #include <cstdint>
 typedef int64_t s64;

@@ -95,8 +95,21 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
 #endif
 
     SDL_GPUDevice* device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, false, nullptr);
+    if (!device)
+    {
+        return false;
+    }
 
-    SDL_Renderer* renderer = SDL_CreateGPURenderer(device, window);
+    SDL_ClaimWindowForGPUDevice(device, window);
+
+    SDL_PropertiesID rendererProps = SDL_CreateProperties();
+    SDL_SetPointerProperty(rendererProps, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
+    SDL_SetPointerProperty(rendererProps, SDL_PROP_RENDERER_CREATE_GPU_DEVICE_POINTER, device);
+    SDL_SetStringProperty(rendererProps, SDL_PROP_RENDERER_CREATE_NAME_STRING, SDL_GPU_RENDERER);
+    SDL_SetBooleanProperty(rendererProps, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, true);
+    SDL_SetBooleanProperty(rendererProps, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN, true);
+    
+    SDL_Renderer* renderer = SDL_CreateRendererWithProperties(rendererProps);
     if (!renderer)
     {
         SDL_Log("Failed to create renderer with SDL: %s\n", SDL_GetError());
@@ -147,15 +160,6 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
 
 bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment)
 {
-    SDL_GPURenderStateCreateInfo renderStateInfo = {};
-    renderStateInfo.fragment_shader = fragment;
-    SDL_GPURenderState* render_state = SDL_CreateGPURenderState(render->renderer, &renderStateInfo);
-    if (!render_state)
-    {
-        return false;
-    }
-    render->render_state = render_state;
-
     SDL_SetGPURenderState(render->renderer, nullptr);
 
     SDL_GPUVertexBufferDescription vertex_buffer_description[1] = {};

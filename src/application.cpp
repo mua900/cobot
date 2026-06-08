@@ -1070,6 +1070,28 @@ bool Application::init_render()
         return false;
     }
 
+    const char* render_state_shader_name[RenderStateCount] = {
+        "PlanetFrag"
+    };
+
+    for (int i = 0; i < RenderStateCount; i++)
+    {
+        AssetId shader = get_asset(String(render_state_shader_name[i]), m_catalog);
+        if (!shader.is_valid())
+        {
+            return false;
+        }
+        SDL_GPURenderStateCreateInfo create_info = {};
+        create_info.fragment_shader = m_catalog.get_shader(shader);
+        SDL_GPURenderState* render_state = SDL_CreateGPURenderState(m_render.renderer, &create_info);
+        if (!render_state)
+        {
+            SDL_Log(SDL_GetError());
+            return false;
+        }
+        m_render.render_states.add(render_state);
+    }
+
     return true;
 }
 

@@ -18,3 +18,6 @@ image folder Parts parts
 # shader file FragmentShader shader/binary/fragment.spv stage=fragment
 shader file VertexShader shader/binary/vertex.dxil      stage=vertex   nUniforms=1
 shader file FragmentShader shader/binary/fragment.dxil  stage=fragment
+
+# shader file PlanetFrag shader/binary/planet.spv stage=fragment
+shader file PlanetFrag shader/binary/planet.dxil stage=fragment

@@ -170,8 +170,10 @@ void draw_game_state(const RenderContext& context, const AssetCatalog& catalog, 
 void draw_game_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
     vec2 render_size = context.render_size;
-
     auto& system = game.starSystem;
+
+    // use shaders for the planets
+    SDL_SetGPURenderState(context.renderer, context.render_states.get_ref(RenderStatePlanet));
     
     vec2 center = render_size / 2;
     draw_circle(context, center, system.star.radius, ColorF(0.6, 0.5, 0.1));
@@ -185,6 +187,8 @@ void draw_game_star_system(const RenderContext& context, const AssetCatalog& cat
         zdistance = (zdistance + 1.0f) / 2;
         draw_circle(context, center + pos, planet.body.radius, ColorF(planet.color, zdistance));
     }
+
+    SDL_SetGPURenderState(context.renderer, nullptr);
 }
 
 void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game)

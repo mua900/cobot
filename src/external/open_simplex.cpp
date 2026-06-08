@@ -1,6 +1,6 @@
 #include "open_simplex.hpp"
 
-// Adopted from https://github.com/KdotJPG/OpenSimplex2/blob/master/java/OpenSimplex2.java
+// Adapted from https://github.com/KdotJPG/OpenSimplex2/blob/master/java/OpenSimplex2.java
 
 #define ARRAY_LENGTH(arr) (sizeof(arr) / sizeof(arr[0]))
 

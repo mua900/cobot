@@ -17,6 +17,11 @@ static const ColorF DEBUG_COLOR =  ColorF(0.6, 0.5, 0.4, 1.0);
 #endif
 #endif
 
+enum RenderStates {
+    RenderStatePlanet,
+    RenderStateCount,
+};
+
 using Texture = SDL_Texture;
 using Viewport = SDL_GPUViewport;
 
@@ -81,7 +86,7 @@ struct FrameContext {
 struct RenderContext {
     vec2 render_size = {};
     SDL_Renderer* renderer = nullptr;
-    SDL_GPURenderState* render_state = nullptr;
+    DArray<SDL_GPURenderState*> render_states = {};
 
     SDL_Texture* target_texture = nullptr;
     SDL_GPUTexture* render_target = nullptr;
