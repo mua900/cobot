@@ -59,9 +59,14 @@ struct Body {
     void determine_state_vector(double centralBodyMass);
 };
 
+enum PlanetId {
+    PlanetRed,
+    PlanetGreen,
+    PlanetBlue,
+};
+
 struct Planet {
-
-
+    PlanetId id = {};
     String name = {};
     ColorF color = {};
     Body body = {};

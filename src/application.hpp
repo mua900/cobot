@@ -24,14 +24,14 @@ enum ApplicationMode {
 enum MenuName {
     MenuMain,
     MenuSettings,
-    MenuMissionSelect,
+    MenuLoad,
 };
 
 enum UiId {
     UiMainMenu,
     UiSettings,
     UiEditor,
-    UiMissionSelect,
+    UiLoad,
     UiSolarSystem,
     UiGame,
     UiCount,
@@ -132,7 +132,7 @@ private:
 
     bool init_ui();
     bool init_game_ui();
-    bool init_mission_ui();
+    bool init_load_ui();
     bool init_editor_ui();
     bool init_solar_system_ui();
 
@@ -166,7 +166,7 @@ private:
 
     bool mouse_input_game();
     bool mouse_input_menu();
-    bool mouse_input_mission_select();
+    bool mouse_input_load();
     bool mouse_input_main_menu();
     bool mouse_input_settings();
     bool mouse_input_editor();
@@ -194,7 +194,6 @@ private:
     void render_text_field(const Text_Field& text_field) const;
     void render_text_editor(const TextEditor& editor) const;
     void render_dropdown(const Drop_Down_List& list) const;
-    void render_panel(const Panel& panel) const;
     void render_control_menu(const ControlMenu& menu) const;
     void render_discrete_slider(const DiscreteSlider& slider) const;
     void render_value_panel(const UiState& ui, const ValuePanel& panel) const;

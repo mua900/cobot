@@ -29,10 +29,11 @@ void idleFixedUpdate(GameState* game) {}
 
 void vehicleSimulationUpdate(GameState* game, TimeInfo time)
 {
+    Vehicle& vehicle = game->get_active_vehicle();
     double dts = time.deltaTimeSeconds;
-    game->vehicle.worldPosition += dts * game->vehicle.velocity;
+    vehicle.worldPosition += dts * vehicle.velocity;
 
-    for (auto& controller : game->vehicle.controller)
+    for (auto& controller : vehicle.controller)
     {
         Script& s = game->scripts.get_ref(controller.script);
         run_script(s);
@@ -57,6 +58,11 @@ Rectangle GameState::get_planet_screen_area(vec2 ws, int planet) const
     const Planet& p = starSystem.planets.get_ref(planet);
     vec2 pos = origin + p.body.position.xy();
     return Rectangle(pos, vec2(p.body.radius));
+}
+
+Vehicle& GameState::get_active_vehicle() const
+{
+    return vehicles.get_ref(active_vehicle);
 }
 
 bool GameState::load_part_images(AssetCatalog& catalog)
@@ -131,20 +137,22 @@ void draw_controller(const Controller& controller, VPartTransform parent, const 
 
 void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
+    Vehicle& vehicle = game.get_active_vehicle();
+
     switch (part.kind)
     {
         case PART_CHASIS: {
-            const Chasis& chasis = game.vehicle.chasis[part.index];
+            const Chasis& chasis = vehicle.chasis[part.index];
             draw_chasis(chasis, parent, context, catalog, game);
             break;
         }
         case PART_TIRE: {
-            const Tire& tire = game.vehicle.tire[part.index];
+            const Tire& tire = vehicle.tire[part.index];
             draw_tire(tire, parent, context, catalog, game);
             break;
         }
         case PART_CONTROLLER: {
-            const Controller& controller = game.vehicle.controller[part.index];
+            const Controller& controller = vehicle.controller[part.index];
             draw_controller(controller, parent, context, catalog, game);
             break;
         }
@@ -154,11 +162,12 @@ void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& 
 
 void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
-    for (int i = 0; i < game.vehicle.rootParts.size(); i++)
+    Vehicle& vehicle = game.get_active_vehicle();
+    for (int i = 0; i < vehicle.rootParts.size(); i++)
     {
-        VPartData part_data = game.vehicle.getPartData(game.vehicle.rootParts[i]);
-        part_data.transform.position += game.vehicle.worldPosition;
-        draw_vehicle_part(game.vehicle.rootParts[i], part_data.transform, context, catalog, game);
+        VPartData part_data = vehicle.getPartData(vehicle.rootParts[i]);
+        part_data.transform.position += vehicle.worldPosition;
+        draw_vehicle_part(vehicle.rootParts[i], part_data.transform, context, catalog, game);
     }
 }
 

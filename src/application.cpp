@@ -116,7 +116,8 @@ bool Application::init_game_state()
         return false;
     }
     */
-    game.vehicle = get_default_vehicle();
+    game.vehicles.add(get_default_vehicle());
+    game.active_vehicle = 0;
     game.starSystem = get_default_star_system();
     game.scripts.add(Script(init_lua()));
 
@@ -195,8 +196,8 @@ UiState& Application::get_active_ui()
                     return m_ui[UiMainMenu];
                 case MenuSettings:
                     return m_ui[UiSettings];
-                case MenuMissionSelect:
-                    return m_ui[UiMissionSelect];
+                case MenuLoad:
+                    return m_ui[UiLoad];
                 default:
                     panic("Invalid menu type");
             }
@@ -308,7 +309,7 @@ bool Application::keyboard_input_up(SDL_KeyboardEvent keyboard)
     {
         case SDL_SCANCODE_DOWN: // fallthrough
         case SDL_SCANCODE_UP: {
-            game.vehicle.velocity.y = 0;
+            game.get_active_vehicle().velocity.y = 0;
             return true;
         }
     }
@@ -343,11 +344,11 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             return true;
         }
         case SDL_SCANCODE_UP: {
-            game.vehicle.velocity.y = -10;
+            game.get_active_vehicle().velocity.y = -10;
             return true;
         }
         case SDL_SCANCODE_DOWN: {
-            game.vehicle.velocity.y = 10;
+            game.get_active_vehicle().velocity.y = 10;
             return true;
         }
         case SDL_SCANCODE_RETURN:
@@ -518,30 +519,6 @@ bool Application::mouse_input_editor()
 {
     UiState& ui = m_ui[UiEditor];
     vec2 mouse_pos = m_input.mouse.pos;
-
-    if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) {
-        for (Panel& panel : ui.panels) {
-            if (panel.area.contains_top_left(mouse_pos))
-            {
-                PanelTab& tab = panel.tabs.get_ref(panel.activeTab);
-                for (int i = 0; i < tab.icons.size(); i++) {
-                    Rectangle area = panel.get_icon_area(i);
-                    if (area.contains_centered(mouse_pos)) {
-                        
-                    }
-                }
-
-                return true;
-            }
-
-            for (int i = 0; i < panel.tabs.size(); i++) {
-                if (panel.get_tab_header_area(i).contains_centered(mouse_pos)) {
-                    panel.activeTab = i;
-                    return true;
-                }
-            }
-        }
-    }
 
     return false;
 }
@@ -815,9 +792,9 @@ bool Application::mouse_input_game()
             }
         }
 
-        if (!game.vehicle.volume.contains_centered(mouse_pos))
+        if (!game.get_active_vehicle().volume.contains_centered(mouse_pos))
         {
-            PartId part = game.vehicle.getPartAt(mouse_pos);
+            PartId part = game.get_active_vehicle().getPartAt(mouse_pos);
             if (part.is_null())
             {
                 for (auto& menu : ui.control) {
@@ -828,9 +805,9 @@ bool Application::mouse_input_game()
     }
     else if (m_input.mouse.buttonFlags & MOUSE_RIGHT_MASK)
     {
-        if (game.vehicle.volume.contains_centered(mouse_pos))
+        if (game.get_active_vehicle().volume.contains_centered(mouse_pos))
         {
-            PartId part = game.vehicle.getPartAt(mouse_pos);
+            PartId part = game.get_active_vehicle().getPartAt(mouse_pos);
             if (part.is_valid())
             {
                 auto& menu = ui.control.get_ref(part.kind);
@@ -848,14 +825,14 @@ bool Application::mouse_input_menu()
     switch (m_menu) {
         case MenuMain:          return mouse_input_main_menu();
         case MenuSettings:      return mouse_input_settings();
-        case MenuMissionSelect: return mouse_input_mission_select();
+        case MenuLoad: return mouse_input_load();
         default: panic("Invalid menu");
     }
 }
 
-bool Application::mouse_input_mission_select() {
+bool Application::mouse_input_load() {
     vec2 mouse_pos = m_input.mouse.pos;
-    UiState& ui = m_ui[UiMissionSelect];
+    UiState& ui = m_ui[UiLoad];
 
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
     {
@@ -868,7 +845,7 @@ bool Application::mouse_input_mission_select() {
                         switch_menu(MenuMain);
                         break;
                     }
-                    case MissionButton: {
+                    case LoadButton: {
                         switch_modes(ModeSolarSystem);
                         break;
                     }
@@ -892,7 +869,7 @@ bool Application::mouse_input_main_menu()
             if (area.contains_centered(mouse_pos)) {
                 switch (button.id) {
                 case PlayButton: {
-                    switch_menu(MenuMissionSelect);
+                    switch_menu(MenuLoad);
                     break;
                 }
                 case SettingsButton: {
@@ -1129,15 +1106,15 @@ bool Application::init_ui()
     Color background = Color(0x33, 0x55, 0x66);
 
     // main menu
-    add_button(UiMainMenu, PlayButton, TextButton(create_text(m_render.renderer, String("Play"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.2), button_scale, background));
-    add_button(UiMainMenu, SettingsButton, TextButton(create_text(m_render.renderer, String("Settings"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.5), button_scale, background));
-    add_button(UiMainMenu, QuitButton, TextButton(create_text(m_render.renderer, String("Quit"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.8), button_scale, background));
+    add_button(UiMainMenu, PlayButton, TextButton(create_text(m_render.renderer, String("Play"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.2), button_scale, background, true));
+    add_button(UiMainMenu, SettingsButton, TextButton(create_text(m_render.renderer, String("Settings"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.5), button_scale, background, true));
+    add_button(UiMainMenu, QuitButton, TextButton(create_text(m_render.renderer, String("Quit"), font, button_color), vec2(ws.x * 0.5, ws.y * 0.8), button_scale, background, true));
 
     // settings
-    add_button(UiSettings, BackButton, TextButton(create_text(m_render.renderer, String("Back"), font, button_color), ws * 0.1, ws * 0.1, background));
+    add_button(UiSettings, BackButton, TextButton(create_text(m_render.renderer, String("Back"), font, button_color), ws * 0.1, ws * 0.1, background, true));
 
     if (!init_game_ui()) return false;
-    if (!init_mission_ui()) return false;
+    if (!init_load_ui()) return false;
     if (!init_editor_ui()) return false;
     if (!init_solar_system_ui()) return false;
 
@@ -1152,7 +1129,7 @@ bool Application::init_solar_system_ui()
     Font font = m_catalog.get_font(m_font);
     Color button_color = Color(0x66, 0x33, 0x22);
     Color background = Color(0x44, 0x66, 0x22);
-    add_button(UiSolarSystem, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background));
+    add_button(UiSolarSystem, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background, true));
 
     // 1e4, 1e5, 1e6
     DiscreteSlider timescaleControl (TimeScale, vec2(ws.x / 2, 50), vec2(40, 50), 3,
@@ -1186,22 +1163,28 @@ bool Application::init_solar_system_ui()
     SDL_Texture* orbitalParameterTab = m_catalog.get_image(orbitalTabId);
 
     ValuePanel planet_panel (PlanetPanel, Rectangle(ws.x * 0.9, ws.y * 0.5, ws.x * 0.2, ws.y), 25, 50, DirLeft);
-    ValuePanelTab planet_tab = {};
-    planet_tab.field_height = 20;
-    planet_tab.color = Color(0x44, 0x55, 0x33);
-    planet_tab.tabIcon = Icon(orbitalParameterTab, Color(0x99, 0x55, 0x33));
+    ValuePanelTab orbital_parameter_tab = {};
+    orbital_parameter_tab.field_height = 20;
+    orbital_parameter_tab.color = Color(0x44, 0x55, 0x33);
+    orbital_parameter_tab.tabIcon = Icon(orbitalParameterTab, Color(0x99, 0x55, 0x33));
 
     Color valueBackground (0x77, 0x66, 0x44);
     Color valueText (0x33, 0x44, 0x88);
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("SemiMajorAxis"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitSemiMajorAxis, ValueNumber));
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("Eccentricity"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitEccentricity, ValueNumber));
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("TrueAnomaly"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitTrueAnomaly, ValueNumber));
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("LongitudeOfTheAscendingNode"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitLongitudeOfTheAscendingNode, ValueNumber));
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitArgumentOfPeriapsis, ValueNumber));
-    planet_tab.fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitInclination, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("SemiMajorAxis"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitSemiMajorAxis, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("Eccentricity"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitEccentricity, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("TrueAnomaly"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitTrueAnomaly, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("LongitudeOfTheAscendingNode"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitLongitudeOfTheAscendingNode, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitArgumentOfPeriapsis, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitInclination, ValueNumber));
 
-    planet_panel.tabs.add(planet_tab);
+    planet_panel.tabs.add(orbital_parameter_tab);
     ui.value_panel.add(planet_panel);
+
+    Text launch_text = create_text(m_render.renderer, String("Launch"), font, Color(0x66, 0x44, 0x44));
+    TextButton launch (launch_text, vec2(ws.x * 0.1, ws.y * 0.9), vec2(ws.x * 0.1, ws.y * 0.1), Color(0x22, 0xAA, 0x22), false);
+    launch.id = LaunchMissionButton;
+    launch.info.visible = false;
+    ui.button.add(launch);
 
     return true;
 }
@@ -1214,7 +1197,7 @@ bool Application::init_game_ui() {
     Color button_color = Color(0x77, 0x55, 0x55);
     Color background = Color(0x33, 0x55, 0x66);
 
-    add_button(UiGame, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), editor_font, button_color), ws * 0.05, ws * 0.1, background));
+    add_button(UiGame, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), editor_font, button_color), ws * 0.05, ws * 0.1, background, true));
 
     Color controlMenuButtonColor = Color(0x44, 0x66, 0x77);
     ControlMenu menus[PART_KIND_COUNT] = {};
@@ -1234,22 +1217,22 @@ bool Application::init_game_ui() {
     return true;
 }
 
-bool Application::init_mission_ui() {
+bool Application::init_load_ui() {
     vec2 ws = get_window_size();
     Font font = m_catalog.get_font(m_editor_font);
     Color button_color = Color(0x77, 0x55, 0x55);
     Color background = Color(0x33, 0x55, 0x66);
     
-    add_button(UiMissionSelect, BackButton, TextButton(create_text(m_render.renderer, String("Back"), m_catalog.get_font(m_font), button_color), ws * 0.05, ws * 0.1, background));
+    add_button(UiLoad, BackButton, TextButton(create_text(m_render.renderer, String("Back"), m_catalog.get_font(m_font), button_color), ws * 0.05, ws * 0.1, background));
     
     float buttonY = ws.y * 0.2;
     float buttonX = ws.x * 0.1;
     vec2 buttonScale = vec2(ws.x * 0.1, ws.y * 0.1);
     Color missionBackground = Color(0x44, 0x55, 0x55);
     Color missionTextColor = Color(0x66, 0x33, 0x77);
-    TextButton testMission = TextButton(create_text(m_render.renderer, String("Test Mission"), m_catalog.get_font(m_font), missionTextColor), vec2(buttonX, buttonY), buttonScale, missionBackground);
-    testMission.data.number = 0;  // the id of the mission this represents
-    add_button(UiMissionSelect, MissionButton, testMission);
+    TextButton testSave = TextButton(create_text(m_render.renderer, String("Test Save"), m_catalog.get_font(m_font), missionTextColor), vec2(buttonX, buttonY), buttonScale, missionBackground);
+    testSave.data.number = 0;  // the id of the mission this represents
+    add_button(UiLoad, LoadButton, testSave);
 
     return true;
 }
@@ -1260,7 +1243,7 @@ bool Application::init_editor_ui() {
 
     Rectangle panel_area = { 0, 0, ws.x * 0.3f, ws.y };
     Color panel_color = Color(0x33, 0x44, 0x44);
-    Panel partsPanel (PartsPanel, panel_area, 32, 48, 16);
+    // @todo readd parts panel
 
     Color iconColor = Color(0x77, 0x33, 0x44);
     Color tabIconColor = Color(0x33, 0x66, 0x44);
@@ -1282,12 +1265,6 @@ bool Application::init_editor_ui() {
     Icon controllerIcon = Icon(m_catalog.get_image(controllerIconId), tabIconColor);
     DArray<IconButton> controllerTabIcons;
     if (!load_controller_icons(controllerTabIcons, iconColor, m_catalog)) return false;
-
-    partsPanel.tabs.add(PanelTab(tireIcon, tireTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(chasisIcon, chasisTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(controllerIcon, controllerTabIcons, panel_color));
-
-    ui.panels.add(partsPanel);
 
     return true;
 }
@@ -1429,22 +1406,23 @@ void Application::draw_ui_state(const UiState& state)
 
     for (const TextButton& button : state.button)
     {
-        render_textured_rectangle(m_render.renderer, Rectangle(button.position, button.scale), button.text.texture, button.background, true);
+        if (button.info.visible)
+        {
+            render_textured_rectangle(m_render.renderer, Rectangle(button.position, button.scale), button.text.texture, button.background, true);
+        }
     }
 
     for (const ImageButton& button : state.image_button)
     {
-        render_textured_rectangle(m_render.renderer, Rectangle(button.position, button.scale), button.image, button.background, true);
+        if (button.info.visible)
+        {
+            render_textured_rectangle(m_render.renderer, Rectangle(button.position, button.scale), button.image, button.background, true);
+        }
     }
 
     for (const Label& label : state.label)
     {
         render_textured_rectangle(m_render.renderer, Rectangle(label.position, label.scale), label.text.texture, label.background, false);
-    }
-
-    for (const Panel& panel : state.panels)
-    {
-        render_panel(panel);
     }
 
     for (const ControlMenu& menu : state.control)
@@ -1628,24 +1606,6 @@ void Application::render_button_group(const ButtonGroup& group) const
     }
 }
 
-void Application::render_panel(const Panel& panel) const
-{
-    auto& tab = panel.tabs.get_ref(panel.activeTab);
-    render_rectangle(panel.area, tab.color, false);
-
-    const float margin = 16;
-    const float iconSize = 32;
-    for (int i = 0; i < tab.icons.size(); i++) {
-        Rectangle area = panel.get_icon_area(i);
-        render_textured_rectangle(m_render.renderer, area, tab.icons.get(i).icon.texture, tab.icons.get(i).icon.background, true, false);
-    }
-
-    for (int i = 0; i < panel.tabs.size(); i++) {
-        Rectangle area = panel.get_tab_header_area(i);
-        render_textured_rectangle(m_render.renderer, area, panel.tabs.get(i).tabIcon.texture, panel.tabs.get(i).tabIcon.background, true);
-    }
-}
-
 void Application::render_control_menu(const ControlMenu& menu) const
 {
     if (menu.visible)
@@ -1697,7 +1657,13 @@ void Application::render_text_field(const Text_Field& text_field) const
 
         int line_count = text_field.m_line_count;
         float font_size = text_field.m_font_size;
-        draw_texture(m_render, Rectangle(top_left, vec2(area.w, area.h)), text_texture);
+
+        SDL_Rect clip = { area.x - area.w / 2, area.y - area.h / 2, area.w, area.h };
+        SDL_SetRenderClipRect(m_render.renderer, &clip);
+
+        draw_texture(m_render, Rectangle(top_left, text_scale), text_texture);
+
+        SDL_SetRenderClipRect(m_render.renderer, nullptr);
 
         if (doing_text_input)
         {

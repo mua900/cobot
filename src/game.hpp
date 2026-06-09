@@ -13,6 +13,7 @@
 #include "mission.hpp"
 #include "space.hpp"
 
+// @todo
 struct Camera {
     vec2 position = {};
     float zoom = 0;
@@ -33,15 +34,16 @@ struct UpdateState {
 
 struct GameState {
     Camera camera = {};
-    Vehicle vehicle = {};
-    Map map = {};
-    Mission mission = {};
+    int active_vehicle = 0;
+    DArray<Vehicle> vehicles = {};
+    DArray<Mission> mission = {};
     StarSystem starSystem = {};
     DArray<Script> scripts = {};
 
     AssetId partImages [PART_KIND_COUNT][MaxPartCount] = {};
     UpdateState* updateState = nullptr;
 
+    Vehicle& get_active_vehicle() const;
     void update(TimeInfo time);
     bool load_part_images(AssetCatalog& catalog);
     Rectangle get_planet_screen_area(vec2 ws, int planet) const;

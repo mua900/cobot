@@ -160,6 +160,8 @@ struct VehiclePart {
     VehiclePart(Controller* c) : kind(PART_CONTROLLER), controller(c) {}
 };
 
+using VehicleId = u16;
+
 struct Vehicle {
     vec2 worldPosition = {};
     vec2 velocity = {};

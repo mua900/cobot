@@ -26,14 +26,18 @@ enum UiElementId {
     BackButton,
     MainEditor,
     PartsPanel,
-    MissionButton,
+    LoadButton,
     TimeScale,
     LaunchButton,
     PlanetPanel,
+    LaunchMissionButton,
 };
 
 struct UiElementInfo {
     bool visible = false;
+
+    UiElementInfo() {}
+    UiElementInfo(bool vis) : visible(vis) {}
 };
 
 struct DragInfo {
@@ -54,6 +58,7 @@ struct Label {
 
 struct TextButton {
     UiElementId id = {};
+    UiElementInfo info = {};
     UserData data = {};
     Text text = {};
     vec2 position = {};
@@ -61,11 +66,12 @@ struct TextButton {
     Color background = {};
 
     TextButton() {}
-    TextButton(Text p_text, vec2 pos, vec2 sca, Color back) : text(p_text), position(pos), scale(sca), background(back) {}
+    TextButton(Text p_text, vec2 pos, vec2 sca, Color back, bool visible = true) : info(visible), text(p_text), position(pos), scale(sca), background(back) {}
 };
 
 struct ImageButton {
     UiElementId id = {};
+    UiElementInfo info = {};
     UserData data = {};
     SDL_Texture* image = {};
     vec2 position = {};
@@ -73,7 +79,7 @@ struct ImageButton {
     Color background = {};
 
     ImageButton() {}
-    ImageButton(SDL_Texture* image, vec2 pos, vec2 sca, Color back) : image(image), position(pos), scale(sca), background(back) {}
+    ImageButton(SDL_Texture* image, vec2 pos, vec2 sca, Color back, bool visible = true) : info(visible), image(image), position(pos), scale(sca), background(back) {}
 };
 
 struct ButtonGroup {
@@ -538,31 +544,6 @@ struct ValuePanel {
     Rectangle get_tab_header_area(int index) const;
 };
 
-struct PanelTab {
-    Icon tabIcon = {};
-    DArray<IconButton> icons = {};
-    Color color = {};
-
-    PanelTab() {}
-    PanelTab(Icon tab, DArray<IconButton> icons, Color color) : tabIcon(tab), icons(icons), color(color) {}
-};
-
-struct Panel {
-    UiElementId id = {};
-    Rectangle area = {};
-    int activeTab = 0;
-    float tabHeaderSize = 0;
-    float iconSize = 0;
-    float iconMargin = 0;
-    DArray<PanelTab> tabs = {};
-
-    Panel() {}
-    Panel(UiElementId id, Rectangle area, float headerSize, float icoSize, float margin) : id(id), area(area), tabHeaderSize(headerSize), iconSize(icoSize), iconMargin(margin) {}
-
-    Rectangle get_icon_area(int index) const;
-    Rectangle get_tab_header_area(int index) const;
-};
-
 struct ControlMenu {
     DragInfo drag = {};
     vec2* anchorPosition = nullptr;
@@ -655,7 +636,6 @@ struct UiState {
     DArray<TextButton> button = {};
     DArray<ImageButton> image_button = {};
     DArray<Label> label = {};
-    DArray<Panel> panels = {};
     DArray<ValuePanel> value_panel = {};
     DArray<ControlMenu> control = {};
     DArray<DiscreteSlider> discrete_slider = {};

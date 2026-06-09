@@ -375,14 +375,6 @@ void UiState::update_state(vec2 window_size, SDL_Renderer* renderer, const Asset
         lbl.scale.y *= y_factor;
     }
 
-    for (auto& p : panels)
-    {
-        p.area.x *= x_factor;
-        p.area.y *= y_factor;
-        p.area.w *= x_factor;
-        p.area.h *= y_factor;
-    }
-
     for (auto& c : control)
     {
         c.position.x *= x_factor;
@@ -566,28 +558,6 @@ Rectangle ValuePanel::get_tab_header_area(int index) const
     else {
         return Rectangle();
     }
-}
-
-Rectangle Panel::get_icon_area(int index) const {
-    ASSERT(index < tabs.get(activeTab).icons.size());
-
-    float length_per_icon = iconSize + iconMargin;
-    int rowCount = area.h / length_per_icon;
-    int row = index % rowCount;
-    int column = index / rowCount;
-    return Rectangle(area.get_position() + vec2(column, row) * length_per_icon,
-                     vec2(iconSize));
-}
-
-Rectangle Panel::get_tab_header_area(int index) const {
-    ASSERT(index < tabs.size());
-
-    int rowCount = area.h / (tabHeaderSize * 2);
-    int row = index % rowCount;
-    int column = index / rowCount;
-    return Rectangle(area.x + area.w + tabHeaderSize / 2 + column * tabHeaderSize,
-                     area.y + tabHeaderSize / 2 + row * tabHeaderSize * 2,
-                     tabHeaderSize, tabHeaderSize);
 }
 
 Rectangle DiscreteSlider::get_bounds() const
