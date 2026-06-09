@@ -445,6 +445,12 @@ int String_Builder::clear_and_append(String s) {
     return s.size;
 }
 
+int String_Builder::clear_and_append_float(float n) {
+    clear();
+    return append_float(n);
+}
+
+
 int String_Builder::append_many(String* strings, int n) {
     int total_length = 0;
     for (int i = 0; i < n; i++) {

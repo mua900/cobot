@@ -617,11 +617,32 @@ bool Application::mouse_input_solar_system()
         bool found = false;
         for (int i = 0; i < game.starSystem.planets.size(); i++)
         {
+            Planet& planet = game.starSystem.planets[i];
             Rectangle area = game.get_planet_screen_area(ws, i);
             if (area.contains_centered(mouse_pos))
             {
                 gameInfo.selectedPlanet = i;
                 found = true;
+
+                String_Builder builder = {};
+
+                ValuePanel* panel = ui.get_value_panel(PlanetPanel);
+                ValuePanelTab& tab = panel->tabs.get_ref(PlanetPanelTabOrbit);
+                Font font = m_catalog.get_font(ui.text_field.get_ref(tab.fields.get_ref(OrbitSemiMajorAxis).ui_element).fontId);
+                Color color = ui.text_field.get_ref(tab.fields.get_ref(OrbitSemiMajorAxis).ui_element).text_color;
+                builder.append_float(planet.body.parameters.semiMajorAxis);
+                ui.text_field.get_ref(tab.fields.get_ref(OrbitSemiMajorAxis).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+                builder.clear_and_append_float(planet.body.parameters.eccentricity);
+                ui.text_field.get_ref(tab.fields.get_ref(OrbitEccentricity).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+                builder.clear_and_append_float(planet.body.parameters.inclination);
+                ui.text_field.get_ref(tab.fields.get_ref(OrbitInclination).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+                builder.clear_and_append_float(planet.body.parameters.argumentOfPeriapsis);
+                ui.text_field.get_ref(tab.fields.get_ref(OrbitArgumentOfPeriapsis).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+                builder.clear_and_append_float(planet.body.parameters.longitudeOfAscendingNode);
+                ui.text_field.get_ref(tab.fields.get_ref(OrbitLongitudeOfTheAscendingNode).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+                builder.clear_and_append_float(planet.body.parameters.trueAnomaly);
+                ui.text_field.get_ref(tab.fields.get_ref(OrbitTrueAnomaly).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+
                 break;
             }
         }
@@ -1537,12 +1558,12 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
     for (ValueField& value : tab.fields)
     {
         vec2 text_scale = {};
-        SDL_GetTextureSize(value.text.texture, &text_scale.x, &text_scale.y);
+        SDL_GetTextureSize(value.name.texture, &text_scale.x, &text_scale.y);
         float factor = panel.fieldSize / text_scale.y;
         text_scale.x *= factor;
         text_scale.y = panel.fieldSize;
         vec2 text_position(panel.area.x, panel.area.y - panel.area.h / 2 + height + text_scale.y / 2);
-        render_texture(m_render.renderer, Rectangle(text_position, text_scale), value.text.texture, true);
+        render_texture(m_render.renderer, Rectangle(text_position, text_scale), value.name.texture, true);
         height += text_scale.y;
 
         float width = panel.area.w * 0.95;
@@ -1676,7 +1697,7 @@ void Application::render_text_field(const Text_Field& text_field) const
 
         int line_count = text_field.m_line_count;
         float font_size = text_field.m_font_size;
-        draw_texture(m_render, area, text_texture);
+        draw_texture(m_render, Rectangle(top_left, vec2(area.w, area.h)), text_texture);
 
         if (doing_text_input)
         {

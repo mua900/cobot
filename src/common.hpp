@@ -323,6 +323,7 @@ struct String_Builder {
     void remove(int amount);  // remove the last n characters from the buffer
     void remove_slice(int start, int end);
     int clear_and_append(String s);
+    int clear_and_append_float(float n);
     int append_many(String* strings, int n);
     void free_buffer();
     void clear();

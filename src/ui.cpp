@@ -528,6 +528,17 @@ Label* UiState::get_label(UiElementId id) {
     return nullptr;
 }
 
+ValuePanel* UiState::get_value_panel(UiElementId id)
+{
+    for (auto& element : value_panel)
+    {
+        if (element.id == id)
+        {
+            return &element;
+        }
+    }
+}
+
 Rectangle ValuePanel::get_tab_header_area(int index) const
 {
     ASSERT(index < tabs.size());

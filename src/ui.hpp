@@ -213,6 +213,18 @@ struct Text_Field
         return m_text.to_string();
     }
 
+    bool set_and_render_text(SDL_Renderer* renderer, Font font, String s, bool wrapped)
+    {
+        set_string(s);
+        return update_text(renderer, font, wrapped);
+    }
+
+    void set_string(String s)
+    {
+        clear();
+        m_buffer.append(s, 0);
+    }
+
     void append_string(String s)
     {
         if (m_selection_start != m_selection_end)
@@ -478,7 +490,7 @@ enum ValueType {
 };
 
 struct ValueField {
-    Text text = {};
+    Text name = {};
     int ui_element = 0;
     int identifier = 0;  // user data
     ValueType type = {};
@@ -490,7 +502,11 @@ struct ValueField {
     } value = {};
 
     ValueField() : value{} {}
-    ValueField(Text text, int ui, int ident, ValueType type) : text(text), ui_element(ui), identifier(ident), type(type), value{} {}
+    ValueField(Text text, int ui, int ident, ValueType type) : name(text), ui_element(ui), identifier(ident), type(type), value{} {}
+};
+
+enum PlanetPanelTabs {
+    PlanetPanelTabOrbit = 0,
 };
 
 struct ValuePanelTab {
@@ -657,8 +673,7 @@ struct UiState {
     Drop_Down_List* get_drop_down(UiElementId id);
     TextButton* get_button(UiElementId id);
     Label* get_label(UiElementId id);
-
-    int add_value_field(int value_panel, int tab, ValueField field);
+    ValuePanel* get_value_panel(UiElementId id);
 
     ~UiState();
 };
