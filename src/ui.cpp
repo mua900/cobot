@@ -531,7 +531,7 @@ ValuePanel* UiState::get_value_panel(UiElementId id)
     }
 }
 
-Rectangle ValuePanel::get_text_area(int tabIndex, int fieldIndex) const
+Rectangle ValuePanel::get_field_title_area(int tabIndex, int fieldIndex) const
 {
     ValuePanelTab& tab = tabs.get_ref(tabIndex);
     ValueField& field = tab.fields.get_ref(fieldIndex);

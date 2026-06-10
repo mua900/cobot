@@ -606,8 +606,17 @@ bool Application::mouse_input_solar_system()
 
             ValuePanelTab& tab = panel->tabs.get_ref(panel->activeTab);
             float height = 0;
-            for (auto& field : tab.fields)
+            for (int i = 0; i < tab.fields.size(); i++)
             {
+                ValueField& field = tab.fields[i];
+                Rectangle title_area = panel->get_field_title_area(panel->activeTab, i);
+                title_area.y += height;
+                height += title_area.h;
+
+                Rectangle area = panel->get_field_area(panel->activeTab, i, &get_active_ui());
+                area.y += height;
+                height += area.h;
+
                 switch (field.type)
                 {
                     case ValueInteger: {
@@ -617,12 +626,31 @@ bool Application::mouse_input_solar_system()
                         // fallthrough
                     }
                     case ValueString: {
+                        if (area.contains_centered(mouse_pos))
+                        {
+                            // @todo text field
+                        }                        
                         break;
                     }
                     case ValueSelection: {
+                        if (area.contains_centered(mouse_pos))
+                        {
+                            // @todo button group
+                        }
                         break;
                     }
                     case ValueButton: {
+                        if (title_area.contains_centered(mouse_pos))
+                        {
+                            switch (field.identifier)
+                            {
+                                case AddMission:
+                                {
+                                    // @todo
+                                    break;
+                                }
+                            }
+                        }
                         break;
                     }
                 }
@@ -1234,7 +1262,7 @@ bool Application::init_solar_system_ui()
     orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitArgumentOfPeriapsis, ValueNumber));
     orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitInclination, ValueNumber));
 
-    missions_tab.fields.add(ValueField(create_text(m_render.renderer, String("Launch Mission"), font, Color(0xAA, 0xAA, 0xDD)), 0, AddMission, ValueButton));
+    missions_tab.fields.add(ValueField(create_text(m_render.renderer, String("Add Mission"), font, Color(0xAA, 0xAA, 0xDD)), 0, AddMission, ValueButton));
 
     planet_panel.tabs.add(orbital_parameter_tab);
     planet_panel.tabs.add(missions_tab);
@@ -1596,7 +1624,7 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
     {
         ValueField& value = tab.fields[i];
 
-        Rectangle text_area = panel.get_text_area(panel.activeTab, i);
+        Rectangle text_area = panel.get_field_title_area(panel.activeTab, i);
         text_area.y += height;
         height += text_area.h;
 

@@ -550,7 +550,7 @@ struct ValuePanel {
     Rectangle get_tab_header_area(int index) const;
     float get_field_width() const { return area.w * 0.95; }
     Rectangle get_field_area(int tab, int field, const UiState* ui) const;
-    Rectangle get_text_area(int tab, int field) const;
+    Rectangle get_field_title_area(int tab, int field) const;
 };
 
 struct ControlMenu {
