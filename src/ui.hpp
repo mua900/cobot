@@ -34,6 +34,8 @@ enum UiElementId {
     LaunchButton,
     PlanetPanel,
     AddMission,
+    VehicleList,
+    PlanetList,
 };
 
 struct UiElementInfo {
@@ -342,7 +344,7 @@ struct TextEditor {
     float title_height = 0;
     Color title_color = Color();  // color of the title text
     Color title_bar_color = Color();
-    
+
     Icon icon1 = {};
     Icon icon2 = {};
     Icon icon3 = {};
@@ -470,6 +472,21 @@ struct Drop_Down_List {
         return options.get(index).index;
     }
 
+    Rectangle get_area() const
+    {
+        if (open) {
+            int count = options.size();
+            return Rectangle(pos.x, pos.y + (float(count) / 2) * scale.y, scale.x, scale.y * count);
+        }
+        else {
+            return Rectangle(pos, scale);
+        }
+    }
+
+    Rectangle get_option_area(int i) const {
+        return Rectangle(pos.x, pos.y + scale.y * (i+1), scale.x, scale.y);
+    }
+
     void remove_option(int index) {
         if (index == selected)
         {
@@ -479,11 +496,20 @@ struct Drop_Down_List {
         options.remove_shift(index);
     }
 
+    void clear()
+    {
+        selected = DROP_DOWN_LIST_SELECTED_SENTINEL;
+        title.clear();
+        options.reset();
+        open = false;
+    }
+
     Drop_Down_List() {}
     Drop_Down_List(vec2 p_pos, vec2 p_scale) : pos(p_pos), scale(p_scale) {}
-    ~Drop_Down_List() {
+
+    void reset() {
         title.clear();
-        for (auto entry : options)
+        for (auto& entry : options)
         {
             entry.label.clear();
         }

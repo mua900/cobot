@@ -220,6 +220,8 @@ Vehicle get_default_vehicle()
 {
     Vehicle vehicle = {};
 
+    vehicle.name = String("Default");
+
     vehicle.worldPosition = vec2(600, 300);
     vehicle.volume = Rectangle(vehicle.worldPosition, vec2());
 

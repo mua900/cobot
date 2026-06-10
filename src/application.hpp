@@ -25,15 +25,20 @@ enum MenuName {
     MenuMain,
     MenuSettings,
     MenuLoad,
+    MenuMissionEditor,
+
+    MenuCount,
 };
 
 enum UiId {
     UiMainMenu,
     UiSettings,
+    UiMissionEditor,
     UiEditor,
     UiLoad,
     UiSolarSystem,
     UiGame,
+
     UiCount,
 };
 
@@ -97,17 +102,18 @@ public:
     TimeInfo m_time = {};
 
     Event_Timeout m_events[EVENT_COUNT] = {};
-    
+
     DArray<Text> m_rendered_text = {};
 
     UpdateState m_update_states[UpdateStateCount];
 
     AssetId m_font = {};
     AssetId m_editor_font = {};
-    
+
     Mesh meshes[MeshType::Count] = {};
-    
+
     GameState game = {};
+    Mission edit_mission = {};
     VehicleEditor editor = {};
     GameInfo gameInfo = {};
 
@@ -134,12 +140,13 @@ private:
     bool init_game_ui();
     bool init_load_ui();
     bool init_editor_ui();
+    bool init_mission_editor_ui();
     bool init_solar_system_ui();
 
     void update_game_state();
 
     void do_gpu_frame();
-    
+
     bool load_assets();
 
     UiState& get_active_ui();
@@ -171,6 +178,7 @@ private:
     bool mouse_input_settings();
     bool mouse_input_editor();
     bool mouse_input_solar_system();
+    bool mouse_input_mission_editor();
 
     void update_keyboard_state();
     bool keyboard_input_down(KeyboardEvent keyboard);

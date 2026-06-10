@@ -427,7 +427,6 @@ int String_Builder::append_float(float n) {
 String String_Builder::put_string(String s) {
     int c = cursor;
     append(s);
-    // this makes compatibility with so many things much easier
     append_char('\0');
     return String(buffer + c, s.size);
 }

@@ -439,8 +439,20 @@ bool load_font_file(Font* font, const char* path, float size)
 
 UiState::~UiState()
 {
+    for (auto& dd : drop_down) {
+        dd.reset();
+    }
+
+    editor.reset();
+    text_field.reset();
     drop_down.reset();
     button.reset();
+    image_button.reset();
+    label.reset();
+    value_panel.reset();
+    control.reset();
+    discrete_slider.reset();
+    button_group.reset();
 
     for (auto& l : label)
     {

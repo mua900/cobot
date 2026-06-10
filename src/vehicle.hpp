@@ -163,6 +163,7 @@ struct VehiclePart {
 using VehicleId = u16;
 
 struct Vehicle {
+    String name = {};  // @todo this would need to change when we need to get names from user
     vec2 worldPosition = {};
     vec2 velocity = {};
     Rectangle volume = {};

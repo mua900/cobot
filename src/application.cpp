@@ -36,7 +36,7 @@ bool Application::initialize()
             return false;
         }
     }
-    
+
     // window
     {
         float scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
@@ -81,7 +81,7 @@ bool Application::initialize()
 
         game.updateState = &m_update_states[UpdateStateIdle];
     }
-    
+
     gameInfo.selectedTimescale = game.updateState->timeScale;
 
     initialize_libraries();
@@ -198,6 +198,8 @@ UiState& Application::get_active_ui()
                     return m_ui[UiSettings];
                 case MenuLoad:
                     return m_ui[UiLoad];
+                case MenuMissionEditor:
+                    return m_ui[UiMissionEditor];
                 default:
                     panic("Invalid menu type");
             }
@@ -517,9 +519,6 @@ bool Application::on_mouse_down()
 
 bool Application::mouse_input_editor()
 {
-    UiState& ui = m_ui[UiEditor];
-    vec2 mouse_pos = m_input.mouse.pos;
-
     return false;
 }
 
@@ -629,7 +628,7 @@ bool Application::mouse_input_solar_system()
                         if (area.contains_centered(mouse_pos))
                         {
                             // @todo text field
-                        }                        
+                        }
                         break;
                     }
                     case ValueSelection: {
@@ -646,7 +645,8 @@ bool Application::mouse_input_solar_system()
                             {
                                 case AddMission:
                                 {
-                                    // @todo
+                                    switch_modes(ModeMenu);
+                                    switch_menu(MenuMissionEditor);
                                     break;
                                 }
                             }
@@ -793,7 +793,7 @@ bool Application::mouse_input_game()
             if (editor.get_icon1_area().contains_centered(mouse_pos)) {
                 // run
                 editor.clicked_icon = 1;
-                
+
                 Script& script = game.scripts.get_ref(editor.user.number);
 
                 String scriptSource = script.script.to_string();
@@ -818,7 +818,7 @@ bool Application::mouse_input_game()
             else if (editor.get_icon2_area().contains_centered(mouse_pos)) {
                 // compile
                 editor.clicked_icon = 2;
-                
+
                 Script& script = game.scripts.get_ref(editor.user.number);
                 script.set_source(ScriptLanguage::LUA, editor.field.get_string());
 
@@ -827,7 +827,7 @@ bool Application::mouse_input_game()
             else if (editor.get_icon3_area().contains_centered(mouse_pos)) {
                 // debug
                 editor.clicked_icon = 3;
-                
+
                 // @todo
 
                 return true;
@@ -894,9 +894,60 @@ bool Application::mouse_input_menu()
     switch (m_menu) {
         case MenuMain:          return mouse_input_main_menu();
         case MenuSettings:      return mouse_input_settings();
-        case MenuLoad: return mouse_input_load();
+        case MenuLoad:          return mouse_input_load();
+        case MenuMissionEditor: return mouse_input_mission_editor();
         default: panic("Invalid menu");
     }
+}
+
+bool Application::mouse_input_mission_editor()
+{
+    UiState& ui = m_ui[UiMissionEditor];
+    vec2 mouse_pos = m_input.mouse.pos;
+
+    for (auto& list : ui.drop_down)
+    {
+        Rectangle area = Rectangle(list.pos, list.scale);
+        if (area.contains_centered(mouse_pos))
+        {
+            log_info("toggle");
+            list.toggle();
+        }
+        else
+        {
+            if (list.open)
+            {
+                int selected = -1;
+                for (int i = 0; i < list.options.size(); i++)
+                {
+                    Rectangle area = list.get_option_area(i);
+                    if (area.contains_centered(mouse_pos))
+                    {
+                        selected = i;
+                    }
+                }
+
+                if (selected != -1)
+                {
+                    switch (list.id)
+                    {
+                        case VehicleList:
+                        {
+                            edit_mission.vehicle = selected;
+                            break;
+                        }
+                        case PlanetList:
+                        {
+                            edit_mission.planet = planet;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 bool Application::mouse_input_load() {
@@ -1186,6 +1237,52 @@ bool Application::init_ui()
     if (!init_load_ui()) return false;
     if (!init_editor_ui()) return false;
     if (!init_solar_system_ui()) return false;
+    if (!init_mission_editor_ui()) return false;
+
+    return true;
+}
+
+bool Application::init_mission_editor_ui()
+{
+    vec2 ws = get_window_size();
+    UiState& ui = m_ui[UiMissionEditor];
+
+    Font font = m_catalog.get_font(m_font);
+
+    // @todo show pictures of what's selected maybe
+    Drop_Down_List vehicle_list;
+    Drop_Down_List planet_list;
+
+    Color text_color(0x88, 0x88, 0x88);
+    Color title_color(0x33, 0x22, 0x99);
+    Color option_color(0x77, 0x33, 0x44);
+
+    vec2 list_scale(ws.x * 0.1, ws.y * 0.1);
+    vehicle_list.set_title(create_text(m_render.renderer, String("Vehicle"), font, text_color));
+    vehicle_list.set_area(vec2(ws.x * 0.1, ws.y * 0.1), list_scale);
+    vehicle_list.option_color = option_color;
+    vehicle_list.title_color = title_color;
+    vehicle_list.id = VehicleList;
+    planet_list.set_title(create_text(m_render.renderer, String("Planet"), font, text_color));
+    planet_list.set_area(vec2(ws.x * 0.3, ws.y * 0.1), list_scale);
+    planet_list.option_color = option_color;
+    planet_list.title_color = title_color;
+    planet_list.id = PlanetList;
+
+    for (int i = 0; i < game.vehicles.size(); i++)
+    {
+        Vehicle& vehicle = game.vehicles[i];
+        vehicle_list.add_option(create_text(m_render.renderer, vehicle.name, font, text_color), i);
+    }
+
+    for (int i = 0; i < game.starSystem.planets.size(); i++)
+    {
+        Planet& planet = game.starSystem.planets[i];
+        planet_list.add_option(create_text(m_render.renderer, planet.name, font, text_color), i);
+    }
+
+    ui.drop_down.add(vehicle_list);
+    ui.drop_down.add(planet_list);
 
     return true;
 }
@@ -1296,7 +1393,7 @@ bool Application::init_game_ui() {
     }
 
     menus[PART_TIRE].add_button(create_text(m_render.renderer, String("Brake"), font, controlMenuButtonColor), 0);
-    
+
     for (int i = 0; i < PART_KIND_COUNT; i++)
     {
         ui.control.add(menus[i]);
@@ -1310,9 +1407,9 @@ bool Application::init_load_ui() {
     Font font = m_catalog.get_font(m_editor_font);
     Color button_color = Color(0x77, 0x55, 0x55);
     Color background = Color(0x33, 0x55, 0x66);
-    
+
     add_button(UiLoad, BackButton, TextButton(create_text(m_render.renderer, String("Back"), m_catalog.get_font(m_font), button_color), ws * 0.05, ws * 0.1, background));
-    
+
     float buttonY = ws.y * 0.2;
     float buttonX = ws.x * 0.1;
     vec2 buttonScale = vec2(ws.x * 0.1, ws.y * 0.1);
@@ -1404,7 +1501,7 @@ void Application::draw()
 void Application::do_gpu_frame()
 {
     start_frame(m_render, m_window.window);
-   
+
     m_render.start_copy_pass();
 
     for (auto& mesh : meshes)
@@ -1527,7 +1624,7 @@ void Application::draw_ui_state(const UiState& state)
     {
         render_value_panel(state, panel);
     }
-    
+
     for (const ButtonGroup& group : state.button_group)
     {
         if (group.info.visible)
@@ -1537,6 +1634,7 @@ void Application::draw_ui_state(const UiState& state)
     }
 }
 
+// these would be more meaningful if we loaded or unloaded something in between
 void Application::switch_modes(ApplicationMode mode) {
     m_mode = mode;
 }
@@ -1664,7 +1762,7 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
                 group.scale = vec2(area.w, area.h);
                 render_button_group(group);
 
-                height += group.scale.y;                
+                height += group.scale.y;
                 break;
             }
             case ValueButton: {
@@ -1724,7 +1822,7 @@ void Application::render_text_editor(const TextEditor& editor) const
     Rectangle area = editor.get_title_area();
     vec2 iconPos = area.get_position() + vec2(area.get_scale().x / 2, 0);
     vec2 iconScale = vec2(editor.title_height, editor.title_height);
-    
+
     Color clicked_background = Color(0xAA, 0x55, 0x33);
     render_textured_rectangle(m_render.renderer, editor.get_icon1_area(), editor.icon1.texture, (editor.clicked_icon == 1) ? clicked_background : editor.icon1.background, true);
     render_textured_rectangle(m_render.renderer, editor.get_icon2_area(), editor.icon2.texture, (editor.clicked_icon == 2) ? clicked_background : editor.icon2.background, true);
@@ -1828,7 +1926,7 @@ void Application::toggle_text_input()
 
 void Application::run_program() {
     Script script = game.scripts.get(0);
-    
+
 }
 
 bool Script::set_source(ScriptLanguage language, String source) {
@@ -1850,7 +1948,7 @@ bool Script::set_source(ScriptLanguage language, String source) {
         if (data.lua) {
             lua_close(data.lua);
         }
-        
+
         data.lua = state;
 
         script.clear_and_append(source);
