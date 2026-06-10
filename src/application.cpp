@@ -537,19 +537,21 @@ bool Application::mouse_input_solar_system()
             {
                 switch (button.id)
                 {
-                case BackButton:
-                    switch_modes(ModeMenu);
-                    switch_menu(MenuMain);
-                    return true;
+                    case BackButton:
+                    {
+                        switch_modes(ModeMenu);
+                        switch_menu(MenuMain);
+                        return true;
+                    }
+                    case LaunchButton:
+                    {
+                        if (button.info.visible)
+                        {
+                            switch_modes(ModeGame);
+                        }
+                        return true;
+                    }
                 }
-            }
-        }
-
-        for (auto& button : ui.image_button)
-        {
-            Rectangle area = Rectangle(button.position, button.scale);
-            if (area.contains_centered(mouse_pos))
-            {
             }
         }
 
@@ -587,6 +589,45 @@ bool Application::mouse_input_solar_system()
                 slider.selected = index;
 
                 return true;
+            }
+        }
+
+        {
+            ValuePanel* panel = ui.get_value_panel(PlanetPanel);
+            for (int i = 0; i < panel->tabs.size(); i++)
+            {
+                Rectangle area = panel->get_tab_header_area(i);
+                if (area.contains_centered(mouse_pos))
+                {
+                    panel->activeTab = i;
+                    break;
+                }
+            }
+
+            ValuePanelTab& tab = panel->tabs.get_ref(panel->activeTab);
+            float height = 0;
+            for (auto& field : tab.fields)
+            {
+                switch (field.type)
+                {
+                    case ValueInteger: {
+                        // fallthrough
+                    }
+                    case ValueNumber: {
+                        // fallthrough
+                    }
+                    case ValueString: {
+                        break;
+                    }
+                    case ValueSelection: {
+                        break;
+                    }
+                    case ValueButton: {
+                        break;
+                    }
+                }
+
+                height += tab.field_margin;
             }
         }
 
@@ -1160,16 +1201,32 @@ bool Application::init_solar_system_ui()
     }
 
     AssetId orbitalTabId = get_asset(String("orbit"), m_catalog);
+    AssetId missionTabId = get_asset(String("mission"), m_catalog);
+    if (!(orbitalTabId.is_valid() && missionTabId.is_valid()))
+    {
+        return false;
+    }
     SDL_Texture* orbitalParameterTab = m_catalog.get_image(orbitalTabId);
+    SDL_Texture* missionTab = m_catalog.get_image(missionTabId);
+    if (!(orbitalParameterTab && missionTab))
+    {
+        return false;
+    }
 
     ValuePanel planet_panel (PlanetPanel, Rectangle(ws.x * 0.9, ws.y * 0.5, ws.x * 0.2, ws.y), 25, 50, DirLeft);
     ValuePanelTab orbital_parameter_tab = {};
+    ValuePanelTab missions_tab = {};
     orbital_parameter_tab.field_height = 20;
     orbital_parameter_tab.color = Color(0x44, 0x55, 0x33);
     orbital_parameter_tab.tabIcon = Icon(orbitalParameterTab, Color(0x99, 0x55, 0x33));
 
+    missions_tab.field_height = 20;
+    missions_tab.color = Color(0x88, 0x66, 0x77);
+    missions_tab.tabIcon = Icon(missionTab, Color(0x88, 0x33, 0x22));
+
     Color valueBackground (0x77, 0x66, 0x44);
     Color valueText (0x33, 0x44, 0x88);
+
     orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("SemiMajorAxis"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitSemiMajorAxis, ValueNumber));
     orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("Eccentricity"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitEccentricity, ValueNumber));
     orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("TrueAnomaly"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitTrueAnomaly, ValueNumber));
@@ -1177,12 +1234,15 @@ bool Application::init_solar_system_ui()
     orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitArgumentOfPeriapsis, ValueNumber));
     orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitInclination, ValueNumber));
 
+    missions_tab.fields.add(ValueField(create_text(m_render.renderer, String("Launch Mission"), font, Color(0xAA, 0xAA, 0xDD)), 0, AddMission, ValueButton));
+
     planet_panel.tabs.add(orbital_parameter_tab);
+    planet_panel.tabs.add(missions_tab);
     ui.value_panel.add(planet_panel);
 
     Text launch_text = create_text(m_render.renderer, String("Launch"), font, Color(0x66, 0x44, 0x44));
     TextButton launch (launch_text, vec2(ws.x * 0.1, ws.y * 0.9), vec2(ws.x * 0.1, ws.y * 0.1), Color(0x22, 0xAA, 0x22), false);
-    launch.id = LaunchMissionButton;
+    launch.id = LaunchButton;
     launch.info.visible = false;
     ui.button.add(launch);
 
@@ -1532,19 +1592,19 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
     render_rectangle(panel.area, tab.color, true);
 
     float height = 0;
-    float margin = 5;
-    for (ValueField& value : tab.fields)
+    for (int i = 0; i < tab.fields.size(); i++)
     {
-        vec2 text_scale = {};
-        SDL_GetTextureSize(value.name.texture, &text_scale.x, &text_scale.y);
-        float factor = panel.fieldSize / text_scale.y;
-        text_scale.x *= factor;
-        text_scale.y = panel.fieldSize;
-        vec2 text_position(panel.area.x, panel.area.y - panel.area.h / 2 + height + text_scale.y / 2);
-        render_texture(m_render.renderer, Rectangle(text_position, text_scale), value.name.texture, true);
-        height += text_scale.y;
+        ValueField& value = tab.fields[i];
 
-        float width = panel.area.w * 0.95;
+        Rectangle text_area = panel.get_text_area(panel.activeTab, i);
+        text_area.y += height;
+        height += text_area.h;
+
+        render_texture(m_render.renderer, text_area, value.name.texture, true);
+
+        Rectangle area = panel.get_field_area(panel.activeTab, i, &ui);
+        area.y += height;
+
         switch (value.type)
         {
             case ValueInteger: {
@@ -1556,12 +1616,9 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
             case ValueString: {
                 Text_Field& text_field = ui.text_field.get_ref(value.ui_element);
                 int line_count = text_field.m_line_count;
-                float font_size = text_field.m_font_size;
-                float tf_height = (line_count == 0) ? font_size : font_size * line_count;
-                vec2 tf_scale = vec2(width, tf_height);
-                vec2 tf_pos = vec2(text_position.x, height + tf_height / 2);
-                Rectangle area = Rectangle(tf_pos, tf_scale);
+
                 text_field.m_area = area;
+
                 if (line_count == 0)
                 {
                     render_rectangle(area, text_field.background);
@@ -1575,14 +1632,20 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
             }
             case ValueSelection: {
                 ButtonGroup& group = ui.button_group.get_ref(value.ui_element);
-                group.position = vec2(text_position.x, height);
-                group.scale = vec2(width, group.button_scale.y * group.buttons.size());
+                group.position = vec2(area.x, area.y);
+                group.scale = vec2(area.w, area.h);
                 render_button_group(group);
+
+                height += group.scale.y;                
+                break;
+            }
+            case ValueButton: {
+                render_rectangle_outline(text_area, Color(0x99, 0x55, 0x66));
                 break;
             }
         }
 
-        height += margin;
+        height += tab.field_margin;
     }
 
     for (int i = 0; i < panel.tabs.size(); i++) {

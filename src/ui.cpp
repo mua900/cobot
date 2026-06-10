@@ -531,6 +531,55 @@ ValuePanel* UiState::get_value_panel(UiElementId id)
     }
 }
 
+Rectangle ValuePanel::get_text_area(int tabIndex, int fieldIndex) const
+{
+    ValuePanelTab& tab = tabs.get_ref(tabIndex);
+    ValueField& field = tab.fields.get_ref(fieldIndex);
+
+    vec2 text_scale = {};
+    SDL_GetTextureSize(field.name.texture, &text_scale.x, &text_scale.y);
+    float factor = fieldSize / text_scale.y;
+    text_scale.x *= factor;
+    text_scale.y = fieldSize;
+    vec2 text_position (area.x, area.y - area.h / 2 + text_scale.y / 2);
+    return Rectangle(text_position, text_scale);
+}
+
+Rectangle ValuePanel::get_field_area(int tabIndex, int fieldIndex, const UiState* ui) const
+{
+    ValuePanelTab& tab = tabs.get_ref(tabIndex);
+    ValueField& field = tab.fields.get_ref(fieldIndex);
+
+    float width = get_field_width();
+    switch (field.type)
+    {
+        case ValueInteger: {
+            // fallthrough
+        }
+        case ValueNumber: {
+            // fallthrough
+        }
+        case ValueString: {
+            Text_Field& text_field = ui->text_field.get_ref(field.ui_element);
+            int line_count = text_field.m_line_count;
+            float font_size = text_field.m_font_size;
+            float tf_height = (line_count == 0) ? font_size : font_size * line_count;
+            vec2 tf_scale = vec2(width, tf_height);
+            vec2 tf_pos = vec2(area.x, tf_height / 2);
+            return Rectangle(tf_pos, tf_scale);
+        }
+        case ValueSelection: {
+            ButtonGroup& group = ui->button_group.get_ref(field.ui_element);
+            vec2 scale = vec2(width, group.button_scale.y * group.buttons.size());
+            vec2 position = vec2(area.x, area.y + group.scale.y / 2);
+            return Rectangle(position, scale);
+        }
+        case ValueButton: {
+            return Rectangle();
+        }
+    }
+}
+
 Rectangle ValuePanel::get_tab_header_area(int index) const
 {
     ASSERT(index < tabs.size());

@@ -18,6 +18,9 @@ struct Window {
     SDL_Window* window;
 };
 
+struct UiState;
+
+// there can be multiple ui elements with the same id so it is more about functionality
 enum UiElementId {
     UiElementSentinel = 0,
     PlayButton,
@@ -30,7 +33,7 @@ enum UiElementId {
     TimeScale,
     LaunchButton,
     PlanetPanel,
-    LaunchMissionButton,
+    AddMission,
 };
 
 struct UiElementInfo {
@@ -492,6 +495,7 @@ enum ValueType {
     ValueInteger,
     ValueNumber,
     ValueString,
+    ValueButton,
     ValueSelection,
 };
 
@@ -513,12 +517,14 @@ struct ValueField {
 
 enum PlanetPanelTabs {
     PlanetPanelTabOrbit = 0,
+    PlanetPanelTabMissions = 1,
 };
 
 struct ValuePanelTab {
     Icon tabIcon = {};
     Color color = {};
     float field_height = 0;
+    float field_margin = 0;
     DArray<ValueField> fields = {};
 };
 
@@ -542,6 +548,9 @@ struct ValuePanel {
     {}
 
     Rectangle get_tab_header_area(int index) const;
+    float get_field_width() const { return area.w * 0.95; }
+    Rectangle get_field_area(int tab, int field, const UiState* ui) const;
+    Rectangle get_text_area(int tab, int field) const;
 };
 
 struct ControlMenu {
