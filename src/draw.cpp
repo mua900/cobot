@@ -160,8 +160,6 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
 
 bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment)
 {
-    SDL_SetGPURenderState(render->renderer, nullptr);
-
     SDL_GPUVertexBufferDescription vertex_buffer_description[1] = {};
     SDL_GPUVertexAttribute vertex_attributes[3] = {};
     vertex_buffer_description[0].slot = 0;                        /**< The binding slot of the vertex buffer. */
