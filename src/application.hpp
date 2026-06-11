@@ -185,6 +185,7 @@ private:
     bool keyboard_input_up(KeyboardEvent keyboard);
 
     bool keyboard_input_down_common(KeyboardEvent keyboard);
+    bool keyboard_input_down_game(KeyboardEvent keyboard);
     bool keyboard_input_down_solar_system(KeyboardEvent keyboard);
 
     void text_input_start();
@@ -209,6 +210,8 @@ private:
 
     void switch_modes(ApplicationMode mode);
     void switch_menu(MenuName menu);
+
+    bool load_mission(Mission& mission);
 
     void add_button(UiId ui, UiElementId id, TextButton button);
     void add_label(UiId ui, UiElementId id, Label label);

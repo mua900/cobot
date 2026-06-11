@@ -126,18 +126,6 @@ bool Application::init_game_state()
 
 void Application::update_game_state()
 {
-    if (m_mode == ModeGame)
-    {
-        game.updateState = &m_update_states[UpdateStateVehicleSimulation];
-    }
-    else if (m_mode == ModeSolarSystem)
-    {
-        game.updateState = &m_update_states[UpdateStateSolarSystem];
-    }
-    else {
-        game.updateState = &m_update_states[UpdateStateIdle];
-    }
-
     game.updateState->timeScale = gameInfo.wantPause ? 0 : gameInfo.selectedTimescale;
     if (gameInfo.wantPause) {
         gameInfo.wantPause = false;
@@ -327,12 +315,35 @@ bool Application::keyboard_input_down(SDL_KeyboardEvent keyboard)
     }
     else
     {
-        if (m_mode == ModeSolarSystem)
+        switch (m_mode)
         {
-            return keyboard_input_down_solar_system(keyboard);
+            case ModeGame:
+            {
+                return keyboard_input_down_game(keyboard);
+            }
+            case ModeSolarSystem:
+            {
+                return keyboard_input_down_solar_system(keyboard);
+            }
         }
 
         return false;
+    }
+}
+
+bool Application::keyboard_input_down_game(KeyboardEvent keyboard)
+{
+    const float vehicle_velocity = 50;
+    switch (keyboard.scancode)
+    {
+        case SDL_SCANCODE_UP: {
+            game.get_active_vehicle().velocity.y = -vehicle_velocity;
+            return true;
+        }
+        case SDL_SCANCODE_DOWN: {
+            game.get_active_vehicle().velocity.y = vehicle_velocity;
+            return true;
+        }
     }
 }
 
@@ -345,14 +356,6 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             quit = true;
             return true;
         }
-        case SDL_SCANCODE_UP: {
-            game.get_active_vehicle().velocity.y = -10;
-            return true;
-        }
-        case SDL_SCANCODE_DOWN: {
-            game.get_active_vehicle().velocity.y = 10;
-            return true;
-        }
         case SDL_SCANCODE_RETURN:
         {
             if (doing_text_input)
@@ -362,9 +365,10 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                 {
                     field->insert_line();
                 }
+                return true;
             }
 
-            return true;
+            break;
         }
         case SDL_SCANCODE_TAB:
         {
@@ -375,9 +379,10 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                 {
                     field->insert_tab(4);
                 }
+                return true;
             }
 
-            return true;
+            break;
         }
         case SDL_SCANCODE_BACKSPACE:
         {
@@ -404,8 +409,10 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                     field->delete_after_cursor();
                     field->update_text(m_render.renderer, m_catalog.get_font(field->fontId), true);
                 }
+                return true;
             }
-            return true;
+
+            break;
         }
         case SDL_SCANCODE_HOME:
         {
@@ -420,9 +427,10 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
                 }
+                return true;
             }
 
-            return true;
+            break;
         }
         case SDL_SCANCODE_END:
         {
@@ -437,9 +445,10 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
                 }
+                return true;
             }
 
-            return true;
+            break;
         }
         case SDL_SCANCODE_LEFT: {
             if (doing_text_input) {
@@ -450,9 +459,10 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
                 }
+                return true;
             }
 
-            return true;
+            break;
         }
         case SDL_SCANCODE_RIGHT: {
             if (doing_text_input) {
@@ -463,9 +473,10 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
                 }
+                return true;
             }
 
-            return true;
+            break;
         }
         case SDL_SCANCODE_F11:
         {
@@ -905,41 +916,62 @@ bool Application::mouse_input_mission_editor()
     UiState& ui = m_ui[UiMissionEditor];
     vec2 mouse_pos = m_input.mouse.pos;
 
-    for (auto& list : ui.drop_down)
+    if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
     {
-        Rectangle area = Rectangle(list.pos, list.scale);
-        if (area.contains_centered(mouse_pos))
+        for (auto& button : ui.button)
         {
-            log_info("toggle");
-            list.toggle();
-        }
-        else
-        {
-            if (list.open)
+            if (Rectangle(button.position, button.scale).contains_centered(mouse_pos))
             {
-                int selected = -1;
-                for (int i = 0; i < list.options.size(); i++)
+                switch (button.id)
                 {
-                    Rectangle area = list.get_option_area(i);
-                    if (area.contains_centered(mouse_pos))
+                    case LaunchButton:
                     {
-                        selected = i;
+                        if (edit_mission.is_valid())
+                        {
+                            int mission = game.mission.add(edit_mission);
+                            load_mission(game.mission.get_ref(mission));
+                            switch_modes(ModeGame);
+                        }
                     }
                 }
+            }
+        }
 
-                if (selected != -1)
+        for (auto& list : ui.drop_down)
+        {
+            Rectangle area = Rectangle(list.pos, list.scale);
+            if (area.contains_centered(mouse_pos))
+            {
+                list.toggle();
+            }
+            else
+            {
+                if (list.open)
                 {
-                    switch (list.id)
+                    int selected = -1;
+                    for (int i = 0; i < list.options.size(); i++)
                     {
-                        case VehicleList:
+                        Rectangle area = list.get_option_area(i);
+                        if (area.contains_centered(mouse_pos))
                         {
-                            edit_mission.vehicle = selected;
-                            break;
+                            selected = i;
                         }
-                        case PlanetList:
+                    }
+
+                    if (selected != -1)
+                    {
+                        switch (list.id)
                         {
-                            edit_mission.planet = planet;
-                            break;
+                            case VehicleList:
+                            {
+                                edit_mission.vehicle = selected;
+                                break;
+                            }
+                            case PlanetList:
+                            {
+                                edit_mission.planet = PlanetId(selected);
+                                break;
+                            }
                         }
                     }
                 }
@@ -1281,8 +1313,12 @@ bool Application::init_mission_editor_ui()
         planet_list.add_option(create_text(m_render.renderer, planet.name, font, text_color), i);
     }
 
+    TextButton launchMission = TextButton(create_text(m_render.renderer, String("Launch Mission"), font, Color(0x88, 0x44, 0x77)), vec2(ws.x * 0.85, ws.y * 0.85), vec2(ws.x * 0.1, ws.y * 0.1), Color(0x99, 0x11, 0x22));
+    launchMission.id = LaunchButton;
+
     ui.drop_down.add(vehicle_list);
     ui.drop_down.add(planet_list);
+    ui.button.add(launchMission);
 
     return true;
 }
@@ -1364,12 +1400,6 @@ bool Application::init_solar_system_ui()
     planet_panel.tabs.add(orbital_parameter_tab);
     planet_panel.tabs.add(missions_tab);
     ui.value_panel.add(planet_panel);
-
-    Text launch_text = create_text(m_render.renderer, String("Launch"), font, Color(0x66, 0x44, 0x44));
-    TextButton launch (launch_text, vec2(ws.x * 0.1, ws.y * 0.9), vec2(ws.x * 0.1, ws.y * 0.1), Color(0x22, 0xAA, 0x22), false);
-    launch.id = LaunchButton;
-    launch.info.visible = false;
-    ui.button.add(launch);
 
     return true;
 }
@@ -1634,13 +1664,42 @@ void Application::draw_ui_state(const UiState& state)
     }
 }
 
-// these would be more meaningful if we loaded or unloaded something in between
 void Application::switch_modes(ApplicationMode mode) {
+    switch (mode)
+    {
+        case ModeSolarSystem:
+        {
+            game.updateState = &m_update_states[UpdateStateSolarSystem];
+            break;
+        }
+        case ModeGame:
+        {
+            game.updateState = &m_update_states[UpdateStateVehicleSimulation];
+            break;
+        }
+        default:
+        {
+            game.updateState = &m_update_states[UpdateStateIdle];
+            break;
+        }
+    }
+
     m_mode = mode;
 }
 
 void Application::switch_menu(MenuName menu) {
     m_menu = menu;
+}
+
+bool Application::load_mission(Mission& mission)
+{
+    if (!mission.is_valid()) return false;
+
+    game.active_vehicle = mission.vehicle;
+    game.active_planet = mission.planet;
+    // @todo heightmaps etc.
+
+    return true;
 }
 
 void Application::render_rectangle(Rectangle rect, Color color, bool center) const

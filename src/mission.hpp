@@ -5,6 +5,10 @@
 #include "vehicle.hpp"
 #include "space.hpp"
 
+struct Region {
+    
+};
+
 struct Mission {
     VehicleId vehicle = 0;
     PlanetId planet = {};
@@ -16,6 +20,11 @@ struct Mission {
     float longitude = 0;
 
     String_Builder buffer = {};
+
+    bool is_valid() const {
+        // @todo
+        return true;
+    }
 };
 
 #endif // _MISSION_H

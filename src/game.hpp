@@ -34,7 +34,8 @@ struct UpdateState {
 
 struct GameState {
     Camera camera = {};
-    int active_vehicle = 0;
+    VehicleId active_vehicle = 0;
+    PlanetId active_planet = {};
     DArray<Vehicle> vehicles = {};
     DArray<Mission> mission = {};
     StarSystem starSystem = {};

@@ -59,16 +59,31 @@ struct Body {
     void determine_state_vector(double centralBodyMass);
 };
 
-enum PlanetId {
+enum PlanetId : int {
     PlanetRed,
     PlanetGreen,
     PlanetBlue,
+};
+
+typedef float (*PressureFunction) (float altitude);
+
+struct Atmosphere {
+    PressureFunction pressure_function = nullptr;
+};
+
+struct CelestialRotation {
+    // > 0 -> prograde, 0 -> no rotation, < 0 -> retrograde
+    int direction = 0;
+    float rotational_period = 0;
+    float axial_tilt = 0;
 };
 
 struct Planet {
     PlanetId id = {};
     String name = {};
     ColorF color = {};
+    CelestialRotation rotation = {};
+    Atmosphere atmosphere = {};
     Body body = {};
 
     Planet() {}
