@@ -30,10 +30,12 @@ static const PartId NullPartId = PartId();
 
 struct VPartTransform {
     vec2 position = {};
+    float rotation = 0;  // radians
     float scale = 0;
 
     VPartTransform() {}
     VPartTransform(vec2 pos, float sca) : position(pos), scale(sca) {}
+    VPartTransform(vec2 pos, float rot, float sca) : position(pos), rotation(rot), scale(sca) {}
 };
 
 VPartTransform chain_part_transform(VPartTransform p0, VPartTransform p1);
@@ -41,7 +43,7 @@ VPartTransform chain_part_transform(VPartTransform p0, VPartTransform p1);
 struct VPartData {
     PartId parent = {};
     VPartTransform transform = {};
-    // float weight = 0;
+    float weight = 0;
 
     VPartData() {}
     VPartData(vec2 position) : transform(position, 1.0f) {}
@@ -166,6 +168,7 @@ struct Vehicle {
     String name = {};  // @todo this would need to change when we need to get names from user
     vec2 worldPosition = {};
     vec2 velocity = {};
+    float orientation = 0;  // radians, 0 looking up
     Rectangle volume = {};
 
     DArray<PartId> rootParts = {};

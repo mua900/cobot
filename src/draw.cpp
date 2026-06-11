@@ -589,6 +589,11 @@ void draw_arc(const RenderContext& context, vec2 center, float inner_radius, flo
 
 void draw_circle(const RenderContext& context, vec2 position, float radius, ColorF color)
 {
+    draw_circle_with_texture(context, position, radius, nullptr, color);
+}
+
+void draw_circle_with_texture(const RenderContext& context, vec2 position, float radius, SDL_Texture* texture, ColorF color)
+{
     // change the number of vertices to use to configure how fine of an approximation we get
     #define NVERTICES 32
     SDL_Vertex vertices[NVERTICES + 1];
@@ -596,6 +601,7 @@ void draw_circle(const RenderContext& context, vec2 position, float radius, Colo
     SDL_Vertex center;
     center.position = SDL_FPoint { position.x, position.y};
     center.color = SDL_FColor { COLOR_ARG(color) };
+    center.tex_coord = SDL_FPoint { 0.5, 0.5 };
 
     vertices[0] = center;
 
@@ -611,6 +617,8 @@ void draw_circle(const RenderContext& context, vec2 position, float radius, Colo
         vertices[i].position.x = center.position.x + xcomp * radius;
         vertices[i].position.y = center.position.y + ycomp * radius;
         vertices[i].color = SDL_FColor { color.r, color.g, color.b, color.a };
+        vertices[i].tex_coord.x = (xcomp + 1.0f) * 0.5f;
+        vertices[i].tex_coord.y = (ycomp + 1.0f) * 0.5f;
 
         // rotate the vector
         float n_xcomp = xcomp * c - ycomp * s;
@@ -631,7 +639,7 @@ void draw_circle(const RenderContext& context, vec2 position, float radius, Colo
     indices[(NVERTICES - 1) * 3 + 1] = NVERTICES;
     indices[(NVERTICES - 1) * 3 + 2] = 1;
 
-    SDL_RenderGeometry(context.renderer, NULL, vertices, ARRAY_SIZE(vertices), indices, ARRAY_SIZE(indices));
+    SDL_RenderGeometry(context.renderer, texture, vertices, ARRAY_SIZE(vertices), indices, ARRAY_SIZE(indices));
     #undef NVERTICES
 }
 
