@@ -137,6 +137,13 @@ struct Shader {
     }
 };
 
+enum Flip {
+    FlipNone = SDL_FLIP_NONE,
+    FlipHorizontal = SDL_FLIP_HORIZONTAL,
+    FlipVertical = SDL_FLIP_VERTICAL,
+    FlipHorizontalAndVertical = SDL_FLIP_HORIZONTAL_AND_VERTICAL,
+};
+
 bool initialize_render_context(RenderContext* render, SDL_Window* window);
 bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader* vertex, SDL_GPUShader* fragment);
 
@@ -162,6 +169,7 @@ SDL_Texture* render_text(SDL_Renderer* renderer, String text, Font font, Color c
 Text create_text(SDL_Renderer* renderer, String text, Font font, Color color);
 
 void render_texture(SDL_Renderer* renderer, Rectangle area, Texture* texture, bool strech = false);
+void render_texture_rotate(SDL_Renderer* renderer, Rectangle area, Texture* texture, float angle, Flip flip, bool strech = false);
 void render_textured_rectangle(SDL_Renderer* renderer, Rectangle rect, Texture* texture, Color color, bool strech = false, bool center = true);
 void render_texture_with_tint(SDL_Renderer* renderer, Rectangle area, Texture* texture, ColorF tint, bool strech = false);
 

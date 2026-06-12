@@ -13,7 +13,7 @@
 #include "mission.hpp"
 #include "space.hpp"
 
-// @todo
+// @todo use
 struct Camera {
     vec2 position = {};
     float zoom = 0;
@@ -33,11 +33,12 @@ struct UpdateState {
 };
 
 struct GameState {
-    Camera camera = {};
+    Camera camera = {};  // @todo
     VehicleId active_vehicle = 0;
     PlanetId active_planet = {};
     DArray<Vehicle> vehicles = {};
     DArray<Mission> mission = {};
+    Map map = {};  // @todo
     StarSystem starSystem = {};
     DArray<Script> scripts = {};
 

@@ -162,7 +162,8 @@ struct VehiclePart {
     VehiclePart(Controller* c) : kind(PART_CONTROLLER), controller(c) {}
 };
 
-using VehicleId = u16;
+typedef u32 VehicleId;
+constexpr VehicleId NullVehicleId = -1;
 
 struct Vehicle {
     String name = {};  // @todo this would need to change when we need to get names from user

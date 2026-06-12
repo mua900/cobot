@@ -339,6 +339,14 @@ bool Application::keyboard_input_down_game(KeyboardEvent keyboard)
             game.get_active_vehicle().velocity.y = vehicle_velocity;
             return true;
         }
+        case SDL_SCANCODE_LEFT: {
+            game.get_active_vehicle().orientation += 0.1;
+            return true;
+        }
+        case SDL_SCANCODE_RIGHT: {
+            game.get_active_vehicle().orientation -= 0.1;
+            return true;
+        }
     }
 }
 
@@ -970,6 +978,8 @@ bool Application::mouse_input_mission_editor()
                                 break;
                             }
                         }
+
+                        list.selected = selected;
                     }
                 }
             }
@@ -1926,7 +1936,8 @@ void Application::render_dropdown(const Drop_Down_List& list) const {
         list.scale.x, list.scale.y
     };
     SDL_RenderFillRect(m_render.renderer, &header_area);
-    render_text_size(m_render.renderer, list.title,
+    Text title_text = list.selected == DROP_DOWN_LIST_SELECTED_SENTINEL ? list.title : list.get_option_text(list.selected);
+    render_text_size(m_render.renderer, title_text,
         vec2(header_area.x + header_area.w / 2, header_area.y + header_area.h / 2), vec2(header_area.w, header_area.h));
 
     if (list.open) {

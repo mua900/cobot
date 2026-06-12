@@ -2,7 +2,7 @@
 
 VPartTransform chain_part_transform(VPartTransform p0, VPartTransform p1)
 {
-    return VPartTransform(p0.position + p1.position, p0.scale * p1.scale);
+    return VPartTransform(p0.position + p1.position, p0.rotation + p1.rotation, p0.scale * p1.scale);
 }
 
 VPartTransform Vehicle::getWorldTransform(PartId part) const

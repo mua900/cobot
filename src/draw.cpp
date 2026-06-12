@@ -765,6 +765,18 @@ void render_texture(SDL_Renderer* renderer, Rectangle area, Texture* texture, bo
     SDL_RenderTexture(renderer, texture, &src, &dst);
 }
 
+void render_texture_rotate(SDL_Renderer* renderer, Rectangle area, Texture* texture, float angle, Flip flip, bool strech)
+{
+    float tex_w, tex_h;
+    SDL_GetTextureSize(texture, &tex_w, &tex_h);
+    SDL_FRect src = { 0, 0, tex_w, tex_h };
+    float width = strech ? area.w : tex_w;
+    float height = strech ? area.h : tex_h;
+    SDL_FRect dst = { area.x - width / 2, area.y - height / 2, width, height };
+    SDL_FPoint center = { dst.x, dst.y };
+    SDL_RenderTextureRotated(renderer, texture, &src, &dst, angle, &center, SDL_FlipMode(flip));
+}
+
 void render_textured_rectangle(SDL_Renderer* renderer, Rectangle rect, SDL_Texture* texture, Color color, bool strech, bool center) {
     SDL_SetRenderDrawColor(renderer, COLOR_ARG(color));
     SDL_FRect area = center ?

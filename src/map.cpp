@@ -2,6 +2,9 @@
 
 #include "external/open_simplex.hpp"
 
+// @todo voronoise https://iquilezles.org/articles/voronoise/
+// @todo domain warping
+// @todo use parameters
 SDL_Texture* generate_map(SDL_Renderer* renderer, u64 seed, int width, int height, float scale, ColorF tint)
 {
     int numPixel = width * height;
@@ -33,4 +36,10 @@ SDL_Texture* generate_map(SDL_Renderer* renderer, u64 seed, int width, int heigh
     delete[] heightmap;
 
     return texture;
+}
+
+// @todo
+bool load_map(const char* path, Map* map, SDL_Renderer* renderer)
+{
+    return false;
 }

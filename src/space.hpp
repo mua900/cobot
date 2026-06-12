@@ -60,10 +60,14 @@ struct Body {
     void determine_state_vector(double centralBodyMass);
 };
 
-enum PlanetId : int {
-    PlanetRed,
-    PlanetGreen,
-    PlanetBlue,
+typedef u32 PlanetId;
+constexpr PlanetId NullPlanetId = -1;
+
+enum DefaultPlanetId : u32 {
+    DefaultPlanetRed,
+    DefaultPlanetGreen,
+    DefaultPlanetBlue,
+    DefaultPlanetCount,
 };
 
 typedef float (*PressureFunction) (float altitude);

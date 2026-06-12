@@ -10,11 +10,20 @@ struct MapPixel {
     u8 r = 0;
 };
 
+SDL_Texture* generate_map(SDL_Renderer* renderer, u64 seed, int width, int height, float scale, ColorF tint);
+
+// @todo
 struct Map {
+    float* heightmap = nullptr;
+    int dimension_x = 0;
+    int dimension_y = 0;
     SDL_Texture* texture = nullptr;
-    MapPixel* mapData = nullptr;
+
+    bool is_valid() const {
+        return heightmap != nullptr;
+    }
 };
 
-SDL_Texture* generate_map(SDL_Renderer* renderer, u64 seed, int width, int height, float scale, ColorF tint);
+bool load_map(const char* path, Map* map, SDL_Renderer* renderer);
 
 #endif // _MAP_H

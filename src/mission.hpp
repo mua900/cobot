@@ -4,26 +4,21 @@
 #include "common.hpp"
 #include "vehicle.hpp"
 #include "space.hpp"
-
-struct Region {
-    
-};
+#include "map.hpp"
 
 struct Mission {
-    VehicleId vehicle = 0;
-    PlanetId planet = {};
+    VehicleId vehicle = NullVehicleId;
+    PlanetId planet = NullPlanetId;
     String name = {};
     String objective = {};
 
-    // where
     float latitude = 0;
     float longitude = 0;
 
     String_Builder buffer = {};
 
     bool is_valid() const {
-        // @todo
-        return true;
+        return vehicle != NullVehicleId && planet != NullPlanetId;
     }
 };
 

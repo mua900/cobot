@@ -100,7 +100,7 @@ void draw_chasis(const Chasis& chasis, VPartTransform parent, const RenderContex
 
     float scale = chasis.part.transform.scale * parent.scale;
     Rectangle area = Rectangle(chasis.part.transform.position + parent.position, get_chasis_scale(chasis.kind) * scale);
-    render_texture(context.renderer, area, texture, true);
+    render_texture_rotate(context.renderer, area, texture, chasis.part.transform.rotation, FlipNone, true);
 
     switch (chasis.kind) {
         case ChasisBasic: {
@@ -121,7 +121,7 @@ void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& con
 
     float scale = tire.part.transform.scale * parent.scale;
     Rectangle area = Rectangle(tire.part.transform.position + parent.position, get_tire_scale(tire.kind) * scale);
-    render_texture(context.renderer, area, texture, true);
+    render_texture_rotate(context.renderer, area, texture, tire.part.transform.rotation, FlipNone, true);
 }
 
 void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
@@ -131,7 +131,7 @@ void draw_controller(const Controller& controller, VPartTransform parent, const 
 
     float scale = controller.part.transform.scale * parent.scale;
     Rectangle area = Rectangle(controller.part.transform.position + parent.position, get_controller_scale(controller.kind) * scale);
-    render_texture(context.renderer, area, texture, true);
+    render_texture_rotate(context.renderer, area, texture, controller.part.transform.rotation, FlipNone, true);
 }
 
 
@@ -167,6 +167,7 @@ void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, con
     {
         VPartData part_data = vehicle.getPartData(vehicle.rootParts[i]);
         part_data.transform.position += vehicle.worldPosition;
+        part_data.transform.rotation = vehicle.orientation;
         draw_vehicle_part(vehicle.rootParts[i], part_data.transform, context, catalog, game);
     }
 }
