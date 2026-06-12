@@ -98,17 +98,16 @@ void draw_chasis(const Chasis& chasis, VPartTransform parent, const RenderContex
     AssetId imageId = game.partImages[PART_CHASIS][chasis.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
-    float scale = chasis.part.transform.scale * parent.scale;
-    Rectangle area = Rectangle(chasis.part.transform.position + parent.position, get_chasis_scale(chasis.kind) * scale);
-    render_texture_rotate(context.renderer, area, texture, chasis.part.transform.rotation, FlipNone, true);
+    VPartTransform transform = chain_part_transform(parent, chasis.part.transform);
+    Rectangle area = Rectangle(transform.position, get_chasis_scale(chasis.kind) * transform.scale);
+    render_texture_rotate(context.renderer, area, texture, transform.rotation, FlipNone, true);
 
     switch (chasis.kind) {
         case ChasisBasic: {
-            auto passDown = chain_part_transform(parent, chasis.part.transform);
-            draw_vehicle_part(chasis.basic.frontLeft.part, passDown, context, catalog, game);
-            draw_vehicle_part(chasis.basic.frontRight.part, passDown, context, catalog, game);
-            draw_vehicle_part(chasis.basic.backLeft.part, passDown, context, catalog, game);
-            draw_vehicle_part(chasis.basic.backRight.part, passDown, context, catalog, game);
+            draw_vehicle_part(chasis.basic.frontLeft.part, transform, context, catalog, game);
+            draw_vehicle_part(chasis.basic.frontRight.part, transform, context, catalog, game);
+            draw_vehicle_part(chasis.basic.backLeft.part, transform, context, catalog, game);
+            draw_vehicle_part(chasis.basic.backRight.part, transform, context, catalog, game);
             break;
         }
     }
@@ -119,9 +118,9 @@ void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& con
     AssetId imageId = game.partImages[PART_TIRE][tire.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
-    float scale = tire.part.transform.scale * parent.scale;
-    Rectangle area = Rectangle(tire.part.transform.position + parent.position, get_tire_scale(tire.kind) * scale);
-    render_texture_rotate(context.renderer, area, texture, tire.part.transform.rotation, FlipNone, true);
+    VPartTransform transform = chain_part_transform(parent, tire.part.transform);
+    Rectangle area = Rectangle(transform.position, get_tire_scale(tire.kind) * transform.scale);
+    render_texture_rotate(context.renderer, area, texture, transform.rotation, FlipNone, true);
 }
 
 void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
@@ -129,9 +128,9 @@ void draw_controller(const Controller& controller, VPartTransform parent, const 
     AssetId imageId = game.partImages[PART_CONTROLLER][controller.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
-    float scale = controller.part.transform.scale * parent.scale;
-    Rectangle area = Rectangle(controller.part.transform.position + parent.position, get_controller_scale(controller.kind) * scale);
-    render_texture_rotate(context.renderer, area, texture, controller.part.transform.rotation, FlipNone, true);
+    VPartTransform transform = chain_part_transform(parent, controller.part.transform);
+    Rectangle area = Rectangle(transform.position, get_controller_scale(controller.kind) * transform.scale);
+    render_texture_rotate(context.renderer, area, texture, transform.rotation, FlipNone, true);
 }
 
 

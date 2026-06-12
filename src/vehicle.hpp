@@ -16,7 +16,7 @@ enum PartKind : u16 {
 };
 
 struct PartId {
-    u16 kind = PART_KIND_SENTINEL;
+    PartKind kind = PART_KIND_SENTINEL;
     u16 index = 0;
 
     PartId() {}
@@ -38,7 +38,7 @@ struct VPartTransform {
     VPartTransform(vec2 pos, float rot, float sca) : position(pos), rotation(rot), scale(sca) {}
 };
 
-VPartTransform chain_part_transform(VPartTransform p0, VPartTransform p1);
+VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child);
 
 struct VPartData {
     PartId parent = {};
@@ -46,7 +46,7 @@ struct VPartData {
     float weight = 0;
 
     VPartData() {}
-    VPartData(vec2 position) : transform(position, 1.0f) {}
+    VPartData(vec2 position) : transform(position, 1.0) {}
     VPartData(vec2 position, float scale) : transform(position, scale) {}
     VPartData(PartId parent, vec2 position, float scale) : parent(parent), transform(position, scale) {}
 };
@@ -59,11 +59,12 @@ struct AttachmentPoint {
     AttachmentPoint(u32 kind_mask) : kindMask(kind_mask) {}
 
     bool attach(PartId part_id) {
-        if (kindMask != 0 && !(kindMask & part.kind)) {
+        if (kindMask != 0 && !(kindMask & part_id.kind)) {
             return false;
         }
 
         part = part_id;
+        return true;
     }
 };
 
@@ -188,6 +189,7 @@ struct Vehicle {
 
     int add_root(PartId part);
 
+    u16 getSubKind(PartId part);
     VPartTransform getWorldTransform(PartId part) const;
     VPartData& getPartData(PartId id) const;
     PartId& getParentRef(PartId part);
@@ -199,7 +201,9 @@ private:
 
 // the lower 16 bits are the subkind and the higher 16 bits are the kind
 using PartKindId = u32;
-PartKindId getPartKindId(PartKind kind, u16 subkind);
+PartKindId get_part_kind_id(PartKind kind, u16 subkind);
+PartKind get_part_kind(PartKindId kindId);
+u16 get_subkind(PartKindId kindId);
 
 constexpr static int MaxPartCount = cobot::max(cobot::max(ChasisKindCount, TireKindCount), ControllerKindCount);
 
@@ -207,6 +211,7 @@ const char* get_chasis_name(ChasisKind kind);
 const char* get_tire_name(TireKind kind);
 const char* get_controller_name(ControllerKind kind);
 
+vec2 get_part_scale(PartKindId id);
 vec2 get_chasis_scale(ChasisKind kind);
 vec2 get_tire_scale(TireKind kind);
 vec2 get_controller_scale(ControllerKind kind);

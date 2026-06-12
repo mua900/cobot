@@ -1072,7 +1072,7 @@ bool Application::mouse_input_settings()
 }
 
 void Application::mouse_hover() {
-
+    // @todo
 }
 
 void Application::update_keyboard_state()

@@ -1,8 +1,11 @@
 #include "vehicle.hpp"
 
-VPartTransform chain_part_transform(VPartTransform p0, VPartTransform p1)
+VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child)
 {
-    return VPartTransform(p0.position + p1.position, p0.rotation + p1.rotation, p0.scale * p1.scale);
+    vec2 position = parent.position + (child.position * parent.scale).rotated(parent.rotation);
+    float rotation = parent.rotation + child.rotation;
+    float scale = parent.scale * child.scale;
+    return VPartTransform(position, rotation, scale);
 }
 
 VPartTransform Vehicle::getWorldTransform(PartId part) const
@@ -11,12 +14,23 @@ VPartTransform Vehicle::getWorldTransform(PartId part) const
     VPartTransform t = data.transform;
     while (data.parent.is_valid()) {
         data = getPartData(data.parent);
-        t = chain_part_transform(t, data.transform);
+        t = chain_part_transform(data.transform, t);
     }
 
-    t = chain_part_transform(t, VPartTransform(worldPosition, 1.0f));
+    t = chain_part_transform(VPartTransform(worldPosition, 1.0), t);
 
     return t;
+}
+
+u16 Vehicle::getSubKind(PartId part)
+{
+    switch (part.kind)
+    {
+        case PART_CHASIS:       return chasis.get_ref(part.index).kind;
+        case PART_TIRE:         return tire.get_ref(part.index).kind;
+        case PART_CONTROLLER:   return controller.get_ref(part.index).kind;
+        default: panic("Unknown part kind");
+    }
 }
 
 PartId& Vehicle::getParentRef(PartId part)
@@ -54,6 +68,19 @@ const char* get_controller_name(ControllerKind kind) {
 }
 
 
+vec2 get_part_scale(PartKindId id)
+{
+    PartKind kind = get_part_kind(id);
+    u16 subKind = get_subkind(id);
+    switch (kind)
+    {
+        case PART_TIRE:         return get_tire_scale(TireKind(subKind));
+        case PART_CHASIS:       return get_chasis_scale(ChasisKind(subKind));
+        case PART_CONTROLLER:   return get_controller_scale(ControllerKind(subKind));
+        default: panic("Unhandled part kind");
+    }
+}
+
 vec2 get_chasis_scale(ChasisKind kind) {
     return vec2(100, 100);
 }
@@ -67,7 +94,17 @@ vec2 get_controller_scale(ControllerKind kind) {
 }
 
 
-PartKindId getPartKindId(PartKind partKind, u16 subType)
+u16 get_subkind(PartKindId kindId)
+{
+    return kindId & 0xffff;
+}
+
+PartKind get_part_kind(PartKindId kindId)
+{
+    return PartKind((kindId >> 16) & 0xffff);
+}
+
+PartKindId get_part_kind_id(PartKind partKind, u16 subType)
 {
     return (partKind << 16) | (subType);
 }
@@ -165,7 +202,7 @@ PartId Vehicle::get_part_on_location(PartId part, vec2 location, VPartTransform 
         case PART_CHASIS: {
             Chasis& cha = chasis[part.index];
             VPartTransform t = chain_part_transform(parent, cha.part.transform);
-            vec2 scale = get_chasis_scale(cha.kind);
+            vec2 scale = get_chasis_scale(cha.kind) * t.scale;
 
             switch (cha.kind) {
                 case ChasisBasic: {
@@ -227,14 +264,14 @@ Vehicle get_default_vehicle()
 
     Chasis chasis = {};
     chasis.kind = ChasisBasic;
-    chasis.part.transform.scale = 1;
+    chasis.part.transform.scale = 1.0;
 
     PartId chasis_id = vehicle.add_chasis(chasis);
 
     Tire tires[4] = {};
     for (auto& t : tires) {
         t.kind = TireBasic;
-        t.part.transform.scale = 1;
+        t.part.transform.scale = 1.0;
         t.basic.size = 5;
         t.part.parent = chasis_id;
     }
@@ -260,7 +297,7 @@ Vehicle get_default_vehicle()
     Controller con = {};
     con.kind = ControllerBasic;
     con.script = {};
-    con.part.transform.scale = 1;
+    con.part.transform.scale = 1.0;
     con.basic.codeSizeLimit = 128;
     vehicle.add_controller(con);
 
@@ -279,7 +316,7 @@ bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& 
         if (!id.is_valid()) return false;
         SDL_Texture* texture = catalog.get_image(id);
 
-        icons.add(IconButton(texture, background, getPartKindId(PART_TIRE, i)));
+        icons.add(IconButton(texture, background, get_part_kind_id(PART_TIRE, i)));
     }
 
     return true;
@@ -293,7 +330,7 @@ bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog
         if (!id.is_valid()) return false;
         SDL_Texture* texture = catalog.get_image(id);
 
-        icons.add(IconButton(texture, background, getPartKindId(PART_CHASIS, i)));
+        icons.add(IconButton(texture, background, get_part_kind_id(PART_CHASIS, i)));
     }
 
     return true;
@@ -307,7 +344,7 @@ bool load_controller_icons(DArray<IconButton>& icons, Color background, AssetCat
         if (!id.is_valid()) return false;
         SDL_Texture* texture = catalog.get_image(id);
 
-        icons.add(IconButton(texture, background, getPartKindId(PART_CONTROLLER, i)));
+        icons.add(IconButton(texture, background, get_part_kind_id(PART_CONTROLLER, i)));
     }
 
     return true;

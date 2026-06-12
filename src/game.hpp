@@ -6,6 +6,7 @@
 #include "math_util.hpp"
 #include "text.hpp"
 #include "time.hpp"
+#include "input.hpp"
 
 #include "vehicle.hpp"
 #include "script.hpp"
@@ -20,6 +21,8 @@ struct Camera {
 };
 
 struct GameState;
+
+typedef bool (*KeyboardCallback)(GameState* game, KeyboardState* keyboard);
 
 typedef void (*UpdateFunction)(GameState* game, TimeInfo time);
 typedef void (*FixedUpdateFunction)(GameState* game);
@@ -44,6 +47,7 @@ struct GameState {
 
     AssetId partImages [PART_KIND_COUNT][MaxPartCount] = {};
     UpdateState* updateState = nullptr;
+    KeyboardCallback keyboard = nullptr;
 
     Vehicle& get_active_vehicle() const;
     void update(TimeInfo time);
@@ -59,6 +63,10 @@ void vehicleSimulationFixedUpdate(GameState* game);
 
 void starSystemUpdate(GameState* game, TimeInfo time);
 void starSystemFixedUpdate(GameState* game);
+
+bool keyboardIdle(GameState* game, KeyboardState* keyboard);
+bool keyboardVehicle(GameState* game, KeyboardState* keyboard);
+bool keyboardStarSystem(GameState* game, KeyboardState* keyboard);
 
 void draw_game_state(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_game_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);

@@ -42,6 +42,10 @@ struct vec2 {
         return sqrtf(x * x + y * y);
     }
 
+    vec2 rotated(float angle) const {
+        return vec2(x * std::cosf(angle), y * std::sinf(angle));
+    }
+
     void operator+=(const vec2 other)
     {
         x += other.x;
