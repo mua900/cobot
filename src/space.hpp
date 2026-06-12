@@ -4,6 +4,7 @@
 #include "common.hpp"
 #include "math_util.hpp"
 #include "template.hpp"
+#include "map.hpp"
 
 // Keplerian orbit (in 2 dimensions)
 // distance(trueAnomaly) = semiMajorAxis*(1-eccentricity**2) / (1 + eccentricity*cos(trueAnomaly))
@@ -84,6 +85,7 @@ struct Planet {
     ColorF color = {};
     CelestialRotation rotation = {};
     Atmosphere atmosphere = {};
+    SDL_Texture* map = {};
     Body body = {};
 
     Planet() {}
@@ -104,6 +106,6 @@ struct StarSystem {
     void simulation_step(double dt);
 };
 
-StarSystem get_default_star_system();
+StarSystem get_default_star_system(SDL_Renderer* renderer);
 
 #endif // _SPACE_H

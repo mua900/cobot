@@ -184,6 +184,8 @@ void draw_game_star_system(const RenderContext& context, const AssetCatalog& cat
     vec2 center = render_size / 2;
     draw_circle(context, center, system.star.radius, ColorF(0.6, 0.5, 0.1));
 
+    // SDL_SetGPURenderState(context.renderer, context.render_states[RenderStatePlanet]);
+
     float maxDepth = 10;
     for (auto& planet : system.planets)
     {
@@ -191,8 +193,11 @@ void draw_game_star_system(const RenderContext& context, const AssetCatalog& cat
         float zdistance = cobot::smoothstep(-maxDepth / 2, maxDepth / 2, planet.body.position.z);
         // remap to 0.5 - 1.0 range
         zdistance = (zdistance + 1.0f) / 2;
-        draw_circle(context, center + pos, planet.body.radius, ColorF(planet.color, zdistance));
+        // draw_circle(context, center + pos, planet.body.radius, ColorF(planet.color, zdistance));
+        draw_circle_with_texture(context, center + pos, planet.body.radius, planet.map, ColorF(planet.color, zdistance));
     }
+
+    SDL_SetGPURenderState(context.renderer, nullptr);
 }
 
 void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game)

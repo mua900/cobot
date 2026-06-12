@@ -111,14 +111,9 @@ bool Application::initialize()
 
 bool Application::init_game_state()
 {
-    /*
-    if (!generate_map(m_render.renderer, &game.map, 32, 640, 640)) {
-        return false;
-    }
-    */
     game.vehicles.add(get_default_vehicle());
     game.active_vehicle = 0;
-    game.starSystem = get_default_star_system();
+    game.starSystem = get_default_star_system(m_render.renderer);
     game.scripts.add(Script(init_lua()));
 
     return true;
@@ -955,6 +950,8 @@ bool Application::mouse_input_mission_editor()
                         if (area.contains_centered(mouse_pos))
                         {
                             selected = i;
+                            list.open = false;
+                            break;
                         }
                     }
 
