@@ -22,7 +22,7 @@ struct Camera {
 
 struct GameState;
 
-typedef bool (*KeyboardCallback)(GameState* game, KeyboardState* keyboard);
+typedef void (*KeyboardCallback)(GameState* game, KeyboardState* keyboard);
 
 typedef void (*UpdateFunction)(GameState* game, TimeInfo time);
 typedef void (*FixedUpdateFunction)(GameState* game);
@@ -64,9 +64,9 @@ void vehicleSimulationFixedUpdate(GameState* game);
 void starSystemUpdate(GameState* game, TimeInfo time);
 void starSystemFixedUpdate(GameState* game);
 
-bool keyboardIdle(GameState* game, KeyboardState* keyboard);
-bool keyboardVehicle(GameState* game, KeyboardState* keyboard);
-bool keyboardStarSystem(GameState* game, KeyboardState* keyboard);
+void keyboardIdle(GameState* game, KeyboardState* keyboard);
+void keyboardVehicle(GameState* game, KeyboardState* keyboard);
+void keyboardStarSystem(GameState* game, KeyboardState* keyboard);
 
 void draw_game_state(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_game_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);

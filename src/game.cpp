@@ -51,6 +51,32 @@ void starSystemFixedUpdate(GameState* game)
     game->starSystem.simulation_step(fixedTimeStep * game->updateState->timeScale);
 }
 
+void keyboardIdle(GameState* game, KeyboardState* keyboard) {}
+
+void keyboardVehicle(GameState* game, KeyboardState* keyboard) {
+    const float vehicle_velocity = 50;
+
+    Vehicle& vehicle = game->get_active_vehicle();
+    if (keyboard->keys[KEY_UP]) {
+        vehicle.velocity = -vehicle_velocity * vehicle.forward();
+    }
+    else if (keyboard->keys[KEY_DOWN]) {
+        vehicle.velocity = vehicle_velocity * vehicle.forward();
+    }
+    else {
+        vehicle.velocity = vec2(0);
+    }
+
+    if (keyboard->keys[KEY_LEFT]) {
+        vehicle.orientation += 0.1;
+    }
+    else if (keyboard->keys[KEY_RIGHT]) {
+        vehicle.orientation -= 0.1;
+    }
+}
+
+void keyboardStarSystem(GameState* game, KeyboardState* keyboard) {}
+
 
 Rectangle GameState::get_planet_screen_area(vec2 ws, int planet) const
 {

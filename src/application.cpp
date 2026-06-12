@@ -80,6 +80,7 @@ bool Application::initialize()
         m_update_states[UpdateStateSolarSystem] = { starSystemUpdate, starSystemFixedUpdate, 0, 0, 1e6 };
 
         game.updateState = &m_update_states[UpdateStateIdle];
+        game.keyboard = keyboardIdle;
     }
 
     gameInfo.selectedTimescale = game.updateState->timeScale;
@@ -286,6 +287,7 @@ void Application::handle_events()
     }
 
     update_keyboard_state();
+    game.keyboard(&game, &m_input.keyboard);
 }
 
 bool Application::keyboard_input_up(SDL_KeyboardEvent keyboard)
@@ -328,26 +330,7 @@ bool Application::keyboard_input_down(SDL_KeyboardEvent keyboard)
 
 bool Application::keyboard_input_down_game(KeyboardEvent keyboard)
 {
-    const float vehicle_velocity = 50;
-    switch (keyboard.scancode)
-    {
-        case SDL_SCANCODE_UP: {
-            game.get_active_vehicle().velocity.y = -vehicle_velocity;
-            return true;
-        }
-        case SDL_SCANCODE_DOWN: {
-            game.get_active_vehicle().velocity.y = vehicle_velocity;
-            return true;
-        }
-        case SDL_SCANCODE_LEFT: {
-            game.get_active_vehicle().orientation += 0.1;
-            return true;
-        }
-        case SDL_SCANCODE_RIGHT: {
-            game.get_active_vehicle().orientation -= 0.1;
-            return true;
-        }
-    }
+    return false;
 }
 
 bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
@@ -1677,16 +1660,19 @@ void Application::switch_modes(ApplicationMode mode) {
         case ModeSolarSystem:
         {
             game.updateState = &m_update_states[UpdateStateSolarSystem];
+            game.keyboard = keyboardStarSystem;
             break;
         }
         case ModeGame:
         {
             game.updateState = &m_update_states[UpdateStateVehicleSimulation];
+            game.keyboard = keyboardVehicle;
             break;
         }
         default:
         {
             game.updateState = &m_update_states[UpdateStateIdle];
+            game.keyboard = keyboardIdle;
             break;
         }
     }

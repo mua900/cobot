@@ -8,6 +8,11 @@ VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child)
     return VPartTransform(position, rotation, scale);
 }
 
+vec2 Vehicle::forward() const
+{
+    return vec2(std::cosf(orientation), std::sinf(orientation));
+}
+
 VPartTransform Vehicle::getWorldTransform(PartId part) const
 {
     VPartData data = getPartData(part);
