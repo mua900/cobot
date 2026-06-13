@@ -23,9 +23,9 @@
      inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
-     inkscape:zoom="2"
-     inkscape:cx="200"
-     inkscape:cy="145.25"
+     inkscape:zoom="4"
+     inkscape:cx="169.25"
+     inkscape:cy="128.625"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -46,5 +46,12 @@
        x="12.7"
        y="-59.266666"
        transform="rotate(90)" />
+    <rect
+       style="fill:#4d4d4d;stroke-width:0.253216"
+       id="rect2"
+       width="12.7"
+       height="25.4"
+       x="42.333332"
+       y="21.166666" />
   </g>
 </svg>

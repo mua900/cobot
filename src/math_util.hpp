@@ -358,6 +358,8 @@ struct Quad {
     }
 };
 
+Quad get_rotated_points(Rectangle rect, float angle);
+
 struct RectangleRot {
     float x = {};
     float y = {};
@@ -372,16 +374,7 @@ struct RectangleRot {
     {}
 
     Quad get_points() const {
-        float s = std::sinf(rot);
-        float c = std::cosf(rot);
-        float hw = w / 2;
-        float hh = h / 2;
-        float mag = std::sqrtf(hw * hw + hh * hh);
-
-        vec2 diag0 = vec2(hw * c - hh * s, hw * s + hh * c);
-        vec2 diag1 = vec2(-hw * c - hh * s, -hw * s + hh * c);
-
-        return Quad(vec2(x + diag1.x, y + diag1.y), vec2(x + diag0.x, y + diag0.y), vec2(x - diag0.x, y - diag0.y), vec2(x - diag1.x, y - diag1.y));
+        return get_rotated_points(Rectangle(x,y,w,h), rot);
     }
 };
 

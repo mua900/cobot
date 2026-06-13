@@ -803,13 +803,13 @@ void draw_closed_path(RenderContext& context, vec2 points[], int numPoints, floa
     }
 }
 
-void render_texture(const RenderContext& render, Rectangle area, Texture* texture, bool strech)
+void render_texture(const RenderContext& render, Rectangle area, Texture* texture, bool stretch)
 {
     float tex_w, tex_h;
     SDL_GetTextureSize(texture, &tex_w, &tex_h);
     SDL_FRect src = { 0, 0, tex_w, tex_h };
-    float width = strech ? area.w : tex_w;
-    float height = strech ? area.h : tex_h;
+    float width = stretch ? area.w : tex_w;
+    float height = stretch ? area.h : tex_h;
     SDL_FRect dst = { area.x - width / 2, area.y - height / 2, width, height };
     SDL_RenderTexture(render.renderer, texture, &src, &dst);
 }
@@ -822,8 +822,8 @@ void render_texture_rotate(const RenderContext& render, Rectangle area, Texture*
     float width = strech ? area.w : tex_w;
     float height = strech ? area.h : tex_h;
     SDL_FRect dst = { area.x - width / 2, area.y - height / 2, width, height };
-    // draw_circle(render, vec2(center.x, center.y), 10, ColorF(1,0,0));
-    SDL_RenderTextureRotated(render.renderer, texture, &src, &dst, angle, nullptr, SDL_FlipMode(flip));
+
+    SDL_RenderTextureRotated(render.renderer, texture, &src, &dst, angle * RADIAN_TO_DEGREE_F, nullptr, SDL_FlipMode(flip));
 }
 
 void render_textured_rectangle(const RenderContext& render, Rectangle rect, SDL_Texture* texture, Color color, bool strech, bool center) {

@@ -68,10 +68,10 @@ void keyboardVehicle(GameState* game, KeyboardState* keyboard) {
     }
 
     if (keyboard->keys[KEY_LEFT]) {
-        vehicle.orientation += 0.1;
+        vehicle.orientation -= 0.1;
     }
     else if (keyboard->keys[KEY_RIGHT]) {
-        vehicle.orientation -= 0.1;
+        vehicle.orientation += 0.1;
     }
 }
 
@@ -193,7 +193,6 @@ void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, con
         VPartData part_data = vehicle.getPartData(vehicle.rootParts[i]);
         VPartTransform vtransform = vehicle.get_vehicle_transform();
         draw_vehicle_part(vehicle.rootParts[i], vtransform, context, catalog, game);
-        draw_arrow(context, vtransform.position, vtransform.position + vehicle.forward() * 60, 6, 0.1, ColorF(0.4,0.4,0));
     }
 }
 

@@ -181,6 +181,21 @@ mat4x4 camera_matrix(vec2 position, vec2 scale)
     };
 }
 
+Quad get_rotated_points(Rectangle rect, float angle)
+{
+    float s = std::sinf(angle);
+    float c = std::cosf(angle);
+    float hw = rect.w / 2;
+    float hh = rect.h / 2;
+    float mag = std::sqrtf(hw * hw + hh * hh);
+
+    vec2 diag0 = vec2(hw * c - hh * s, hw * s + hh * c);
+    vec2 diag1 = vec2(-hw * c - hh * s, -hw * s + hh * c);
+
+    return Quad(vec2(rect.x + diag1.x, rect.y + diag1.y), vec2(rect.x + diag0.x, rect.y + diag0.y), vec2(rect.x - diag0.x, rect.y - diag0.y),
+                vec2(rect.x - diag1.x, rect.y - diag1.y));
+}
+
 Rectangle merge_volumes(Rectangle v1, Rectangle v2)
 {
     Rectangle res = {};

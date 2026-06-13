@@ -164,6 +164,7 @@ void draw_closed_path(RenderContext& context, vec2 points[], int numPoints, floa
 void draw_quadratic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, float thick, ColorF color);
 void draw_cubic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, vec2 p3, float thick, ColorF color);
 void draw_quad(const RenderContext& context, Quad quad, ColorF color);
+void draw_quad_with_texture(const RenderContext& context, Quad quad, SDL_Texture* texture, ColorF color);
 
 void draw_texture(const RenderContext& context, Rectangle area, SDL_Texture* texture);
 
