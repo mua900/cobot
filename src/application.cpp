@@ -8,8 +8,18 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3_mixer/SDL_mixer.h>
 
+static const char* org_name = "flying-carpet";
+static const char* cobot_identifier = "flying-carpet.cobot";
+static const char* cobot_name = "cobot";
+static const char* cobot_version = "0.1.0";
+
 bool Application::initialize()
 {
+    if (!SDL_SetAppMetadata(cobot_name, cobot_version, cobot_identifier))
+    {
+        SDL_Log(SDL_GetError());
+    }
+
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
         SDL_Log("Failed to init SDL: %s\n", SDL_GetError());
         return false;
@@ -43,7 +53,7 @@ bool Application::initialize()
 
         SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE |
                                 SDL_WINDOW_HIDDEN;  // show the window after the initialization is complete
-        SDL_Window* window = SDL_CreateWindow("game", INIT_WINDOW_WIDTH, INIT_WINDOW_HEIGHT, flags);
+        SDL_Window* window = SDL_CreateWindow("cobot", INIT_WINDOW_WIDTH, INIT_WINDOW_HEIGHT, flags);
         if (!window)
         {
             SDL_Log("Failed to create window with SDL: %s\n", SDL_GetError());
