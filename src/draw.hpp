@@ -153,6 +153,7 @@ void end_frame(RenderContext& context);
 bool loadShader(RenderContext& context, Shader& shader, const char* path);
 
 void draw_segment(const RenderContext& context, vec2 start, vec2 end, float thick, ColorF color);
+void draw_arrow(const RenderContext& context, vec2 start, vec2 end, float thick, float head_ratio, ColorF color);
 void draw_circle(const RenderContext& context, vec2 position, float radius, ColorF color);
 void draw_circle_with_texture(const RenderContext& context, vec2 position, float radius, SDL_Texture* texture, ColorF color);
 void draw_arc(const RenderContext& context, vec2 center, float inner_radius, float outer_radius, float start_angle, float arc, ColorF color);
@@ -162,16 +163,17 @@ void draw_path(RenderContext& context, vec2 points[], int numPoints, float thick
 void draw_closed_path(RenderContext& context, vec2 points[], int numPoints, float thick, ColorF color);
 void draw_quadratic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, float thick, ColorF color);
 void draw_cubic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, vec2 p3, float thick, ColorF color);
+void draw_quad(const RenderContext& context, Quad quad, ColorF color);
 
 void draw_texture(const RenderContext& context, Rectangle area, SDL_Texture* texture);
 
 SDL_Texture* render_text(SDL_Renderer* renderer, String text, Font font, Color color);
 Text create_text(SDL_Renderer* renderer, String text, Font font, Color color);
 
-void render_texture(SDL_Renderer* renderer, Rectangle area, Texture* texture, bool strech = false);
-void render_texture_rotate(SDL_Renderer* renderer, Rectangle area, Texture* texture, float angle, Flip flip, bool strech = false);
-void render_textured_rectangle(SDL_Renderer* renderer, Rectangle rect, Texture* texture, Color color, bool strech = false, bool center = true);
-void render_texture_with_tint(SDL_Renderer* renderer, Rectangle area, Texture* texture, ColorF tint, bool strech = false);
+void render_texture(const RenderContext& render, Rectangle area, Texture* texture, bool strech = false);
+void render_texture_rotate(const RenderContext& render, Rectangle area, Texture* texture, float angle, Flip flip, bool strech = false);
+void render_textured_rectangle(const RenderContext& render, Rectangle rect, Texture* texture, Color color, bool strech = false, bool center = true);
+void render_texture_with_tint(const RenderContext& render, Rectangle area, Texture* texture, ColorF tint, bool strech = false);
 
 
 void render_text_size(SDL_Renderer* renderer, Text text, vec2 where, vec2 absolute_scale = vec2(0, 0));

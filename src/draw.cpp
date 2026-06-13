@@ -491,6 +491,40 @@ void draw_segment(const RenderContext& context, vec2 start, vec2 end, float thic
     SDL_RenderGeometry(context.renderer, nullptr, vertices, 4, indices, 6);
 }
 
+void draw_arrow(const RenderContext& context, vec2 start, vec2 end, float thick, float head_ratio, ColorF color)
+{
+    vec2 dir = end - start;
+    float length = dir.magnitude();
+    dir /= length;
+    vec2 perp = vec2(-dir.y, dir.x);
+    vec2 head_start = start + dir * (1.0f - head_ratio) * length;
+    float wide = thick * 1.5;
+    
+    draw_segment(context, start, head_start, thick, color);
+
+    SDL_Vertex vertices[3];
+    int indices[3];
+
+    vertices[0] = {
+        SDL_FPoint { head_start.x + perp.x * wide, head_start.y + perp.y * wide },
+        SDL_FColor { COLOR_ARG(color) },
+    };
+    vertices[1] = {
+        SDL_FPoint { head_start.x - perp.x * wide, head_start.y - perp.y * wide },
+        SDL_FColor { COLOR_ARG(color) },
+    };
+    vertices[2] = {
+        SDL_FPoint { end.x, end.y },
+        SDL_FColor { COLOR_ARG(color) },
+    };
+
+    indices[0] = 0;
+    indices[1] = 1;
+    indices[2] = 2;
+
+    SDL_RenderGeometry(context.renderer, nullptr, vertices, 3, indices, 3);
+}
+
 void draw_arrow(const RenderContext& context, vec2 start, vec2 end, float thickness, ColorF color)
 {
     // 3 for the arrow head, 4 for the quadrilateral below
@@ -738,6 +772,21 @@ void draw_polygon(RenderContext& context, vec2 points[], int numPoints, ColorF c
     SDL_RenderGeometry(context.renderer, nullptr, context.vertex_scratch.data(), context.vertex_scratch.size(), context.index_scratch.data(), context.index_scratch.size());
 }
 
+void draw_quad(const RenderContext& context, Quad quad, ColorF color)
+{
+    SDL_Vertex vertex [4];
+    vertex[0] = { SDL_FPoint { quad.vertices[0].x, quad.vertices[0].y }, SDL_FColor { COLOR_ARG(color) } };
+    vertex[1] = { SDL_FPoint { quad.vertices[1].x, quad.vertices[1].y }, SDL_FColor { COLOR_ARG(color) } };
+    vertex[2] = { SDL_FPoint { quad.vertices[2].x, quad.vertices[2].y }, SDL_FColor { COLOR_ARG(color) } };
+    vertex[3] = { SDL_FPoint { quad.vertices[3].x, quad.vertices[3].y }, SDL_FColor{ COLOR_ARG(color) } };
+    int index [6] = {
+        QuadTopLeft, QuadBottomRight, QuadTopRight,
+        QuadTopLeft, QuadBottomLeft, QuadBottomRight,
+    };
+
+    SDL_RenderGeometry(context.renderer, nullptr, vertex, 4, index, 6);
+}
+
 void draw_path(RenderContext& context, vec2 points[], int numPoints, float thick, ColorF color)
 {
     for (int i = 0; i < numPoints - 1; i++)
@@ -754,7 +803,7 @@ void draw_closed_path(RenderContext& context, vec2 points[], int numPoints, floa
     }
 }
 
-void render_texture(SDL_Renderer* renderer, Rectangle area, Texture* texture, bool strech)
+void render_texture(const RenderContext& render, Rectangle area, Texture* texture, bool strech)
 {
     float tex_w, tex_h;
     SDL_GetTextureSize(texture, &tex_w, &tex_h);
@@ -762,10 +811,10 @@ void render_texture(SDL_Renderer* renderer, Rectangle area, Texture* texture, bo
     float width = strech ? area.w : tex_w;
     float height = strech ? area.h : tex_h;
     SDL_FRect dst = { area.x - width / 2, area.y - height / 2, width, height };
-    SDL_RenderTexture(renderer, texture, &src, &dst);
+    SDL_RenderTexture(render.renderer, texture, &src, &dst);
 }
 
-void render_texture_rotate(SDL_Renderer* renderer, Rectangle area, Texture* texture, float angle, Flip flip, bool strech)
+void render_texture_rotate(const RenderContext& render, Rectangle area, Texture* texture, float angle, Flip flip, bool strech)
 {
     float tex_w, tex_h;
     SDL_GetTextureSize(texture, &tex_w, &tex_h);
@@ -773,16 +822,16 @@ void render_texture_rotate(SDL_Renderer* renderer, Rectangle area, Texture* text
     float width = strech ? area.w : tex_w;
     float height = strech ? area.h : tex_h;
     SDL_FRect dst = { area.x - width / 2, area.y - height / 2, width, height };
-    SDL_FPoint center = { dst.x, dst.y };
-    SDL_RenderTextureRotated(renderer, texture, &src, &dst, angle, &center, SDL_FlipMode(flip));
+    // draw_circle(render, vec2(center.x, center.y), 10, ColorF(1,0,0));
+    SDL_RenderTextureRotated(render.renderer, texture, &src, &dst, angle, nullptr, SDL_FlipMode(flip));
 }
 
-void render_textured_rectangle(SDL_Renderer* renderer, Rectangle rect, SDL_Texture* texture, Color color, bool strech, bool center) {
-    SDL_SetRenderDrawColor(renderer, COLOR_ARG(color));
+void render_textured_rectangle(const RenderContext& render, Rectangle rect, SDL_Texture* texture, Color color, bool strech, bool center) {
+    SDL_SetRenderDrawColor(render.renderer, COLOR_ARG(color));
     SDL_FRect area = center ?
         SDL_FRect { rect.x - rect.w / 2, rect.y - rect.h / 2, rect.w, rect.h } :
         SDL_FRect { rect.x, rect.y, rect.w, rect.h };
-    SDL_RenderFillRect(renderer, &area);
+    SDL_RenderFillRect(render.renderer, &area);
 
     float tex_w, tex_h;
     SDL_GetTextureSize(texture, &tex_w, &tex_h);
@@ -790,10 +839,10 @@ void render_textured_rectangle(SDL_Renderer* renderer, Rectangle rect, SDL_Textu
     float width = strech ? area.w : tex_w;
     float height = strech ? area.h : tex_h;
     SDL_FRect dst = { area.x, area.y, width, height };
-    SDL_RenderTexture(renderer, texture, &src, &dst);
+    SDL_RenderTexture(render.renderer, texture, &src, &dst);
 }
 
-void render_texture_with_tint(SDL_Renderer* renderer, Rectangle area, Texture* texture, ColorF tint, bool strech)
+void render_texture_with_tint(const RenderContext& render, Rectangle area, Texture* texture, ColorF tint, bool strech)
 {
     float tex_w, tex_h;
     SDL_GetTextureSize(texture, &tex_w, &tex_h);
@@ -804,7 +853,7 @@ void render_texture_with_tint(SDL_Renderer* renderer, Rectangle area, Texture* t
 
     SDL_SetTextureColorModFloat(texture, tint.r, tint.g, tint.b);
     SDL_SetTextureAlphaModFloat(texture, tint.a);
-    SDL_RenderTexture(renderer, texture, &src, &dst);
+    SDL_RenderTexture(render.renderer, texture, &src, &dst);
 }
 
 void draw_quadratic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, float thick, ColorF color)

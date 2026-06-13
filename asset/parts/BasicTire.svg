@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
-   sodipodi:docname="tire_topdown.svg"
+   sodipodi:docname="BasicTire.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,7 +25,7 @@
      inkscape:document-units="px"
      inkscape:zoom="3.1523438"
      inkscape:cx="127.84139"
-     inkscape:cy="128"
+     inkscape:cy="128.31722"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -43,28 +43,32 @@
        id="rect1"
        width="33.866665"
        height="51.858334"
-       x="16.933332"
-       y="7.9375" />
+       x="16.933334"
+       y="-59.79583"
+       transform="rotate(90)" />
     <rect
        style="fill:#999999;stroke-width:0.22759"
        id="rect2"
        width="25.4"
        height="7.7217679"
-       x="21.166666"
-       y="11.90625" />
+       x="21.166668"
+       y="-55.82708"
+       transform="rotate(90)" />
     <rect
        style="fill:#999999;stroke-width:0.22759"
        id="rect4"
        width="25.4"
        height="7.7217679"
-       x="21.166666"
-       y="27.78125" />
+       x="21.166668"
+       y="-39.95208"
+       transform="rotate(90)" />
     <rect
        style="fill:#999999;stroke-width:0.22759"
        id="rect5"
        width="25.4"
        height="7.7217679"
-       x="21.166666"
-       y="43.65625" />
+       x="21.166668"
+       y="-24.077082"
+       transform="rotate(90)" />
   </g>
 </svg>

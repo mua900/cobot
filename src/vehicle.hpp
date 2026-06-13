@@ -195,6 +195,7 @@ struct Vehicle {
     PartId& getParentRef(PartId part);
 
     vec2 forward() const;
+    VPartTransform get_vehicle_transform() const;
 
     PartId getPartAt(vec2 position) const;
 private:

@@ -58,10 +58,10 @@ void keyboardVehicle(GameState* game, KeyboardState* keyboard) {
 
     Vehicle& vehicle = game->get_active_vehicle();
     if (keyboard->keys[KEY_UP]) {
-        vehicle.velocity = -vehicle_velocity * vehicle.forward();
+        vehicle.velocity =  vehicle_velocity * vehicle.forward();
     }
     else if (keyboard->keys[KEY_DOWN]) {
-        vehicle.velocity = vehicle_velocity * vehicle.forward();
+        vehicle.velocity = -vehicle_velocity * vehicle.forward();
     }
     else {
         vehicle.velocity = vec2(0);
@@ -126,7 +126,7 @@ void draw_chasis(const Chasis& chasis, VPartTransform parent, const RenderContex
 
     VPartTransform transform = chain_part_transform(parent, chasis.part.transform);
     Rectangle area = Rectangle(transform.position, get_chasis_scale(chasis.kind) * transform.scale);
-    render_texture_rotate(context.renderer, area, texture, transform.rotation, FlipNone, true);
+    render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 
     switch (chasis.kind) {
         case ChasisBasic: {
@@ -146,7 +146,7 @@ void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& con
 
     VPartTransform transform = chain_part_transform(parent, tire.part.transform);
     Rectangle area = Rectangle(transform.position, get_tire_scale(tire.kind) * transform.scale);
-    render_texture_rotate(context.renderer, area, texture, transform.rotation, FlipNone, true);
+    render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 }
 
 void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
@@ -156,7 +156,7 @@ void draw_controller(const Controller& controller, VPartTransform parent, const 
 
     VPartTransform transform = chain_part_transform(parent, controller.part.transform);
     Rectangle area = Rectangle(transform.position, get_controller_scale(controller.kind) * transform.scale);
-    render_texture_rotate(context.renderer, area, texture, transform.rotation, FlipNone, true);
+    render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 }
 
 
@@ -191,18 +191,18 @@ void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, con
     for (int i = 0; i < vehicle.rootParts.size(); i++)
     {
         VPartData part_data = vehicle.getPartData(vehicle.rootParts[i]);
-        part_data.transform.position += vehicle.worldPosition;
-        part_data.transform.rotation = vehicle.orientation;
-        draw_vehicle_part(vehicle.rootParts[i], part_data.transform, context, catalog, game);
+        VPartTransform vtransform = vehicle.get_vehicle_transform();
+        draw_vehicle_part(vehicle.rootParts[i], vtransform, context, catalog, game);
+        draw_arrow(context, vtransform.position, vtransform.position + vehicle.forward() * 60, 6, 0.1, ColorF(0.4,0.4,0));
     }
 }
 
-void draw_game_state(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+void draw_vehicle_simulation(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
     draw_vehicle(context, catalog, game);
 }
 
-void draw_game_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+void draw_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
     vec2 render_size = context.render_size;
     auto& system = game.starSystem;
@@ -210,6 +210,7 @@ void draw_game_star_system(const RenderContext& context, const AssetCatalog& cat
     vec2 center = render_size / 2;
     draw_circle(context, center, system.star.radius, ColorF(0.6, 0.5, 0.1));
 
+    // @todo fix
     // SDL_SetGPURenderState(context.renderer, context.render_states[RenderStatePlanet]);
 
     float maxDepth = 10;

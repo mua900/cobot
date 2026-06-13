@@ -68,8 +68,8 @@ void keyboardIdle(GameState* game, KeyboardState* keyboard);
 void keyboardVehicle(GameState* game, KeyboardState* keyboard);
 void keyboardStarSystem(GameState* game, KeyboardState* keyboard);
 
-void draw_game_state(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
-void draw_game_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
+void draw_vehicle_simulation(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
+void draw_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset, double centralBodyMass, float thick);
 void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_planet_outline(RenderContext& context, const GameState& game, int planet);

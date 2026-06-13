@@ -43,7 +43,9 @@ struct vec2 {
     }
 
     vec2 rotated(float angle) const {
-        return vec2(x * std::cosf(angle), y * std::sinf(angle));
+        float s = std::sinf(angle);
+        float c = std::cosf(angle);
+        return vec2(x * c - y * s, x * s + y * c);
     }
 
     void operator+=(const vec2 other)
@@ -335,6 +337,53 @@ struct Rectangle {
 };
 
 Rectangle merge_volumes(Rectangle v1, Rectangle v2);
+
+enum QuadVertexPosition {
+    QuadTopLeft = 0,
+    QuadTopRight = 1,
+    QuadBottomLeft = 2,
+    QuadBottomRight = 3,
+};
+
+struct Quad {
+    vec2 vertices[4];
+
+    Quad() {}
+    Quad(vec2 tl, vec2 tr, vec2 bl, vec2 br)
+    {
+        vertices[0] = tl;
+        vertices[1] = tr;
+        vertices[2] = bl;
+        vertices[3] = br;
+    }
+};
+
+struct RectangleRot {
+    float x = {};
+    float y = {};
+    float w = {};
+    float h = {};
+    float rot = {};
+
+    RectangleRot() {}
+    RectangleRot(float x, float y, float w, float h, float rotation)
+        :
+        x(x), y(y), w(w), h(h), rot(rotation)
+    {}
+
+    Quad get_points() const {
+        float s = std::sinf(rot);
+        float c = std::cosf(rot);
+        float hw = w / 2;
+        float hh = h / 2;
+        float mag = std::sqrtf(hw * hw + hh * hh);
+
+        vec2 diag0 = vec2(hw * c - hh * s, hw * s + hh * c);
+        vec2 diag1 = vec2(-hw * c - hh * s, -hw * s + hh * c);
+
+        return Quad(vec2(x + diag1.x, y + diag1.y), vec2(x + diag0.x, y + diag0.y), vec2(x - diag0.x, y - diag0.y), vec2(x - diag1.x, y - diag1.y));
+    }
+};
 
 #define COLOR_WHITE ((Color){0xff,0xff,0xff,0xff})
 #define COLOR_BLACK ((Color){0,0,0,0xff})

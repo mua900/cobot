@@ -1575,12 +1575,12 @@ vec2 Application::get_window_size() const {
 
 void Application::draw_game()
 {
-    draw_game_state(m_render, m_catalog, game);
+    draw_vehicle_simulation(m_render, m_catalog, game);
 }
 
 void Application::draw_solar_system()
 {
-    draw_game_star_system(m_render, m_catalog, game);
+    draw_star_system(m_render, m_catalog, game);
     draw_orbits(m_render, m_catalog, game);
     if (gameInfo.selectedPlanet != -1)
     {
@@ -1595,7 +1595,7 @@ void Application::draw_ui()
 
 void Application::draw_messages() {
     for (auto msg : messages) {
-        render_textured_rectangle(m_render.renderer, Rectangle(msg.where, msg.scale), msg.texture, msg.background, true);
+        render_textured_rectangle(m_render, Rectangle(msg.where, msg.scale), msg.texture, msg.background, true);
     }
 }
 
@@ -1623,7 +1623,7 @@ void Application::draw_ui_state(const UiState& state)
     {
         if (button.info.visible)
         {
-            render_textured_rectangle(m_render.renderer, Rectangle(button.position, button.scale), button.text.texture, button.background, true);
+            render_textured_rectangle(m_render, Rectangle(button.position, button.scale), button.text.texture, button.background, true);
         }
     }
 
@@ -1631,13 +1631,13 @@ void Application::draw_ui_state(const UiState& state)
     {
         if (button.info.visible)
         {
-            render_textured_rectangle(m_render.renderer, Rectangle(button.position, button.scale), button.image, button.background, true);
+            render_textured_rectangle(m_render, Rectangle(button.position, button.scale), button.image, button.background, true);
         }
     }
 
     for (const Label& label : state.label)
     {
-        render_textured_rectangle(m_render.renderer, Rectangle(label.position, label.scale), label.text.texture, label.background, false);
+        render_textured_rectangle(m_render, Rectangle(label.position, label.scale), label.text.texture, label.background, false);
     }
 
     for (const ControlMenu& menu : state.control)
@@ -1739,7 +1739,7 @@ void Application::render_discrete_slider(const DiscreteSlider& slider) const
 
         if (slider.texture)
         {
-            render_texture_with_tint(m_render.renderer, area, slider.texture, color, true);
+            render_texture_with_tint(m_render, area, slider.texture, color, true);
         }
         else
         {
@@ -1788,7 +1788,7 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
         text_area.y += height;
         height += text_area.h;
 
-        render_texture(m_render.renderer, text_area, value.name.texture, true);
+        render_texture(m_render, text_area, value.name.texture, true);
 
         Rectangle area = panel.get_field_area(panel.activeTab, i, &ui);
         area.y += height;
@@ -1838,7 +1838,7 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
 
     for (int i = 0; i < panel.tabs.size(); i++) {
         Rectangle area = panel.get_tab_header_area(i);
-        render_textured_rectangle(m_render.renderer, area, panel.tabs.get(i).tabIcon.texture, panel.tabs.get(i).tabIcon.background, true);
+        render_textured_rectangle(m_render, area, panel.tabs.get(i).tabIcon.texture, panel.tabs.get(i).tabIcon.background, true);
     }
 }
 
@@ -1869,7 +1869,7 @@ void Application::render_control_menu(const ControlMenu& menu) const
         int index = 0;
         for (auto& button : menu.buttons)
         {
-            render_textured_rectangle(m_render.renderer, Rectangle(menu.position + vec2(0, menu.scale.y * index), menu.scale), button.label.texture, menu.background, true);
+            render_textured_rectangle(m_render, Rectangle(menu.position + vec2(0, menu.scale.y * index), menu.scale), button.label.texture, menu.background, true);
             index += 1;
         }
     }
@@ -1879,16 +1879,16 @@ void Application::render_text_editor(const TextEditor& editor) const
 {
     Rectangle text_area = editor.field.m_area;
     Rectangle title_area = editor.get_title_area();
-    render_textured_rectangle(m_render.renderer, title_area, editor.title_texture, editor.title_bar_color);
+    render_textured_rectangle(m_render, title_area, editor.title_texture, editor.title_bar_color);
 
     Rectangle area = editor.get_title_area();
     vec2 iconPos = area.get_position() + vec2(area.get_scale().x / 2, 0);
     vec2 iconScale = vec2(editor.title_height, editor.title_height);
 
     Color clicked_background = Color(0xAA, 0x55, 0x33);
-    render_textured_rectangle(m_render.renderer, editor.get_icon1_area(), editor.icon1.texture, (editor.clicked_icon == 1) ? clicked_background : editor.icon1.background, true);
-    render_textured_rectangle(m_render.renderer, editor.get_icon2_area(), editor.icon2.texture, (editor.clicked_icon == 2) ? clicked_background : editor.icon2.background, true);
-    render_textured_rectangle(m_render.renderer, editor.get_icon3_area(), editor.icon3.texture, (editor.clicked_icon == 3) ? clicked_background : editor.icon3.background, true);
+    render_textured_rectangle(m_render, editor.get_icon1_area(), editor.icon1.texture, (editor.clicked_icon == 1) ? clicked_background : editor.icon1.background, true);
+    render_textured_rectangle(m_render, editor.get_icon2_area(), editor.icon2.texture, (editor.clicked_icon == 2) ? clicked_background : editor.icon2.background, true);
+    render_textured_rectangle(m_render, editor.get_icon3_area(), editor.icon3.texture, (editor.clicked_icon == 3) ? clicked_background : editor.icon3.background, true);
 
     render_text_field(editor.field);
 }

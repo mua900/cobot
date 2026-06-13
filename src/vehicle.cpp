@@ -8,6 +8,11 @@ VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child)
     return VPartTransform(position, rotation, scale);
 }
 
+VPartTransform Vehicle::get_vehicle_transform() const
+{
+    return VPartTransform(worldPosition, orientation, 1.0);
+}
+
 vec2 Vehicle::forward() const
 {
     return vec2(std::cosf(orientation), std::sinf(orientation));
@@ -281,12 +286,12 @@ Vehicle get_default_vehicle()
         t.part.parent = chasis_id;
     }
 
-    int hDist = 36;
-    int vDist = 25;
-    tires[0].part.transform.position = vec2(-hDist, -vDist);
-    tires[1].part.transform.position = vec2( hDist, -vDist);
-    tires[2].part.transform.position = vec2(-hDist,  vDist);
-    tires[3].part.transform.position = vec2( hDist,  vDist);
+    int hDist = 25;
+    int vDist = 36;
+    tires[0].part.transform.position = vec2( hDist, -vDist);
+    tires[1].part.transform.position = vec2( hDist,  vDist);
+    tires[2].part.transform.position = vec2(-hDist, -vDist);
+    tires[3].part.transform.position = vec2(-hDist,  vDist);
 
     PartId fl = vehicle.add_tire(tires[0]);
     PartId fr = vehicle.add_tire(tires[1]);
