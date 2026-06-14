@@ -10,14 +10,19 @@ struct ivec2 {
 };
 
 enum Direction {
-    DirRight,
-    DirLeft,
-    DirDown,
-    DirUp,
+    DirNone = 0,
+    DirEast = 1,
+    DirWest = 2,
+    DirSouth = 4,
+    DirNorth = 8,
+    DirNorthEast = DirNorth | DirEast,
+    DirNorthWest = DirNorth | DirWest,
+    DirSouthEast = DirSouth | DirEast,
+    DirSouthWest = DirSouth | DirWest,
 };
 
-constexpr bool direction_is_vertical(Direction dir) { return dir == DirUp || dir == DirDown; }
-constexpr bool direction_is_horizontal(Direction dir) { return dir == DirLeft || dir == DirRight; }
+constexpr bool direction_is_vertical(Direction dir) { return dir & DirNorth || dir & DirSouth; }
+constexpr bool direction_is_horizontal(Direction dir) { return dir & DirWest || dir & DirEast; }
 
 enum Axis {
     AXIS_X,
@@ -318,6 +323,18 @@ struct Rectangle {
     }
     Rectangle to_center() const {
         return Rectangle(x + w / 2, y + h / 2, w, h);
+    }
+
+    Direction on_edge(vec2 position, float d) const
+    {
+        vec2 topLeft = get_top_left();
+        vec2 relative = position - topLeft;
+        Direction west = std::fabsf(relative.x) < d ? DirWest : DirNone;
+        Direction east = std::fabsf(relative.x - w) < d ? DirEast : DirNone;
+        Direction south = std::fabsf(relative.y) < d ? DirSouth : DirNone;
+        Direction north = std::fabsf(relative.y - h) < d ? DirNorth : DirNone;
+
+        return Direction(west | east | south | north);
     }
 
     vec2 get_position() const {

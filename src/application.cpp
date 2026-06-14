@@ -73,6 +73,22 @@ bool Application::initialize()
         SDL_ShowWindow(window);
     }
 
+    {
+        SDL_Cursor* normal = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
+        SDL_Cursor* text = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT);
+        SDL_Cursor* resize_ew = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE);
+        SDL_Cursor* resize_ns = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE);
+        if (!(normal && text && resize_ew && resize_ns))
+        {
+            return false;
+        }
+
+        m_input.mouse.cursor.normal = normal;
+        m_input.mouse.cursor.text = text;
+        m_input.mouse.cursor.resize_ew = resize_ew;
+        m_input.mouse.cursor.resize_ns = resize_ns;
+    }
+
     if (!load_assets())
     {
         return false;
@@ -261,6 +277,7 @@ void Application::handle_events()
             case SDL_EVENT_MOUSE_MOTION:
             {
                 m_input.mouse.buttonFlags = SDL_GetMouseState(&m_input.mouse.pos.x, &m_input.mouse.pos.y);
+                mouse_hover();
                 break;
             }
             case SDL_EVENT_WINDOW_RESIZED:
@@ -298,6 +315,36 @@ void Application::handle_events()
 
     update_keyboard_state();
     game.keyboard(&game, &m_input.keyboard);
+}
+
+void Application::mouse_hover()
+{
+    vec2 mouse_pos = m_input.mouse.pos;
+    UiState& ui = get_active_ui();
+
+    for (auto& editor : ui.editor)
+    {
+        Rectangle text_area = editor.get_text_area();
+        Rectangle title_area = editor.get_title_area();
+
+        Direction dir = text_area.on_edge(mouse_pos, 3);
+        if (dir) {
+            if (direction_is_vertical(dir))
+            {
+                SDL_SetCursor(m_input.mouse.cursor.resize_ns);
+            }
+            else if (direction_is_horizontal(dir))
+            {
+                SDL_SetCursor(m_input.mouse.cursor.resize_ew);
+            }
+        }
+        else if (text_area.contains_centered(mouse_pos)) {
+            SDL_SetCursor(m_input.mouse.cursor.text);
+        }
+        else {
+            SDL_SetCursor(m_input.mouse.cursor.normal);
+        }
+    }
 }
 
 bool Application::keyboard_input_up(SDL_KeyboardEvent keyboard)
@@ -349,6 +396,12 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
     {
         case SDL_SCANCODE_ESCAPE:
         {
+            if (doing_text_input)
+            {
+                text_input_stop();
+                return true;
+            }
+            
             quit = true;
             return true;
         }
@@ -1064,10 +1117,6 @@ bool Application::mouse_input_settings()
     return false;
 }
 
-void Application::mouse_hover() {
-    // @todo
-}
-
 void Application::update_keyboard_state()
 {
     m_input.keyboard.keys = SDL_GetKeyboardState(&m_input.keyboard.num_keys);
@@ -1374,7 +1423,7 @@ bool Application::init_solar_system_ui()
         return false;
     }
 
-    ValuePanel planet_panel (PlanetPanel, Rectangle(ws.x * 0.9, ws.y * 0.5, ws.x * 0.2, ws.y), 25, 50, DirLeft);
+    ValuePanel planet_panel (PlanetPanel, Rectangle(ws.x * 0.9, ws.y * 0.5, ws.x * 0.2, ws.y), 25, 50, DirWest);
     ValuePanelTab orbital_parameter_tab = {};
     ValuePanelTab missions_tab = {};
     orbital_parameter_tab.field_height = 20;
@@ -1412,7 +1461,7 @@ bool Application::init_game_ui() {
     Color button_color = Color(0x77, 0x55, 0x55);
     Color background = Color(0x33, 0x55, 0x66);
 
-    add_button(UiGame, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), editor_font, button_color), ws * 0.05, ws * 0.1, background, true));
+    add_button(UiGame, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background, true));
 
     Color controlMenuButtonColor = Color(0x44, 0x66, 0x77);
     ControlMenu menus[PART_KIND_COUNT] = {};
@@ -1428,6 +1477,25 @@ bool Application::init_game_ui() {
     {
         ui.control.add(menus[i]);
     }
+
+    AssetId buildIcon = get_asset(String("buildIcon"), m_catalog);
+    AssetId debugIcon = get_asset(String("debugIcon"), m_catalog);
+    AssetId runIcon = get_asset(String("runIcon"), m_catalog);
+
+    if (!(buildIcon.is_valid() && debugIcon.is_valid() && runIcon.is_valid()))
+    {
+        return false;
+    }
+
+    TextEditor editor = TextEditor(MainEditor, Rectangle(1200, 300, 300, 300), m_editor_font,
+                                    Color(0x22, 0x88, 0x22), Color(0x88, 0x22, 0x33), Color(0x55, 0x77, 0x44), Color(0x88, 0x33, 0x66),
+                                    String("Program"), 15);
+    Color icon_background(0x66, 0x11, 0x33);
+    editor.icon1 = Icon(m_catalog.get_image(runIcon), icon_background);
+    editor.icon2 = Icon(m_catalog.get_image(buildIcon), icon_background);
+    editor.icon3 = Icon(m_catalog.get_image(debugIcon), icon_background);
+
+    ui.editor.add(editor);
 
     return true;
 }

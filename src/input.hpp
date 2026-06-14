@@ -38,9 +38,17 @@ struct KeyboardState {
     SDL_Keymod mod_state = {};
 };
 
+struct MouseCursor {
+    SDL_Cursor* normal = nullptr;
+    SDL_Cursor* text = nullptr;
+    SDL_Cursor* resize_ns = nullptr;
+    SDL_Cursor* resize_ew = nullptr;
+};
+
 struct MouseState {
     vec2 pos = {};
     SDL_MouseButtonFlags buttonFlags = {};
+    MouseCursor cursor = {};
     bool down = false;
 };
 

@@ -596,23 +596,23 @@ Rectangle ValuePanel::get_tab_header_area(int index) const
 {
     ASSERT(index < tabs.size());
 
-    if (direction == DirLeft || direction == DirRight)
+    if (direction & DirWest || direction & DirEast)
     {
         int rowCount = area.h / (tabHeaderSize * 2);
         int row = index % rowCount;
         int column = index / rowCount;
-        float x = area.x + area.w / 2 * (direction == DirRight ? 1 : -1) + (tabHeaderSize / 2 + column * tabHeaderSize) * (direction == DirRight ? 1 : -1);
+        float x = area.x + area.w / 2 * (direction & DirEast ? 1 : -1) + (tabHeaderSize / 2 + column * tabHeaderSize) * (direction & DirEast ? 1 : -1);
         float y = area.y - area.h / 2 + tabHeaderSize / 2 + row * tabHeaderSize * 2;
         return Rectangle(x, y,
                          tabHeaderSize, tabHeaderSize);
     }
-    else if (direction == DirUp || direction == DirDown)
+    else if (direction & DirNorth || direction & DirSouth)
     {
         int columnCount = area.w / (tabHeaderSize * 2);
         int column = index % columnCount;
         int row = index / columnCount;
         float x = area.x + tabHeaderSize / 2 + column * tabHeaderSize * 2;
-        float y = area.y + (direction == DirDown ? area.h : 0) + (tabHeaderSize / 2 + row * tabHeaderSize) * (direction == DirDown ? 1 : -1);
+        float y = area.y + (direction & DirSouth ? area.h : 0) + (tabHeaderSize / 2 + row * tabHeaderSize) * (direction & DirSouth ? 1 : -1);
         return Rectangle(x, y,
                          tabHeaderSize, tabHeaderSize);
     }
