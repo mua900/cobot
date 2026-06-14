@@ -169,7 +169,9 @@ private:
 
     bool on_mouse_down();
     void on_mouse_up(int button);
-    void mouse_hover();
+    void on_mouse_move();
+
+    void set_text_editor_cursor(Rectangle text_area, Direction dir);
 
     bool mouse_input_game();
     bool mouse_input_menu();

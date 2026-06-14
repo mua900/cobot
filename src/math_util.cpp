@@ -1,3 +1,4 @@
+#include "common.hpp"
 #include "math_util.hpp"
 
 float Complex::magnitude() const
@@ -213,6 +214,21 @@ Rectangle merge_volumes(Rectangle v1, Rectangle v2)
     res.h = max.y - min.y;
 
     return res;
+}
+
+vec2 Rectangle::get_point_at_direction(Direction dir) const {
+    switch (dir) {
+        case DirNone:      return vec2(x, y);  // ???
+        case DirEast:      return vec2(x + w / 2, y);
+        case DirWest:      return vec2(x - w / 2, y);
+        case DirSouth:     return vec2(x, y - h / 2);
+        case DirNorth:     return vec2(x, y + h / 2);
+        case DirNorthEast: return vec2(x + w / 2, y + h / 2);
+        case DirNorthWest: return vec2(x - w / 2, y + h / 2);
+        case DirSouthEast: return vec2(x + w / 2, y - h / 2);
+        case DirSouthWest: return vec2(x - w / 2, y - h / 2);
+        default:           panic("Invalid direction");
+    }
 }
 
 bool Rectangle::contains_top_left(vec2 p) const

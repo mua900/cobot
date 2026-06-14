@@ -337,6 +337,8 @@ struct Rectangle {
         return Direction(west | east | south | north);
     }
 
+    vec2 get_point_at_direction(Direction dir) const;
+    
     vec2 get_position() const {
         return vec2(x, y);
     }

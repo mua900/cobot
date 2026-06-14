@@ -46,8 +46,15 @@ struct UiElementInfo {
 };
 
 struct DragInfo {
-    vec2 start = vec2();
+    vec2 start = {};
     bool drag = false;
+};
+
+struct ResizeInfo {
+    vec2 start = {};
+    Rectangle initialArea = {};
+    Direction direction = {};
+    bool resize = false;
 };
 
 struct Label {
@@ -340,7 +347,7 @@ struct Text_Field
 struct TextEditor {
     Text_Field field = {};
     MutableString name = {};
-    SDL_Texture* title_texture = nullptr;  // rendered name
+    SDL_Texture* title_texture = nullptr;  // rendered name or something else
     float title_height = 0;
     Color title_color = Color();  // color of the title text
     Color title_bar_color = Color();
@@ -351,6 +358,7 @@ struct TextEditor {
     int clicked_icon = 0;
 
     DragInfo drag = {};
+    ResizeInfo resize = {};
     UserData user = {};
 
     TextEditor() {}

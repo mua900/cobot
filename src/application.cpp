@@ -277,7 +277,7 @@ void Application::handle_events()
             case SDL_EVENT_MOUSE_MOTION:
             {
                 m_input.mouse.buttonFlags = SDL_GetMouseState(&m_input.mouse.pos.x, &m_input.mouse.pos.y);
-                mouse_hover();
+                on_mouse_move();
                 break;
             }
             case SDL_EVENT_WINDOW_RESIZED:
@@ -317,7 +317,7 @@ void Application::handle_events()
     game.keyboard(&game, &m_input.keyboard);
 }
 
-void Application::mouse_hover()
+void Application::on_mouse_move()
 {
     vec2 mouse_pos = m_input.mouse.pos;
     UiState& ui = get_active_ui();
@@ -327,23 +327,67 @@ void Application::mouse_hover()
         Rectangle text_area = editor.get_text_area();
         Rectangle title_area = editor.get_title_area();
 
-        Direction dir = text_area.on_edge(mouse_pos, 3);
-        if (dir) {
-            if (direction_is_vertical(dir))
+        if (editor.resize.resize)
+        {
+            Rectangle area = editor.resize.initialArea;
+            vec2 p = area.get_point_at_direction(editor.resize.direction);
+            vec2 d = mouse_pos - p;
+            Direction direction = editor.resize.direction;
+
+            if (direction & DirEast)
             {
-                SDL_SetCursor(m_input.mouse.cursor.resize_ns);
+                area.x += d.x / 2;
+                area.w += d.x;
             }
-            else if (direction_is_horizontal(dir))
+            else if (direction & DirWest)
             {
-                SDL_SetCursor(m_input.mouse.cursor.resize_ew);
+                area.x += d.x / 2;
+                area.w -= d.x;
             }
+
+            if (direction & DirNorth)
+            {
+                area.y += d.y / 2;
+                area.h += d.y;
+            }
+            else if (direction & DirSouth)
+            {
+                area.y += d.y / 2;
+                area.h -= d.y;
+            }
+
+            area.w = cobot::clamp(30, 2000, area.w);
+            area.h = cobot::clamp(30, 2000, area.h);
+
+            editor.field.m_area = area;
         }
-        else if (text_area.contains_centered(mouse_pos)) {
-            SDL_SetCursor(m_input.mouse.cursor.text);
+        else
+        {
+            Direction dir = text_area.on_edge(mouse_pos, 3);
+            set_text_editor_cursor(text_area, dir);
         }
-        else {
-            SDL_SetCursor(m_input.mouse.cursor.normal);
+    }
+}
+
+void Application::set_text_editor_cursor(Rectangle text_area, Direction dir)
+{
+    vec2 mouse_pos = m_input.mouse.pos;
+
+    if (dir) {
+        if (direction_is_vertical(dir))
+        {
+            SDL_SetCursor(m_input.mouse.cursor.resize_ns);
         }
+        else if (direction_is_horizontal(dir))
+        {
+            SDL_SetCursor(m_input.mouse.cursor.resize_ew);
+        }
+    }
+    else if (text_area.contains_centered(mouse_pos)) {
+        SDL_SetCursor(m_input.mouse.cursor.text);
+    }
+    else {
+        SDL_SetCursor(m_input.mouse.cursor.normal);
     }
 }
 
@@ -553,9 +597,6 @@ bool Application::keyboard_input_down_solar_system(KeyboardEvent keyboard)
 
 bool Application::on_mouse_down()
 {
-    vec2 mouse_pos = m_input.mouse.pos;
-    vec2 render_size = m_render.render_size;
-
     if (m_mode == ModeGame)
     {
         return mouse_input_game();
@@ -825,7 +866,8 @@ bool Application::mouse_input_game()
             }
         }
 
-        for (int it = 0; it < ui.editor.size(); it++) {
+        for (int it = 0; it < ui.editor.size(); it++)
+        {
             auto& editor = ui.editor.get_ref(it);
             auto& field = editor.field;
             Rectangle area = field.m_area;
@@ -833,6 +875,16 @@ bool Application::mouse_input_game()
             if (editor.drag.drag) {
                 editor.drag.drag = false;
                 continue;
+            }
+
+            Direction dir = area.on_edge(mouse_pos, 3);
+            if (dir != DirNone)
+            {
+                editor.resize.resize = true;
+                editor.resize.direction = dir;
+                editor.resize.start = mouse_pos;
+                editor.resize.initialArea = editor.get_text_area();
+                return true;
             }
 
             if (area.contains_centered(mouse_pos))
@@ -1194,14 +1246,19 @@ void Application::update_ui_pos()
 
 void Application::on_mouse_up(int button)
 {
-    if (button == MOUSE_LEFT_MASK)
-    {
-        // @todo maybe button interactions should take action on button up
+    UiState& ui = get_active_ui();
 
-        UiState& ui = get_active_ui();
+    if (button & MOUSE_LEFT_MASK)
+    {
+        // @todo maybe button interactions should be on button up
+
         for (auto& editor : ui.editor) {
             if (editor.drag.drag) {
                 editor.drag.drag = false;
+            }
+
+            if (editor.resize.resize) {
+                editor.resize = {};
             }
 
             editor.clicked_icon = 0;
