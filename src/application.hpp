@@ -130,8 +130,6 @@ public:
 
     void cleanup();
 private:
-    void run_program();
-
     bool init_game_state();
 
     bool init_render();

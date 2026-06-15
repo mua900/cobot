@@ -115,7 +115,7 @@ bool Application::initialize()
         int num_keys = 0;
         m_input.keyboard.keys = SDL_GetKeyboardState(&num_keys);
         m_input.keyboard.num_keys = num_keys;
-        m_input.keyboard.do_input = true;
+        m_input.keyboard.do_input = true;   
     }
 
     initialize_libraries();
@@ -2121,11 +2121,6 @@ void Application::toggle_text_input()
     }
 }
 
-void Application::run_program() {
-    Script script = game.scripts.get(0);
-
-}
-
 bool Script::set_source(ScriptLanguage language, String source) {
     if (language == ScriptLanguage::LANGUAGE) {
         Interp* interp = interp_create();
@@ -2137,17 +2132,6 @@ bool Script::set_source(ScriptLanguage language, String source) {
         return true;
     }
     else if (language == ScriptLanguage::LUA) {
-        String_Builder buffer = {};
-        buffer.append(source);
-        lua_State* state = init_lua();
-
-
-        if (data.lua) {
-            lua_close(data.lua);
-        }
-
-        data.lua = state;
-
         script.clear_and_append(source);
         return true;
     }

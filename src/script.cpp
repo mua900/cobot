@@ -1,4 +1,5 @@
 #include "script.hpp"
+#include "log.hpp"
 
 void run_script(Script& s)
 {
@@ -22,58 +23,31 @@ lua_State* init_lua()
 {
     lua_State* L = luaL_newstate();
     if (!L) return nullptr;
-    luaL_openlibs(L);
+    luaL_openselectedlibs(L, LUA_MATHLIBK | LUA_TABLIBK | LUA_STRLIBK, 0);
 
-    lua_newuserdata(L, 1);
-    lua_register(L, "add", add);
+    lua_newtable(L);
+    lua_pushcfunction(L, move);
+    lua_setfield(L, -2, "move");
+    lua_newtable(L);
+    lua_pushnumber(L, 0);
+    lua_setfield(L, -2, "x");
+    lua_pushnumber(L, 0);
+    lua_setfield(L, -2, "y");
+    lua_setfield(L, -2, "target");
+    lua_setglobal(L, "vehicle");
+    lua_register(L, "move", move);
 
     return L;
 }
 
 // -- lua functions
 
-int add(lua_State* L)
-{
-    int a = lua_tointeger(L, 1);
-    int b = lua_tointeger(L, 2);
-
-    lua_pushinteger(L, a + b);
-
-    return 1;
-}
-
-int forward(lua_State* L)
+int move(lua_State* L)
 {
     float x = lua_tonumber(L, 1);
     float y = lua_tonumber(L, 2);
-    float delta = lua_tonumber(L, 3);
 
-    float mag = std::sqrtf(x * x + y * y);
-    
-    x = x + (x / mag) * delta;
-    y = y + (y / mag) * delta;
+    log_info("%f, %f", x, y);
 
-    lua_pushnumber(L, x);
-    lua_pushnumber(L, y);
-
-    return 2;
-}
-
-int back(lua_State* L)
-{
-    lua_checkstack(L, 3);
-
-    float x = lua_tonumber(L, 1);
-    float y = lua_tonumber(L, 2);
-    float delta = lua_tonumber(L, 3);
-
-    float mag = std::sqrtf(x * x + y * y);
-    
-    x = x + (x / mag) * delta;
-    y = y + (y / mag) * delta;
-
-    lua_pushnumber(L, x);
-    lua_pushnumber(L, y);
-
-    return 2;
+    return 0;
 }
