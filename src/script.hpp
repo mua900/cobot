@@ -35,4 +35,13 @@ struct Script {
 
 void run_script(Script& s);
 
+// make a lua state
+lua_State* init_lua();
+
+// functions
+int add(lua_State* L);
+int forward(lua_State* L);
+int back(lua_State* L);
+int move(lua_State* L);
+
 #endif // _SCRIPT_H

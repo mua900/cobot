@@ -28,14 +28,20 @@
 #define KEY_RIGHT SDL_SCANCODE_RIGHT
 #define KEY_LEFT SDL_SCANCODE_LEFT
 
-using KeyboardEvent = SDL_KeyboardEvent;
+using Scancode = SDL_Scancode;
+constexpr Scancode ScancodeUnknown = SDL_SCANCODE_UNKNOWN;
+constexpr Scancode ScancodeCount = SDL_SCANCODE_COUNT;
 
-// @todo gamepad
+using KeyboardEvent = SDL_KeyboardEvent;
 
 struct KeyboardState {
     const bool* keys = {};
     int num_keys = {};
     SDL_Keymod mod_state = {};
+
+    bool do_input = false;
+
+    bool key_pressed(Scancode code) const;
 };
 
 struct MouseCursor {

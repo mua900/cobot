@@ -56,21 +56,26 @@ void keyboardIdle(GameState* game, KeyboardState* keyboard) {}
 void keyboardVehicle(GameState* game, KeyboardState* keyboard) {
     const float vehicle_velocity = 50;
 
+    if (!keyboard->do_input)
+    {
+        return;
+    }
+
     Vehicle& vehicle = game->get_active_vehicle();
-    if (keyboard->keys[KEY_UP]) {
+    if (keyboard->key_pressed(KEY_UP)) {
         vehicle.velocity =  vehicle_velocity * vehicle.forward();
     }
-    else if (keyboard->keys[KEY_DOWN]) {
+    else if (keyboard->key_pressed(KEY_DOWN)) {
         vehicle.velocity = -vehicle_velocity * vehicle.forward();
     }
     else {
         vehicle.velocity = vec2(0);
     }
 
-    if (keyboard->keys[KEY_LEFT]) {
+    if (keyboard->key_pressed(KEY_LEFT)) {
         vehicle.orientation -= 0.1;
     }
-    else if (keyboard->keys[KEY_RIGHT]) {
+    else if (keyboard->key_pressed(KEY_RIGHT)) {
         vehicle.orientation += 0.1;
     }
 }

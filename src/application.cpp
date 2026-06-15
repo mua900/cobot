@@ -111,6 +111,13 @@ bool Application::initialize()
 
     gameInfo.selectedTimescale = game.updateState->timeScale;
 
+    {
+        int num_keys = 0;
+        m_input.keyboard.keys = SDL_GetKeyboardState(&num_keys);
+        m_input.keyboard.num_keys = num_keys;
+        m_input.keyboard.do_input = true;
+    }
+
     initialize_libraries();
 
     if (!init_game_state()) {
@@ -356,8 +363,8 @@ void Application::on_mouse_move()
                 area.h -= d.y;
             }
 
-            area.w = cobot::clamp(40, 2000, area.w);
-            area.h = cobot::clamp(40, 2000, area.h);
+            area.w = cobot::clamp(30, 2000, area.w);
+            area.h = cobot::clamp(30, 2000, area.h);
 
             editor.field.m_area = area;
         }
@@ -1544,9 +1551,9 @@ bool Application::init_game_ui() {
         return false;
     }
 
-    TextEditor editor = TextEditor(MainEditor, Rectangle(1200, 300, 300, 300), m_editor_font,
+    TextEditor editor = TextEditor(MainEditor, Rectangle(900, 300, 500, 500), m_editor_font,
                                     Color(0x22, 0x88, 0x22), Color(0x88, 0x22, 0x33), Color(0x55, 0x77, 0x44), Color(0x88, 0x33, 0x66),
-                                    String("Program"), 15);
+                                    String("Program"), 30);
     Color icon_background(0x66, 0x11, 0x33);
     editor.icon1 = Icon(m_catalog.get_image(runIcon), icon_background);
     editor.icon2 = Icon(m_catalog.get_image(buildIcon), icon_background);
@@ -2044,7 +2051,7 @@ void Application::render_text_field(const Text_Field& text_field) const
         if (doing_text_input)
         {
             float cursor_width = area.w / 1000;
-            render_rectangle(Rectangle(vec2(top_left.x + text_field.m_cursor_pixel_x - cursor_width / 2, top_left.y + text_field.m_cursor_pixel_y), vec2(cursor_width, font_size)), TextCursorColor);
+            render_rectangle(Rectangle(vec2(top_left.x + text_field.m_cursor_pixel_x - cursor_width / 2, top_left.y + text_field.m_cursor_pixel_y + font_size / 2), vec2(cursor_width, font_size)), TextCursorColor);
         }
     }
 }
@@ -2083,6 +2090,7 @@ void Application::text_input_stop()
 {
     SDL_StopTextInput(m_window.window);
     doing_text_input = false;
+    m_input.keyboard.do_input = true;
 
     for (int i = 0; i < UiCount; i++)
     {
@@ -2096,6 +2104,7 @@ void Application::text_input_start()
 {
     SDL_StartTextInput(m_window.window);
     doing_text_input = true;
+    m_input.keyboard.do_input = false;
 
     m_background_color = {0, 0x44, 0x66, 0xff};
 }
@@ -2146,16 +2155,6 @@ bool Script::set_source(ScriptLanguage language, String source) {
         ASSERT(false);
         return false;
     }
-}
-
-lua_State* init_lua()
-{
-    lua_State* state = luaL_newstate();
-    if (!state) return nullptr;
-
-    // @todo register the functions we want etc.
-
-    return state;
 }
 
 void initialize_libraries()
