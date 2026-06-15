@@ -13,7 +13,7 @@ cmake ..
 By default the executable will go into build/bin/ or build/bin/$ConfigurationName depending on the compiler.
 The application will search for assets and a file named run_tree.txt listing what it needs to load in the folder the executable is located in.
 The application needs shaders to function and they are kept in source format in version control.
-So you need to create an asset/shader/binary/folder and put the compiled binary forms of the shaders in asset/shader/src/.
+So you need to create an asset/shader/binary/ folder and put the compiled binary forms of the shaders in asset/shader/src/.
 There is a python script asset/shader/compile_shaders.py that can automatically compile and put shaders you want.
 You need directx shader compiler installed to use it.
 

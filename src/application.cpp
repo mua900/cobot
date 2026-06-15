@@ -356,8 +356,8 @@ void Application::on_mouse_move()
                 area.h -= d.y;
             }
 
-            area.w = cobot::clamp(30, 2000, area.w);
-            area.h = cobot::clamp(30, 2000, area.h);
+            area.w = cobot::clamp(40, 2000, area.w);
+            area.h = cobot::clamp(40, 2000, area.h);
 
             editor.field.m_area = area;
         }
@@ -1221,7 +1221,7 @@ void Application::update_ui_state(vec2 window_size) {
         float x_factor = window_size.x / assumed.x;
         float y_factor = window_size.y / assumed.y;
         if ((fabsf(x_factor - 1.0f) >= 0.1f) || (fabsf(y_factor - 1.0f) >= 0.1f)) {
-            m_ui[i].update_state(window_size, m_render.renderer, m_catalog);
+            m_ui[i].update_state(window_size, m_render, m_catalog);
         }
     }
 }

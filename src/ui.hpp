@@ -379,6 +379,8 @@ struct TextEditor {
         title_bar_color(titleBarColor)
     {}
 
+    void rescale(vec2 scale, const RenderContext& render, const AssetCatalog& catalog);
+
     Rectangle get_title_area() const {
         return Rectangle(field.m_area.x, field.m_area.y - (field.m_area.h + title_height) / 2, field.m_area.w, title_height);
     }
@@ -687,7 +689,7 @@ struct UiState {
     TextInputTarget text_input_target = {};
     vec2 assumed_window_size = {};
 
-    void update_state(vec2 window_size, SDL_Renderer* renderer, const AssetCatalog& catalog);
+    void update_state(vec2 window_size, const RenderContext& render, const AssetCatalog& catalog);
 
     Text_Field* get_selected_text_field();
 

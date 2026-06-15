@@ -35,5 +35,8 @@ def main():
     if args.fragment:
         compile_shaders(args.fragment, "fragment")
 
+    if not (args.vertex or args.fragment):
+        print("Please provide shaders to compile")
+
 if __name__ == "__main__":
     main()
