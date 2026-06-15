@@ -8,6 +8,9 @@
 
 #include "lua.hpp"
 
+struct VehicleProgram {
+    vec2 target = {};
+};
 
 enum class ScriptLanguage {
     LUA,
@@ -23,6 +26,8 @@ struct Script {
         Interp* interp;
     } data = {};
 
+    VehicleProgram program = {};
+
     Script() : language(ScriptLanguage::LUA), data{} {}
     Script(lua_State* lua) : language(ScriptLanguage::LUA)
     {
@@ -36,12 +41,8 @@ struct Script {
 
 void run_script(Script& s);
 
-struct VehicleProgram {
-    vec2 target = {};
-};
-
 // make a lua state
-lua_State* init_lua();
+lua_State* init_lua(VehicleProgram* program);
 
 // functions
 int move(lua_State* L);

@@ -19,7 +19,7 @@ void run_script(Script& s)
     }
 }
 
-lua_State* init_lua()
+lua_State* init_lua(VehicleProgram* program)
 {
     lua_State* L = luaL_newstate();
     if (!L) return nullptr;
@@ -34,8 +34,12 @@ lua_State* init_lua()
     lua_pushnumber(L, 0);
     lua_setfield(L, -2, "y");
     lua_setfield(L, -2, "target");
+    lua_pushcfunction(L, move);
+    lua_setfield(L, -2, "move");
     lua_setglobal(L, "vehicle");
-    lua_register(L, "move", move);
+
+    lua_pushlightuserdata(L, program);
+    lua_setfield(L, LUA_REGISTRYINDEX, "program");
 
     return L;
 }
@@ -47,7 +51,9 @@ int move(lua_State* L)
     float x = lua_tonumber(L, 1);
     float y = lua_tonumber(L, 2);
 
-    log_info("%f, %f", x, y);
+    lua_getfield(L, LUA_REGISTRYINDEX, "program");
+    VehicleProgram* program = (VehicleProgram*) lua_topointer(L, -1);
+    log_info("%p", program);
 
     return 0;
 }

@@ -115,7 +115,7 @@ bool Application::initialize()
         int num_keys = 0;
         m_input.keyboard.keys = SDL_GetKeyboardState(&num_keys);
         m_input.keyboard.num_keys = num_keys;
-        m_input.keyboard.do_input = true;   
+        m_input.keyboard.do_input = true;
     }
 
     initialize_libraries();
@@ -148,7 +148,9 @@ bool Application::init_game_state()
     game.vehicles.add(get_default_vehicle());
     game.active_vehicle = 0;
     game.starSystem = get_default_star_system(m_render.renderer);
-    game.scripts.add(Script(init_lua()));
+    Script s = {};
+    s.data.lua = init_lua(&s.program);
+    game.scripts.add(s);
 
     return true;
 }
