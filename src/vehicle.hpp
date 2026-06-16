@@ -9,7 +9,7 @@
 
 enum PartKind : u16 {
     PART_TIRE = 0,
-    PART_CHASIS = 1,
+    PART_CHASSIS = 1,
     PART_CONTROLLER = 2,
     PART_KIND_COUNT = 3,
     PART_KIND_SENTINEL = 4,
@@ -93,32 +93,32 @@ struct Tire {
     Tire(VPartData part, BasicTire t) : kind(TireBasic), part(part), basic(t) {}
 };
 
-enum ChasisKind {
-    ChasisBasic,
-    ChasisKindCount,
-    ChasisSentinel,
+enum ChassisKind {
+    ChassisBasic,
+    ChassisKindCount,
+    ChassisSentinel,
 };
 
-struct BasicChasis {
+struct BasicChassis {
     AttachmentPoint frontLeft = {};
     AttachmentPoint frontRight = {};
     AttachmentPoint backLeft = {};
     AttachmentPoint backRight = {};
 };
 
-struct Chasis {
-    ChasisKind kind = ChasisSentinel;
+struct Chassis {
+    ChassisKind kind = ChassisSentinel;
     VPartData part = {};
     union {
-        BasicChasis basic;
+        BasicChassis basic;
     };
 
-    Chasis() {
+    Chassis() {
         basic = {};
     }
     // implicit
-    Chasis(BasicChasis c) : kind(ChasisBasic), basic(c) {}
-    Chasis(VPartData part, BasicChasis c) : kind(ChasisBasic), part(part), basic(c) {}
+    Chassis(BasicChassis c) : kind(ChassisBasic), basic(c) {}
+    Chassis(VPartData part, BasicChassis c) : kind(ChassisBasic), part(part), basic(c) {}
 };
 
 enum ControllerKind {
@@ -151,7 +151,7 @@ struct VehiclePart {
     PartKind kind = PART_KIND_SENTINEL;
     union {
         Tire* tire;
-        Chasis* chasis;
+        Chassis* chassis;
         Controller* controller;
     };
 
@@ -159,7 +159,7 @@ struct VehiclePart {
         tire = nullptr;
     }
     VehiclePart(Tire* t) : kind(PART_TIRE), tire(t) {}
-    VehiclePart(Chasis* c) : kind(PART_CHASIS), chasis(c) {}
+    VehiclePart(Chassis* c) : kind(PART_CHASSIS), chassis(c) {}
     VehiclePart(Controller* c) : kind(PART_CONTROLLER), controller(c) {}
 };
 
@@ -177,15 +177,15 @@ struct Vehicle {
     DArray<PartId> rootParts = {};
     
     DArray<Tire> tire = {};
-    DArray<Chasis> chasis = {};
+    DArray<Chassis> chassis = {};
     DArray<Controller> controller = {};
 
     PartId add_tire(Tire& t);
-    PartId add_chasis(Chasis& c);
+    PartId add_chassis(Chassis& c);
     PartId add_controller(Controller& c);
 
     Tire* get_tire(PartId t);
-    Chasis* get_chasis(PartId c);
+    Chassis* get_chassis(PartId c);
     Controller* get_controller(PartId c);
 
     int add_root(PartId part);
@@ -211,19 +211,19 @@ PartKindId get_part_kind_id(PartKind kind, u16 subkind);
 PartKind get_part_kind(PartKindId kindId);
 u16 get_subkind(PartKindId kindId);
 
-constexpr static int MaxPartCount = cobot::max(cobot::max(ChasisKindCount, TireKindCount), ControllerKindCount);
+constexpr static int MaxPartCount = cobot::max(cobot::max(ChassisKindCount, TireKindCount), ControllerKindCount);
 
-const char* get_chasis_name(ChasisKind kind);
+const char* get_chassis_name(ChassisKind kind);
 const char* get_tire_name(TireKind kind);
 const char* get_controller_name(ControllerKind kind);
 
 vec2 get_part_scale(PartKindId id);
-vec2 get_chasis_scale(ChasisKind kind);
+vec2 get_chassis_scale(ChassisKind kind);
 vec2 get_tire_scale(TireKind kind);
 vec2 get_controller_scale(ControllerKind kind);
 
 bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
-bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
+bool load_chassis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
 bool load_controller_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
 
 Vehicle get_default_vehicle();

@@ -38,7 +38,10 @@ void vehicleSimulationUpdate(GameState* game, TimeInfo time)
 
         if (!s.commands.empty())
         {
-            vehicle.execute_command(*s.commands.get_start());
+            if (vehicle.execute_command(*s.commands.get_start()))
+            {
+                s.commands.remove_start();
+            }
         }
     }
 
@@ -101,11 +104,11 @@ Vehicle& GameState::get_active_vehicle() const
 
 bool GameState::load_part_images(AssetCatalog& catalog)
 {
-    for (int i = 0; i < ChasisKindCount; i++) {
-        String name = String(get_chasis_name(ChasisKind(i)));
+    for (int i = 0; i < ChassisKindCount; i++) {
+        String name = String(get_chassis_name(ChassisKind(i)));
         AssetId id = get_asset(name, catalog);
         if (!id.is_valid()) return false;
-        partImages[PART_CHASIS][i] = id;
+        partImages[PART_CHASSIS][i] = id;
     }
     
     for (int i = 0; i < TireKindCount; i++) {
@@ -127,17 +130,17 @@ bool GameState::load_part_images(AssetCatalog& catalog)
 
 void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 
-void draw_chasis(const Chasis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+void draw_chasis(const Chassis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
-    AssetId imageId = game.partImages[PART_CHASIS][chasis.kind];
+    AssetId imageId = game.partImages[PART_CHASSIS][chasis.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
     VPartTransform transform = chain_part_transform(parent, chasis.part.transform);
-    Rectangle area = Rectangle(transform.position, get_chasis_scale(chasis.kind) * transform.scale);
+    Rectangle area = Rectangle(transform.position, get_chassis_scale(chasis.kind) * transform.scale);
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 
     switch (chasis.kind) {
-        case ChasisBasic: {
+        case ChassisBasic: {
             draw_vehicle_part(chasis.basic.frontLeft.part, transform, context, catalog, game);
             draw_vehicle_part(chasis.basic.frontRight.part, transform, context, catalog, game);
             draw_vehicle_part(chasis.basic.backLeft.part, transform, context, catalog, game);
@@ -174,8 +177,8 @@ void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& 
 
     switch (part.kind)
     {
-        case PART_CHASIS: {
-            const Chasis& chasis = vehicle.chasis[part.index];
+        case PART_CHASSIS: {
+            const Chassis& chasis = vehicle.chassis[part.index];
             draw_chasis(chasis, parent, context, catalog, game);
             break;
         }

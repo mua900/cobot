@@ -24,7 +24,7 @@ struct AssetId {
     bool is_valid() const { return id != -1 && generation != 0; }
 };
 
-static const AssetId NullAssetId = AssetId {-1, 0};
+static constexpr AssetId NullAssetId = AssetId {-1, 0};
 
 struct AssetLoadContext {
     RenderContext* render;

@@ -7,11 +7,11 @@
 #include "template.hpp"
 
 using TrackId = u32;
-static const TrackId NullTrackId = -1;
+static constexpr TrackId NullTrackId = -1;
 
 struct AudioPlayer {
     SDL_AudioDeviceID device = {};
-    MIX_Mixer* mixer;
+    MIX_Mixer* mixer = {};
     // each track owns a single audio to play and we can query from SDL_mixer the audio object so we don't need to store it separately
     BucketList<MIX_Track*> tracks;
 

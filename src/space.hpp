@@ -37,7 +37,7 @@ struct OrbitalParameters {
     {}
 };
 
-// orbitting body
+// orbiting body
 struct Body {
     float mass = 0;
     float radius = 0;
@@ -93,7 +93,7 @@ struct Planet {
     Body body = {};
 
     Planet() {}
-    Planet(String name, ColorF color, Body body) : name(name), color(color), body(body) {}
+    Planet(String name, ColorF color, const Body &body) : name(name), color(color), body(body) {}
 };
 
 struct Star {

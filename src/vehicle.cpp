@@ -61,7 +61,7 @@ u16 Vehicle::getSubKind(PartId part)
 {
     switch (part.kind)
     {
-        case PART_CHASIS:       return chasis.get_ref(part.index).kind;
+        case PART_CHASSIS:       return chassis.get_ref(part.index).kind;
         case PART_TIRE:         return tire.get_ref(part.index).kind;
         case PART_CONTROLLER:   return controller.get_ref(part.index).kind;
         default: panic("Unknown part kind");
@@ -77,8 +77,8 @@ PartId& Vehicle::getParentRef(PartId part)
 VPartData& Vehicle::getPartData(PartId id) const
 {
     switch (id.kind) {
-        case PART_CHASIS: {
-            return chasis[id.index].part;
+        case PART_CHASSIS: {
+            return chassis[id.index].part;
         }
         case PART_TIRE: {
             return tire[id.index].part;
@@ -90,7 +90,7 @@ VPartData& Vehicle::getPartData(PartId id) const
     }
 }
 
-const char* get_chasis_name(ChasisKind kind) {
+const char* get_chassis_name(ChassisKind kind) {
     return "BasicChasis";
 }
 
@@ -110,13 +110,13 @@ vec2 get_part_scale(PartKindId id)
     switch (kind)
     {
         case PART_TIRE:         return get_tire_scale(TireKind(subKind));
-        case PART_CHASIS:       return get_chasis_scale(ChasisKind(subKind));
+        case PART_CHASSIS:       return get_chassis_scale(ChassisKind(subKind));
         case PART_CONTROLLER:   return get_controller_scale(ControllerKind(subKind));
         default: panic("Unhandled part kind");
     }
 }
 
-vec2 get_chasis_scale(ChasisKind kind) {
+vec2 get_chassis_scale(ChassisKind kind) {
     return vec2(100, 100);
 }
 
@@ -155,13 +155,13 @@ PartId Vehicle::add_tire(Tire& t) {
     return thisPart;
 }
 
-PartId Vehicle::add_chasis(Chasis& c) {
+PartId Vehicle::add_chassis(Chassis& c) {
     
-    int index = chasis.add(c);
+    int index = chassis.add(c);
 
-    PartId thisPart = PartId(PART_CHASIS, index);
+    PartId thisPart = PartId(PART_CHASSIS, index);
     switch (c.kind) {
-        case ChasisBasic:
+        case ChassisBasic:
         {
             if (c.basic.frontLeft.part.is_valid())  getParentRef(c.basic.frontLeft.part) = thisPart;
             if (c.basic.frontRight.part.is_valid()) getParentRef(c.basic.frontRight.part) = thisPart;
@@ -173,7 +173,7 @@ PartId Vehicle::add_chasis(Chasis& c) {
     }
 
     VPartTransform transform = getWorldTransform(thisPart);
-    volume = merge_volumes(volume, Rectangle(transform.position, transform.scale * get_chasis_scale(c.kind)));
+    volume = merge_volumes(volume, Rectangle(transform.position, transform.scale * get_chassis_scale(c.kind)));
 
     return thisPart;
 }
@@ -196,11 +196,11 @@ Tire* Vehicle::get_tire(PartId t) {
     return tire.get_ptr(t.index);
 }
 
-Chasis* Vehicle::get_chasis(PartId c) {
-    if (c.kind != PART_CHASIS) {
+Chassis* Vehicle::get_chassis(PartId c) {
+    if (c.kind != PART_CHASSIS) {
         return nullptr;
     }
-    return chasis.get_ptr(c.index);
+    return chassis.get_ptr(c.index);
 }
 
 Controller* Vehicle::get_controller(PartId c) {
@@ -234,13 +234,13 @@ PartId Vehicle::get_part_on_location(PartId part, vec2 location, VPartTransform 
 {
     switch (part.kind)
     {
-        case PART_CHASIS: {
-            Chasis& cha = chasis[part.index];
+        case PART_CHASSIS: {
+            Chassis& cha = chassis[part.index];
             VPartTransform t = chain_part_transform(parent, cha.part.transform);
-            vec2 scale = get_chasis_scale(cha.kind) * t.scale;
+            vec2 scale = get_chassis_scale(cha.kind) * t.scale;
 
             switch (cha.kind) {
-                case ChasisBasic: {
+                case ChassisBasic: {
                     PartId part;
                     part = get_part_on_location(cha.basic.frontLeft.part, location, t);
                     if (part.is_valid()) return part;
@@ -298,11 +298,11 @@ Vehicle get_default_vehicle()
     vehicle.worldPosition = vec2(600, 300);
     vehicle.volume = Rectangle(vehicle.worldPosition, vec2());
 
-    Chasis chasis = {};
-    chasis.kind = ChasisBasic;
+    Chassis chasis = {};
+    chasis.kind = ChassisBasic;
     chasis.part.transform.scale = 1.0;
 
-    PartId chasis_id = vehicle.add_chasis(chasis);
+    PartId chasis_id = vehicle.add_chassis(chasis);
 
     Tire tires[4] = {};
     for (auto& t : tires) {
@@ -324,7 +324,7 @@ Vehicle get_default_vehicle()
     PartId bl = vehicle.add_tire(tires[2]);
     PartId br = vehicle.add_tire(tires[3]);
 
-    Chasis* ch = vehicle.get_chasis(chasis_id);
+    Chassis* ch = vehicle.get_chassis(chasis_id);
     ch->basic.frontLeft.attach(fl);
     ch->basic.frontRight.attach(fr);
     ch->basic.backLeft.attach(bl);
@@ -358,15 +358,15 @@ bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& 
     return true;
 }
 
-bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog) {
-    for (int i = 0; i < (int)ChasisKindCount; i++)
+bool load_chassis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog) {
+    for (int i = 0; i < (int)ChassisKindCount; i++)
     {
-        const char* name = get_chasis_name(ChasisKind(i));
+        const char* name = get_chassis_name(ChassisKind(i));
         AssetId id = get_asset(String(name), catalog);
         if (!id.is_valid()) return false;
         SDL_Texture* texture = catalog.get_image(id);
 
-        icons.add(IconButton(texture, background, get_part_kind_id(PART_CHASIS, i)));
+        icons.add(IconButton(texture, background, get_part_kind_id(PART_CHASSIS, i)));
     }
 
     return true;

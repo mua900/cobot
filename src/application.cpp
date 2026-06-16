@@ -454,7 +454,7 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                 text_input_stop();
                 return true;
             }
-            
+
             quit = true;
             return true;
         }
@@ -1400,6 +1400,10 @@ bool Application::init_mission_editor_ui()
     Drop_Down_List vehicle_list;
     Drop_Down_List planet_list;
 
+    AssetId plusId = get_asset(String("Plus"), m_catalog);
+    SDL_Texture* plus = m_catalog.get_image(plusId);
+    ImageButton add_vehicle (plus, vec2(ws.x * 0.2, ws.y * 0.1), vec2(ws.x * 0.1), Color(0x22, 0x33, 0xAA));
+
     Color text_color(0x88, 0x88, 0x88);
     Color title_color(0x33, 0x22, 0x99);
     Color option_color(0x77, 0x33, 0x44);
@@ -1433,6 +1437,7 @@ bool Application::init_mission_editor_ui()
 
     ui.drop_down.add(vehicle_list);
     ui.drop_down.add(planet_list);
+    ui.image_button.add(add_vehicle);
     ui.button.add(launchMission);
 
     return true;
@@ -1607,7 +1612,7 @@ bool Application::init_editor_ui() {
     if (!chasisIconId.is_valid()) return false;
     Icon chasisIcon = Icon(m_catalog.get_image(chasisIconId), tabIconColor);
     DArray<IconButton> chasisTabIcons;
-    if (!load_chasis_icons(chasisTabIcons, iconColor, m_catalog)) return false;
+    if (!load_chassis_icons(chasisTabIcons, iconColor, m_catalog)) return false;
 
     AssetId controllerIconId = get_asset(String("controllerTabIcon"), m_catalog);
     if (!controllerIconId.is_valid()) return false;
