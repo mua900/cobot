@@ -548,6 +548,29 @@ ValuePanel* UiState::get_value_panel(UiElementId id)
     }
 }
 
+
+Rectangle Panel::get_icon_area(int index) const {
+    ASSERT(index < tabs.get(activeTab).icons.size());
+
+    float length_per_icon = iconSize + iconMargin;
+    int rowCount = area.h / length_per_icon;
+    int row = index % rowCount;
+    int column = index / rowCount;
+    return Rectangle(area.get_position() + vec2(column, row) * length_per_icon,
+                     vec2(iconSize));
+}
+
+Rectangle Panel::get_tab_header_area(int index) const {
+    ASSERT(index < tabs.size());
+
+    int rowCount = area.h / (tabHeaderSize * 2);
+    int row = index % rowCount;
+    int column = index / rowCount;
+    return Rectangle(area.x + area.w + tabHeaderSize / 2 + column * tabHeaderSize,
+                     area.y + tabHeaderSize / 2 + row * tabHeaderSize * 2,
+                     tabHeaderSize, tabHeaderSize);
+}
+
 Rectangle ValuePanel::get_field_title_area(int tabIndex, int fieldIndex) const
 {
     ValuePanelTab& tab = tabs.get_ref(tabIndex);

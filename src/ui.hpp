@@ -528,6 +528,31 @@ struct Drop_Down_List {
     }
 };
 
+struct PanelTab {
+    Icon tabIcon = {};
+    DArray<IconButton> icons = {};
+    Color color = {};
+
+    PanelTab() {}
+    PanelTab(Icon tab, DArray<IconButton> icons, Color color) : tabIcon(tab), icons(icons), color(color) {}
+};
+
+struct Panel {
+    UiElementId id = {};
+    Rectangle area = {};
+    int activeTab = 0;
+    float tabHeaderSize = 0;
+    float iconSize = 0;
+    float iconMargin = 0;
+    DArray<PanelTab> tabs = {};
+
+    Panel() {}
+    Panel(UiElementId id, Rectangle area, float headerSize, float icoSize, float margin) : id(id), area(area), tabHeaderSize(headerSize), iconSize(icoSize), iconMargin(margin) {}
+
+    Rectangle get_icon_area(int index) const;
+    Rectangle get_tab_header_area(int index) const;
+};
+
 enum ValueType {
     ValueInteger,
     ValueNumber,
@@ -682,6 +707,7 @@ struct UiState {
     DArray<TextButton> button = {};
     DArray<ImageButton> image_button = {};
     DArray<Label> label = {};
+    DArray<Panel> panel = {};
     DArray<ValuePanel> value_panel = {};
     DArray<ControlMenu> control = {};
     DArray<DiscreteSlider> discrete_slider = {};

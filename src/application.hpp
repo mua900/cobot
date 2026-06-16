@@ -205,6 +205,7 @@ private:
     void render_dropdown(const Drop_Down_List& list) const;
     void render_control_menu(const ControlMenu& menu) const;
     void render_discrete_slider(const DiscreteSlider& slider) const;
+    void render_panel(const Panel& panel) const;
     void render_value_panel(const UiState& ui, const ValuePanel& panel) const;
     void render_button_group(const ButtonGroup& group) const;
 

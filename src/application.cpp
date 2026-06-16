@@ -629,6 +629,33 @@ bool Application::on_mouse_down()
 
 bool Application::mouse_input_editor()
 {
+    UiState& ui = m_ui[UiEditor];
+    vec2 mouse_pos = m_input.mouse.pos;
+
+    if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) {
+        for (Panel& panel : ui.panel) {
+            if (panel.area.contains_top_left(mouse_pos))
+            {
+                PanelTab& tab = panel.tabs.get_ref(panel.activeTab);
+                for (int i = 0; i < tab.icons.size(); i++) {
+                    Rectangle area = panel.get_icon_area(i);
+                    if (area.contains_centered(mouse_pos)) {
+                        
+                    }
+                }
+
+                return true;
+            }
+
+            for (int i = 0; i < panel.tabs.size(); i++) {
+                if (panel.get_tab_header_area(i).contains_centered(mouse_pos)) {
+                    panel.activeTab = i;
+                    return true;
+                }
+            }
+        }
+    }
+
     return false;
 }
 
@@ -1617,6 +1644,7 @@ bool Application::init_editor_ui() {
 
     Rectangle panel_area = { 0, 0, ws.x * 0.3f, ws.y };
     Color panel_color = Color(0x33, 0x44, 0x44);
+    Panel partsPanel (PartsPanel, panel_area, 32, 48, 16);
 
     Color iconColor = Color(0x77, 0x33, 0x44);
     Color tabIconColor = Color(0x33, 0x66, 0x44);
@@ -1638,6 +1666,12 @@ bool Application::init_editor_ui() {
     Icon controllerIcon = Icon(m_catalog.get_image(controllerIconId), tabIconColor);
     DArray<IconButton> controllerTabIcons;
     if (!load_controller_icons(controllerTabIcons, iconColor, m_catalog)) return false;
+
+    partsPanel.tabs.add(PanelTab(tireIcon, tireTabIcons, panel_color));
+    partsPanel.tabs.add(PanelTab(chasisIcon, chasisTabIcons, panel_color));
+    partsPanel.tabs.add(PanelTab(controllerIcon, controllerTabIcons, panel_color));
+
+    ui.panel.add(partsPanel);
 
     return true;
 }
@@ -1808,6 +1842,11 @@ void Application::draw_ui_state(const UiState& state)
         render_discrete_slider(slider);
     }
 
+    for (const Panel& panel : state.panel)
+    {
+        render_panel(panel);
+    }
+
     for (const ValuePanel& panel : state.value_panel)
     {
         render_value_panel(state, panel);
@@ -1929,6 +1968,24 @@ void Application::render_slider(Rectangle area, vec2 knob_scale, float value, Co
         const int margin = 10;
         render_text_scale(m_render.renderer, text,
             vec2(slider.x + slider.w / 2, slider.y + slider.h * 2 + margin), vec2(0.6, 0.6));
+    }
+}
+
+void Application::render_panel(const Panel& panel) const
+{
+    auto& tab = panel.tabs.get_ref(panel.activeTab);
+    render_rectangle(panel.area, tab.color, false);
+
+    const float margin = 16;
+    const float iconSize = 32;
+    for (int i = 0; i < tab.icons.size(); i++) {
+        Rectangle area = panel.get_icon_area(i);
+        render_textured_rectangle(m_render, area, tab.icons.get(i).icon.texture, tab.icons.get(i).icon.background, true, false);
+    }
+
+    for (int i = 0; i < panel.tabs.size(); i++) {
+        Rectangle area = panel.get_tab_header_area(i);
+        render_textured_rectangle(m_render, area, panel.tabs.get(i).tabIcon.texture, panel.tabs.get(i).tabIcon.background, true);
     }
 }
 
