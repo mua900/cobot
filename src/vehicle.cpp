@@ -358,7 +358,7 @@ bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& 
     return true;
 }
 
-bool load_chassis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog) {
+bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog) {
     for (int i = 0; i < (int)ChassisKindCount; i++)
     {
         const char* name = get_chassis_name(ChassisKind(i));

@@ -1028,6 +1028,21 @@ bool Application::mouse_input_mission_editor()
 
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
     {
+        for (auto& button : ui.image_button)
+        {
+            if (Rectangle(button.position, button.scale).contains_centered(mouse_pos))
+            {
+                switch (button.id) {
+                    case AddVehicle: {
+                        switch_modes(ModeEditor);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        }
+
         for (auto& button : ui.button)
         {
             if (Rectangle(button.position, button.scale).contains_centered(mouse_pos))
@@ -1084,6 +1099,8 @@ bool Application::mouse_input_mission_editor()
                                 edit_mission.planet = PlanetId(selected);
                                 break;
                             }
+                            default:
+                                break;
                         }
 
                         list.selected = selected;
@@ -1115,6 +1132,8 @@ bool Application::mouse_input_load() {
                         switch_modes(ModeSolarSystem);
                         break;
                     }
+                    default:
+                        break;
                 }
             }
         }
@@ -1400,9 +1419,10 @@ bool Application::init_mission_editor_ui()
     Drop_Down_List vehicle_list;
     Drop_Down_List planet_list;
 
-    AssetId plusId = get_asset(String("Plus"), m_catalog);
+    AssetId plusId = get_asset(String("plus"), m_catalog);
     SDL_Texture* plus = m_catalog.get_image(plusId);
-    ImageButton add_vehicle (plus, vec2(ws.x * 0.2, ws.y * 0.1), vec2(ws.x * 0.1), Color(0x22, 0x33, 0xAA));
+    ImageButton add_vehicle (plus, vec2(ws.x * 0.2, ws.y * 0.1), vec2(ws.x * 0.05), Color(0x88, 0xAA, 0xAA));
+    add_vehicle.id = AddVehicle;
 
     Color text_color(0x88, 0x88, 0x88);
     Color title_color(0x33, 0x22, 0x99);
@@ -1597,7 +1617,6 @@ bool Application::init_editor_ui() {
 
     Rectangle panel_area = { 0, 0, ws.x * 0.3f, ws.y };
     Color panel_color = Color(0x33, 0x44, 0x44);
-    // @todo readd parts panel
 
     Color iconColor = Color(0x77, 0x33, 0x44);
     Color tabIconColor = Color(0x33, 0x66, 0x44);
@@ -1612,7 +1631,7 @@ bool Application::init_editor_ui() {
     if (!chasisIconId.is_valid()) return false;
     Icon chasisIcon = Icon(m_catalog.get_image(chasisIconId), tabIconColor);
     DArray<IconButton> chasisTabIcons;
-    if (!load_chassis_icons(chasisTabIcons, iconColor, m_catalog)) return false;
+    if (!load_chasis_icons(chasisTabIcons, iconColor, m_catalog)) return false;
 
     AssetId controllerIconId = get_asset(String("controllerTabIcon"), m_catalog);
     if (!controllerIconId.is_valid()) return false;
@@ -2048,7 +2067,12 @@ void Application::render_text_field(const Text_Field& text_field) const
         int line_count = text_field.m_line_count;
         float font_size = text_field.m_font_size;
 
-        SDL_Rect clip = { area.x - area.w / 2, area.y - area.h / 2, area.w, area.h };
+        SDL_Rect clip = {
+            int(area.x - area.w / 2),
+            int(area.y - area.h / 2),
+            int(area.w),
+            int(area.h)
+        };
         SDL_SetRenderClipRect(m_render.renderer, &clip);
 
         draw_texture(m_render, Rectangle(top_left, text_scale), text_texture);

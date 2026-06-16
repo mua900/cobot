@@ -81,7 +81,7 @@ enum UpdateStateId {
 
 struct GameInfo {
     bool wantPause = false;
-    int selectedTimescale = 0;
+    double selectedTimescale = 0;
     int selectedPlanet = -1;
 };
 

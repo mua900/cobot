@@ -223,7 +223,7 @@ vec2 get_tire_scale(TireKind kind);
 vec2 get_controller_scale(ControllerKind kind);
 
 bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
-bool load_chassis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
+bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
 bool load_controller_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
 
 Vehicle get_default_vehicle();
