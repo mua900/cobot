@@ -27,7 +27,7 @@ void Script::set_program_data(int index)
     {
         lua_State* L = data.lua;
 
-        lua_pushlightuserdata(L, &commands.get_ref(index).program);
+        lua_pushlightuserdata(L, &commands.get_element(index)->program);
         lua_setfield(L, LUA_REGISTRYINDEX, "program");
     }
 }

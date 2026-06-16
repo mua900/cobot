@@ -37,7 +37,7 @@ struct Script {
         Interp* interp;
     } data = {};
 
-    DArray<VehicleCommand> commands = {};
+    List<VehicleCommand> commands = {};
 
     Script() : language(ScriptLanguage::LUA), data{} {}
     Script(ScriptLanguage lang) : language(lang) {}

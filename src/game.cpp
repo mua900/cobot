@@ -36,9 +36,9 @@ void vehicleSimulationUpdate(GameState* game, TimeInfo time)
         Script& s = game->scripts.get_ref(controller.script);
         run_script(s);
 
-        if (s.commands.size() > 0)
+        if (!s.commands.empty())
         {
-            vehicle.execute_command(s.commands.get_ref(0));
+            vehicle.execute_command(*s.commands.get_start());
         }
     }
 
@@ -194,8 +194,8 @@ void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& 
 
     for (auto& controller : vehicle.controller)
     {
-        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_ref(0).program.target, 10, ColorF(1,0,0));
-        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_ref(0).program.turnTarget, 10, ColorF(0,1,0));
+        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_start()->program.target, 10, ColorF(1, 0, 0));
+        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_start()->program.turnTarget, 10, ColorF(0, 1, 0));
     }
 }
 
@@ -224,7 +224,7 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
     draw_circle(context, center, system.star.radius, ColorF(0.6, 0.5, 0.1));
 
     // @todo fix
-    // SDL_SetGPURenderState(context.renderer, context.render_states[RenderStatePlanet]);
+    SDL_SetGPURenderState(context.renderer, context.render_states[RenderStatePlanet]);
 
     float maxDepth = 10;
     for (auto& planet : system.planets)

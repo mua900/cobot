@@ -308,7 +308,7 @@ struct BucketList {
 		int index = elem_index % BUCKET_SIZE;
 
 		if (!in_bounds(elem_index)) return T();
-		return buckets.get_ref(bucket_index).elemets[index];
+		return buckets.get_ref(bucket_index).elements[index];
 	}
 
 	T* get_ptr(int elem_index) const {
@@ -433,19 +433,163 @@ struct BucketList {
 template<typename T>
 struct List
 {
-	T* head = nullptr;
-	T* last = nullptr;
+	struct Entry {
+		T element;
+		Entry* previous = nullptr;
+		Entry* next = nullptr;
 
-	void add(T& elem)
+		Entry(const T& elem) : element(elem) {}
+		Entry(const T& elem, Entry* prev) : element(elem), previous(prev) {}
+	};
+
+	Entry* head = nullptr;
+	Entry* last = nullptr;
+
+	T* get_start() const
+	{
+		return head ? &head->element : nullptr;
+	}
+
+	T* get_last() const
+	{
+		return last ? &last->element : nullptr;
+	}
+
+	T* get_element(int index) const
+	{
+		if (index < 0) panic("Negative index trying to access list");
+
+		int i = 0;
+		Entry * iter = head;
+		while (iter)
+		{
+			if (i == index)
+			{
+				return &iter->element;
+			}
+
+			iter = iter->next;
+			i += 1;
+		}
+
+		panic("Out of bounds list access");
+	}
+
+	List() {}
+	~List() { reset(); }
+
+	List(const List& other) = delete;
+	void operator=(const List& other) = delete;
+
+	List(List&& other)
+		:
+		head(other.head), last(other.last)
+	{
+		other.head = nullptr;
+		other.last = nullptr;
+	}
+
+	void operator=(List&& other)
+	{
+		if (head == other.head)
+		{
+			return;
+		}
+
+		reset();
+
+		head = other.head;
+		last = other.last;
+
+		other.head = nullptr;
+		other.last = nullptr;
+	}
+
+	void reset()
+	{
+		while (head)
+		{
+			remove_start();
+		}
+	}
+
+	bool empty() const { return head ? false : true; }
+
+	void add(const T& elem)
 	{
 		if (!head)
 		{
-			head = new T(elem);
+			head = new Entry(elem);
 			last = head;
 			return;
 		}
 
+		last->next = new Entry(elem, last);
+		last = last->next;
+	}
+
+	void remove_start()
+	{
+		if (!head)
+		{
+			return;
+		}
+
+		bool is_single = (head == last);
+
+		Entry* next = head->next;
+		delete head;
+		if (is_single) last = nullptr;
+		head = next;
+		if (head)
+		{
+			head->previous = nullptr;
+		}
+	}
+
+	T remove_and_get_start()
+	{
+		if (!head)
+		{
+			return T();
+		}
+
+		T elem = std::move(head->element);
+		remove_start();
 		
+		return elem;
+	}
+
+	void remove_last()
+	{
+		if (!head)
+		{
+			return;
+		}
+
+		bool is_single = (last == head);
+
+		Entry* prev = last->previous;
+		delete last;
+		if (is_single) head = nullptr;
+		last = prev;
+		if (last)
+		{
+			last->next = nullptr;
+		}
+	}
+
+	T remove_and_get_last()
+	{
+		if (!head)
+		{
+			return T();
+		}
+
+		T elem = std::move(last->element);
+		remove_last();
+
+		return elem;
 	}
 };
 
