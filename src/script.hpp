@@ -3,6 +3,7 @@
 
 #include "common.hpp"
 #include "math_util.hpp"
+#include "template.hpp"
 
 #include "language/lang.hpp"
 
@@ -10,6 +11,16 @@
 
 struct VehicleProgram {
     vec2 target = {};
+    vec2 turnTarget = {};
+};
+
+enum CommandType {
+    CommandMove, CommandTurn,
+};
+
+struct VehicleCommand {
+    CommandType type = {};
+    VehicleProgram program = {};
 };
 
 enum class ScriptLanguage {
@@ -26,7 +37,7 @@ struct Script {
         Interp* interp;
     } data = {};
 
-    VehicleProgram program = {};
+    DArray<VehicleCommand> commands = {};
 
     Script() : language(ScriptLanguage::LUA), data{} {}
     Script(ScriptLanguage lang) : language(lang) {}
@@ -40,7 +51,7 @@ struct Script {
 
     bool set_source(ScriptLanguage language, String source);
 
-    void set_program_data();
+    void set_program_data(int index);
 };
 
 void run_script(Script& s);
@@ -49,6 +60,7 @@ void run_script(Script& s);
 lua_State* init_lua();
 
 // functions
-int move(lua_State* L);
+int move(lua_State* L);   // float x, y
+int lookat(lua_State* L); // float x, y
 
 #endif // _SCRIPT_H

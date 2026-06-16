@@ -8,8 +8,6 @@ constexpr s64 fixedTimeStepNS = NANOSECONDS_PER_SECOND / fixedUpdateRate;
 constexpr s64 fixedTimeStepUS = MICROSECONDS_PER_SECOND / fixedUpdateRate;
 constexpr s64 fixedTimeStepMS = MILLISECONDS_PER_SECOND / fixedUpdateRate;
 
-const float vehicle_velocity = 50;
-
 void GameState::update(TimeInfo time)
 {
     constexpr int maxIterationsPerFrame = 50;
@@ -32,17 +30,19 @@ void idleFixedUpdate(GameState* game) {}
 void vehicleSimulationUpdate(GameState* game, TimeInfo time)
 {
     Vehicle& vehicle = game->get_active_vehicle();
-    double dts = time.deltaTimeSeconds;
-    vehicle.worldPosition += dts * vehicle.velocity;
 
     for (auto& controller : vehicle.controller)
     {
         Script& s = game->scripts.get_ref(controller.script);
         run_script(s);
 
-        vec2 direction = (s.program.target - vehicle.worldPosition).normalized();
-        vehicle.velocity = vehicle_velocity * direction;
+        if (s.commands.size() > 0)
+        {
+            vehicle.execute_command(s.commands.get_ref(0));
+        }
     }
+
+    vehicle.worldPosition += time.deltaTimeSeconds * vehicle.velocity;
 }
 
 void vehicleSimulationFixedUpdate(GameState* game)
@@ -66,10 +66,10 @@ void keyboardVehicle(GameState* game, KeyboardState* keyboard) {
 
     Vehicle& vehicle = game->get_active_vehicle();
     if (keyboard->key_pressed(KEY_UP)) {
-        vehicle.velocity =  vehicle_velocity * vehicle.forward();
+        vehicle.velocity =  vehicle.speed * vehicle.forward();
     }
     else if (keyboard->key_pressed(KEY_DOWN)) {
-        vehicle.velocity = -vehicle_velocity * vehicle.forward();
+        vehicle.velocity = -vehicle.speed * vehicle.forward();
     }
     else {
         vehicle.velocity = vec2(0);
@@ -190,6 +190,12 @@ void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& 
             break;
         }
         default: panic("Invalid part type");
+    }
+
+    for (auto& controller : vehicle.controller)
+    {
+        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_ref(0).program.target, 10, ColorF(1,0,0));
+        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_ref(0).program.turnTarget, 10, ColorF(0,1,0));
     }
 }
 

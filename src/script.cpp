@@ -21,13 +21,13 @@ bool Script::set_source(ScriptLanguage language, String source) {
     }
 }
 
-void Script::set_program_data()
+void Script::set_program_data(int index)
 {
     if (language == ScriptLanguage::LUA)
     {
         lua_State* L = data.lua;
 
-        lua_pushlightuserdata(L, &program);
+        lua_pushlightuserdata(L, &commands.get_ref(index).program);
         lua_setfield(L, LUA_REGISTRYINDEX, "program");
     }
 }
@@ -65,6 +65,8 @@ lua_State* init_lua()
     lua_setfield(L, -2, "target");
     lua_pushcfunction(L, move);
     lua_setfield(L, -2, "move");
+    lua_pushcfunction(L, lookat);
+    lua_setfield(L, -2, "lookat");
     lua_setglobal(L, "vehicle");
 
     return L;
@@ -83,6 +85,21 @@ int move(lua_State* L)
 
     program->target.x = x;
     program->target.y = y;
+
+    return 0;
+}
+
+int lookat(lua_State* L)
+{
+    float x = lua_tonumber(L, 1);
+    float y = lua_tonumber(L, 2);
+
+    lua_getfield(L, LUA_REGISTRYINDEX, "program");
+    VehicleProgram* program = (VehicleProgram*) lua_touserdata(L, -1);
+    lua_pop(L, 1);
+
+    program->turnTarget.x = x;
+    program->turnTarget.y = y;
 
     return 0;
 }

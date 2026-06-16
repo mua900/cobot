@@ -8,6 +8,31 @@ VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child)
     return VPartTransform(position, rotation, scale);
 }
 
+bool Vehicle::execute_command(VehicleCommand& command)
+{
+    if (command.type == CommandMove)
+    {
+        vec2 difference = command.program.target - worldPosition;
+        float angle = atan2f(difference.y, difference.x);
+        float distance = difference.magnitude();
+        bool arrived = distance < 0.01;
+        bool turned = fabsf(orientation - angle) < 0.05;
+        if (!arrived)
+        {
+            vec2 direction = difference / distance;
+            velocity = speed * direction;
+        }
+        if (!turned)
+        {
+            orientation += (angle - orientation) > 0 ? 0.1 : -0.1;
+        }
+
+        return turned && arrived;
+    }
+
+    return false;
+}
+
 VPartTransform Vehicle::get_vehicle_transform() const
 {
     return VPartTransform(worldPosition, orientation, 1.0);
@@ -268,6 +293,7 @@ Vehicle get_default_vehicle()
     Vehicle vehicle = {};
 
     vehicle.name = String("Default");
+    vehicle.speed = 10;
 
     vehicle.worldPosition = vec2(600, 300);
     vehicle.volume = Rectangle(vehicle.worldPosition, vec2());

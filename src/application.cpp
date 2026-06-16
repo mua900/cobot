@@ -149,8 +149,8 @@ bool Application::init_game_state()
     game.active_vehicle = 0;
     game.starSystem = get_default_star_system(m_render.renderer);
     int s = game.scripts.add(Script(init_lua()));
-    game.scripts.get_ref(s).set_program_data();
-    game.scripts.get_ref(s).program.target = vec2(50,30);
+    game.scripts.get_ref(s).commands.add(VehicleCommand());
+    game.scripts.get_ref(s).set_program_data(0);
 
     return true;
 }

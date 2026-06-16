@@ -431,6 +431,25 @@ struct BucketList {
 };
 
 template<typename T>
+struct List
+{
+	T* head = nullptr;
+	T* last = nullptr;
+
+	void add(T& elem)
+	{
+		if (!head)
+		{
+			head = new T(elem);
+			last = head;
+			return;
+		}
+
+		
+	}
+};
+
+template<typename T>
 struct HashTable {
 	struct Entry {
 		int empty = 0;  // 0 is empty

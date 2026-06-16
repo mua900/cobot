@@ -170,6 +170,7 @@ struct Vehicle {
     String name = {};  // @todo this would need to change when we need to get names from user
     vec2 worldPosition = {};
     vec2 velocity = {};
+    float speed = 0;
     float orientation = 0;  // radians, 0 looking up
     Rectangle volume = {};
 
@@ -196,6 +197,8 @@ struct Vehicle {
 
     vec2 forward() const;
     VPartTransform get_vehicle_transform() const;
+
+    bool execute_command(VehicleCommand& command);
 
     PartId getPartAt(vec2 position) const;
 private:
