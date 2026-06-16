@@ -8,6 +8,8 @@ constexpr s64 fixedTimeStepNS = NANOSECONDS_PER_SECOND / fixedUpdateRate;
 constexpr s64 fixedTimeStepUS = MICROSECONDS_PER_SECOND / fixedUpdateRate;
 constexpr s64 fixedTimeStepMS = MILLISECONDS_PER_SECOND / fixedUpdateRate;
 
+const float vehicle_velocity = 50;
+
 void GameState::update(TimeInfo time)
 {
     constexpr int maxIterationsPerFrame = 50;
@@ -37,6 +39,9 @@ void vehicleSimulationUpdate(GameState* game, TimeInfo time)
     {
         Script& s = game->scripts.get_ref(controller.script);
         run_script(s);
+
+        vec2 direction = (s.program.target - vehicle.worldPosition).normalized();
+        vehicle.velocity = vehicle_velocity * direction;
     }
 }
 
@@ -54,8 +59,6 @@ void starSystemFixedUpdate(GameState* game)
 void keyboardIdle(GameState* game, KeyboardState* keyboard) {}
 
 void keyboardVehicle(GameState* game, KeyboardState* keyboard) {
-    const float vehicle_velocity = 50;
-
     if (!keyboard->do_input)
     {
         return;

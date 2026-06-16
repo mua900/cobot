@@ -81,7 +81,8 @@ int move(lua_State* L)
     VehicleProgram* program = (VehicleProgram*) lua_touserdata(L, -1);
     lua_pop(L, 1);
 
-    log_info("%f, %f", program->target.x, program->target.y);
+    program->target.x = x;
+    program->target.y = y;
 
     return 0;
 }
