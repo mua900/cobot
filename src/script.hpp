@@ -29,6 +29,7 @@ struct Script {
     VehicleProgram program = {};
 
     Script() : language(ScriptLanguage::LUA), data{} {}
+    Script(ScriptLanguage lang) : language(lang) {}
     Script(lua_State* lua) : language(ScriptLanguage::LUA)
     {
         data.lua = lua;
@@ -36,13 +37,16 @@ struct Script {
     Script(Interp* interpreter) : language(ScriptLanguage::LANGUAGE) {
         data.interp = interpreter;
     }
+
     bool set_source(ScriptLanguage language, String source);
+
+    void set_program_data();
 };
 
 void run_script(Script& s);
 
 // make a lua state
-lua_State* init_lua(VehicleProgram* program);
+lua_State* init_lua();
 
 // functions
 int move(lua_State* L);

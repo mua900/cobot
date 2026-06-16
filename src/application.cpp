@@ -148,9 +148,9 @@ bool Application::init_game_state()
     game.vehicles.add(get_default_vehicle());
     game.active_vehicle = 0;
     game.starSystem = get_default_star_system(m_render.renderer);
-    Script s = {};
-    s.data.lua = init_lua(&s.program);
-    game.scripts.add(s);
+    int s = game.scripts.add(Script(init_lua()));
+    game.scripts.get_ref(s).set_program_data();
+    game.scripts.get_ref(s).program.target = vec2(50,30);
 
     return true;
 }
@@ -2120,26 +2120,6 @@ void Application::toggle_text_input()
     else
     {
         text_input_stop();
-    }
-}
-
-bool Script::set_source(ScriptLanguage language, String source) {
-    if (language == ScriptLanguage::LANGUAGE) {
-        Interp* interp = interp_create();
-        if (!interp) return false;
-        if (!interp_set_program(interp, source.data, source.size)) return false;
-
-        script.clear_and_append(source);
-
-        return true;
-    }
-    else if (language == ScriptLanguage::LUA) {
-        script.clear_and_append(source);
-        return true;
-    }
-    else {
-        ASSERT(false);
-        return false;
     }
 }
 

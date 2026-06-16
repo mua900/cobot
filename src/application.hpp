@@ -223,7 +223,8 @@ private:
 };
 
 void get_base_path(String_Builder& builder);
-lua_State* init_lua();
+// make a lua state
+lua_State* init_lua(VehicleProgram* program);
 
 void initialize_libraries();
 
