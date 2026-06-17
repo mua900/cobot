@@ -389,6 +389,10 @@ struct RectangleRot {
     float rot = {};
 
     RectangleRot() {}
+    RectangleRot(vec2 pos, vec2 sca, float ori)
+        :
+        x(pos.x), y(pos.y), w(sca.x), h(sca.y), rot(ori)
+    {}
     RectangleRot(float x, float y, float w, float h, float rotation)
         :
         x(x), y(y), w(w), h(h), rot(rotation)

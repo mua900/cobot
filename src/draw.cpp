@@ -790,10 +790,10 @@ void draw_quad(const RenderContext& context, cobot::Quad quad, cobot::ColorF col
 void draw_quad_with_texture(const RenderContext& context, cobot::Quad quad, SDL_Texture* texture, cobot::ColorF color)
 {
     SDL_Vertex vertex [4];
-    vertex[cobot::QuadTopLeft] = { SDL_FPoint { quad.vertices[0].x, quad.vertices[0].y }, SDL_FColor { COLOR_ARG(color) }, SDL_FPoint { 0, 0 } };
-    vertex[cobot::QuadTopRight] = { SDL_FPoint { quad.vertices[1].x, quad.vertices[1].y }, SDL_FColor { COLOR_ARG(color) }, SDL_FPoint { 1, 0 } };
-    vertex[cobot::QuadBottomLeft] = { SDL_FPoint { quad.vertices[2].x, quad.vertices[2].y }, SDL_FColor { COLOR_ARG(color) }, SDL_FPoint { 0, 1 } };
-    vertex[cobot::QuadBottomRight] = { SDL_FPoint { quad.vertices[3].x, quad.vertices[3].y }, SDL_FColor{ COLOR_ARG(color) }, SDL_FPoint { 1, 1 } };
+    vertex[cobot::QuadTopLeft] = { SDL_FPoint { quad.vertices[0].x, quad.vertices[0].y }, SDL_FColor { COLOR_ARG(color) }, SDL_FPoint { 0, 1 } };
+    vertex[cobot::QuadTopRight] = { SDL_FPoint { quad.vertices[1].x, quad.vertices[1].y }, SDL_FColor { COLOR_ARG(color) }, SDL_FPoint { 1, 1 } };
+    vertex[cobot::QuadBottomLeft] = { SDL_FPoint { quad.vertices[2].x, quad.vertices[2].y }, SDL_FColor { COLOR_ARG(color) }, SDL_FPoint { 0, 0 } };
+    vertex[cobot::QuadBottomRight] = { SDL_FPoint { quad.vertices[3].x, quad.vertices[3].y }, SDL_FColor{ COLOR_ARG(color) }, SDL_FPoint { 1, 0 } };
     int index [6] = {
         cobot::QuadTopLeft, cobot::QuadBottomRight, cobot::QuadTopRight,
         cobot::QuadTopLeft, cobot::QuadBottomLeft, cobot::QuadBottomRight,

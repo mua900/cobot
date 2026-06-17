@@ -657,13 +657,16 @@ bool Application::mouse_input_vehicle_editor()
                 for (int i = 0; i < tab.icons.size(); i++) {
                     cobot::Rectangle area = panel.get_icon_area(i);
                     PartKindId partKindId = (tab.icons.get_ref(i).data.number);
-                    if (area.contains_centered(mouse_pos))
+                    if (area.contains_top_left(mouse_pos))
                     {
                         gameInfo.selectedPartKind = partKindId;
                         gameInfo.haveSeletedPart = true;
+                        return true;
                     }
                 }
 
+                gameInfo.selectedPartKind = {};
+                gameInfo.haveSeletedPart = false;
                 return true;
             }
 
@@ -1752,6 +1755,7 @@ void Application::draw()
             break;
         }
         case ModeVehicleEditor: {
+            draw_vehicle_editor();
             break;
         }
     }
@@ -1820,8 +1824,9 @@ void Application::draw_vehicle_editor()
     {
         SDL_Texture* texture = get_part_texture(gameInfo.selectedPartKind, m_catalog);
     
-        cobot::Rectangle area = cobot::Rectangle(m_input.mouse.pos, cobot::vec2(100, 100));
-        
+        auto area = cobot::RectangleRot(m_input.mouse.pos, cobot::vec2(100, 100), 0);
+        cobot::Quad points = area.get_points();
+        draw_quad_with_texture(m_render, points, texture, cobot::ColorF(0.9,0.9,0.9,0.5));
     }
 }
 
