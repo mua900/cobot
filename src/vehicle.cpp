@@ -342,6 +342,23 @@ Vehicle get_default_vehicle()
     return vehicle;
 }
 
+SDL_Texture* get_part_texture(PartKindId partKind, AssetCatalog& catalog)
+{
+    const char* name = nullptr;
+    PartKind kind = get_part_kind(partKind);
+    u16 subKind = get_subkind(partKind);
+
+    switch (kind)
+    {
+        case PART_CHASSIS:      name = get_chassis_name(ChassisKind(subKind)); break;
+        case PART_TIRE:         name = get_tire_name(TireKind(subKind)); break;
+        case PART_CONTROLLER:   name = get_controller_name(ControllerKind(subKind)); break;
+        default: panic("Invalid part kind");
+    }
+
+    AssetId id = get_asset(String(name), catalog);
+    return catalog.get_image(id);
+}
 
 bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog)
 {

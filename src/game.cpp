@@ -227,7 +227,8 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
     draw_circle(context, center, system.star.radius, ColorF(0.6, 0.5, 0.1));
 
     // @todo fix
-    SDL_SetGPURenderState(context.renderer, context.render_states[RenderStatePlanet]);
+    // SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 0, nullptr, sizeof(nullptr));
+    // SDL_SetGPURenderState(context.renderer, context.render_states[RenderStatePlanet]);
 
     float maxDepth = 10;
     for (auto& planet : system.planets)

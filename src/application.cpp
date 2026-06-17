@@ -226,7 +226,7 @@ UiState& Application::get_active_ui()
         case ModeGame: {
             return m_ui[UiGame];
         }
-        case ModeEditor: {
+        case ModeVehicleEditor: {
             return m_ui[UiEditor];
         }
         case ModeSolarSystem: {
@@ -608,9 +608,9 @@ bool Application::on_mouse_down()
     {
         return mouse_input_menu();
     }
-    else if (m_mode == ModeEditor)
+    else if (m_mode == ModeVehicleEditor)
     {
-        return mouse_input_editor();
+        return mouse_input_vehicle_editor();
     }
     else if (m_mode == ModeSolarSystem)
     {
@@ -621,7 +621,7 @@ bool Application::on_mouse_down()
     }
 }
 
-bool Application::mouse_input_editor()
+bool Application::mouse_input_vehicle_editor()
 {
     UiState& ui = m_ui[UiEditor];
     vec2 mouse_pos = m_input.mouse.pos;
@@ -656,8 +656,11 @@ bool Application::mouse_input_editor()
                 PanelTab& tab = panel.tabs.get_ref(panel.activeTab);
                 for (int i = 0; i < tab.icons.size(); i++) {
                     Rectangle area = panel.get_icon_area(i);
-                    if (area.contains_centered(mouse_pos)) {
-                        
+                    PartKindId partKindId = (tab.icons.get_ref(i).data.number);
+                    if (area.contains_centered(mouse_pos))
+                    {
+                        gameInfo.selectedPartKind = partKindId;
+                        gameInfo.haveSeletedPart = true;
                     }
                 }
 
@@ -1078,7 +1081,7 @@ bool Application::mouse_input_mission_editor()
             {
                 switch (button.id) {
                     case AddVehicle: {
-                        switch_modes(ModeEditor);
+                        switch_modes(ModeVehicleEditor);
                         break;
                     }
                     default:
@@ -1467,7 +1470,7 @@ bool Application::init_ui()
 
     if (!init_game_ui()) return false;
     if (!init_load_ui()) return false;
-    if (!init_editor_ui()) return false;
+    if (!init_vehicle_editor_ui()) return false;
     if (!init_solar_system_ui()) return false;
     if (!init_mission_editor_ui()) return false;
 
@@ -1518,7 +1521,7 @@ bool Application::init_mission_editor_ui()
         planet_list.add_option(create_text(m_render.renderer, planet.name, font, text_color), i);
     }
 
-    TextButton launchMission = TextButton(create_text(m_render.renderer, String("Launch Mission"), font, Color(0x88, 0x44, 0x77)), vec2(ws.x * 0.85, ws.y * 0.85), vec2(ws.x * 0.1, ws.y * 0.1), Color(0x99, 0x11, 0x22));
+    TextButton launchMission = TextButton(create_text(m_render.renderer, String("Launch Mission"), font, Color(0x55, 0x44, 0x77)), vec2(ws.x * 0.85, ws.y * 0.85), vec2(ws.x * 0.1, ws.y * 0.1), Color(0x88, 0x11, 0x22));
     launchMission.id = LaunchButton;
 
     ui.drop_down.add(vehicle_list);
@@ -1677,7 +1680,7 @@ bool Application::init_load_ui() {
     return true;
 }
 
-bool Application::init_editor_ui() {
+bool Application::init_vehicle_editor_ui() {
     vec2 ws = get_window_size();
     UiState& ui = m_ui[UiEditor];
 
@@ -1748,7 +1751,7 @@ void Application::draw()
         case ModeMenu: {
             break;
         }
-        case ModeEditor: {
+        case ModeVehicleEditor: {
             break;
         }
     }
@@ -1809,6 +1812,17 @@ vec2 Application::get_window_size() const {
 void Application::draw_game()
 {
     draw_vehicle_simulation(m_render, m_catalog, game);
+}
+
+void Application::draw_vehicle_editor()
+{
+    if (gameInfo.haveSeletedPart)
+    {
+        SDL_Texture* texture = get_part_texture(gameInfo.selectedPartKind, m_catalog);
+    
+        Rectangle area = Rectangle(m_input.mouse.pos, vec2(100, 100));
+        
+    }
 }
 
 void Application::draw_solar_system()

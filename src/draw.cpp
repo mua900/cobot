@@ -787,6 +787,21 @@ void draw_quad(const RenderContext& context, Quad quad, ColorF color)
     SDL_RenderGeometry(context.renderer, nullptr, vertex, 4, index, 6);
 }
 
+void draw_quad_with_texture(const RenderContext& context, Quad quad, SDL_Texture* texture, ColorF color)
+{
+    SDL_Vertex vertex [4];
+    vertex[QuadTopLeft] = { SDL_FPoint { quad.vertices[0].x, quad.vertices[0].y }, SDL_FColor { COLOR_ARG(color) }, SDL_FPoint { 0, 0 } };
+    vertex[QuadTopRight] = { SDL_FPoint { quad.vertices[1].x, quad.vertices[1].y }, SDL_FColor { COLOR_ARG(color) }, SDL_FPoint { 1, 0 } };
+    vertex[QuadBottomLeft] = { SDL_FPoint { quad.vertices[2].x, quad.vertices[2].y }, SDL_FColor { COLOR_ARG(color) }, SDL_FPoint { 0, 1 } };
+    vertex[QuadBottomRight] = { SDL_FPoint { quad.vertices[3].x, quad.vertices[3].y }, SDL_FColor{ COLOR_ARG(color) }, SDL_FPoint { 1, 1 } };
+    int index [6] = {
+        QuadTopLeft, QuadBottomRight, QuadTopRight,
+        QuadTopLeft, QuadBottomLeft, QuadBottomRight,
+    };
+
+    SDL_RenderGeometry(context.renderer, texture, vertex, 4, index, 6);
+}
+
 void draw_path(RenderContext& context, vec2 points[], int numPoints, float thick, ColorF color)
 {
     for (int i = 0; i < numPoints - 1; i++)

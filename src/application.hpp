@@ -14,7 +14,7 @@
 
 enum ApplicationMode {
     ModeMenu,
-    ModeEditor,
+    ModeVehicleEditor,
     ModeSolarSystem,
     ModeGame,
 
@@ -83,6 +83,8 @@ struct GameInfo {
     bool wantPause = false;
     double selectedTimescale = 0;
     int selectedPlanet = -1;
+    PartKindId selectedPartKind = {};
+    bool haveSeletedPart = false;
 };
 
 class Application {
@@ -137,7 +139,7 @@ private:
     bool init_ui();
     bool init_game_ui();
     bool init_load_ui();
-    bool init_editor_ui();
+    bool init_vehicle_editor_ui();
     bool init_mission_editor_ui();
     bool init_solar_system_ui();
 
@@ -160,6 +162,7 @@ private:
 
     void draw_game();
     void draw_solar_system();
+    void draw_vehicle_editor();
 	void draw_ui();
     void draw_messages();
 
@@ -176,7 +179,7 @@ private:
     bool mouse_input_load();
     bool mouse_input_main_menu();
     bool mouse_input_settings();
-    bool mouse_input_editor();
+    bool mouse_input_vehicle_editor();
     bool mouse_input_solar_system();
     bool mouse_input_mission_editor();
 
