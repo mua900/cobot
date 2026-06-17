@@ -338,42 +338,36 @@ void Application::on_mouse_move()
 
         if (editor.resize.resize)
         {
-            Rectangle area = editor.resize.initialArea;
-            vec2 p = area.get_point_at_direction(editor.resize.direction);
-            vec2 d = mouse_pos - p;
-            Direction direction = editor.resize.direction;
-
-            if (direction & DirEast)
-            {
-                area.x += d.x / 2;
-                area.w += d.x;
-            }
-            else if (direction & DirWest)
-            {
-                area.x += d.x / 2;
-                area.w -= d.x;
-            }
-
-            if (direction & DirNorth)
-            {
-                area.y += d.y / 2;
-                area.h += d.y;
-            }
-            else if (direction & DirSouth)
-            {
-                area.y += d.y / 2;
-                area.h -= d.y;
-            }
-
-            area.w = cobot::clamp(30, 2000, area.w);
-            area.h = cobot::clamp(30, 2000, area.h);
-
-            editor.field.m_area = area;
+            editor.field.m_area = editor.resize.calculate_new_area(mouse_pos, 30, 2000);
         }
         else
         {
             Direction dir = text_area.on_edge(mouse_pos, 3);
             set_text_editor_cursor(text_area, dir);
+        }
+    }
+
+    for (auto& panel : ui.panel)
+    {
+        if (panel.resize.resize)
+        {
+            panel.area = panel.resize.calculate_new_area(mouse_pos, 30, 2000);
+        }
+        else
+        {
+            Direction dir = panel.area.on_edge(mouse_pos, 3);
+            if (direction_is_horizontal(dir))
+            {
+                SDL_SetCursor(m_input.mouse.cursor.resize_ew);
+            }
+            else if (direction_is_vertical(dir))
+            {
+                SDL_SetCursor(m_input.mouse.cursor.resize_ns);
+            }
+            else
+            {
+                SDL_SetCursor(m_input.mouse.cursor.normal);
+            }
         }
     }
 }
@@ -634,7 +628,30 @@ bool Application::mouse_input_editor()
 
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) {
         for (Panel& panel : ui.panel) {
-            if (panel.area.contains_top_left(mouse_pos))
+            if (panel.drag.drag) {
+                panel.drag.drag = false;
+                continue;
+            }
+
+            Direction dir = panel.area.on_edge(mouse_pos, 3);
+            if (dir != DirNone)
+            {
+                panel.resize.resize = true;
+                panel.resize.direction = dir;
+                panel.resize.initialArea = panel.area;
+                panel.resize.start = mouse_pos;
+                return true;
+            }
+
+            Rectangle title_area = panel.get_title_area();
+            if (title_area.contains_centered(mouse_pos))
+            {
+                panel.drag.drag = true;
+                panel.drag.start = mouse_pos - panel.area.get_top_left();
+                return true;
+            }
+
+            if (panel.area.contains_centered(mouse_pos))
             {
                 PanelTab& tab = panel.tabs.get_ref(panel.activeTab);
                 for (int i = 0; i < tab.icons.size(); i++) {
@@ -1297,6 +1314,17 @@ void Application::update_ui_pos()
             editor.set_position(dst);
         }
     }
+
+    for (auto& panel : ui.panel)
+    {
+        if (panel.drag.drag)
+        {
+            vec2 half_scale = panel.area.get_scale() / 2;
+            vec2 pos = (mouse_pos - panel.drag.start) + half_scale;
+            panel.area.x = pos.x;
+            panel.area.y = pos.y;
+        }
+    }
 }
 
 void Application::on_mouse_up(int button)
@@ -1317,6 +1345,17 @@ void Application::on_mouse_up(int button)
             }
 
             editor.clicked_icon = 0;
+        }
+
+        for (auto& panel : ui.panel)
+        {
+            if (panel.drag.drag) {
+                panel.drag.drag = false;
+            }
+
+            if (panel.resize.resize) {
+                panel.resize = {};
+            }
         }
     }
 }
@@ -1644,7 +1683,9 @@ bool Application::init_editor_ui() {
 
     Rectangle panel_area = { 0, 0, ws.x * 0.3f, ws.y };
     Color panel_color = Color(0x33, 0x44, 0x44);
-    Panel partsPanel (PartsPanel, panel_area, 32, 48, 16);
+    Panel partsPanel (PartsPanel, panel_area.to_center(), 32, 48, 16);
+    partsPanel.title_height = 10;
+    partsPanel.title_bar_color = Color(0x44, 0x66, 0x77);
 
     Color iconColor = Color(0x77, 0x33, 0x44);
     Color tabIconColor = Color(0x33, 0x66, 0x44);
@@ -1973,8 +2014,10 @@ void Application::render_slider(Rectangle area, vec2 knob_scale, float value, Co
 
 void Application::render_panel(const Panel& panel) const
 {
+    render_rectangle(panel.get_title_area(), panel.title_bar_color);
+
     auto& tab = panel.tabs.get_ref(panel.activeTab);
-    render_rectangle(panel.area, tab.color, false);
+    render_rectangle(panel.area, tab.color);
 
     const float margin = 16;
     const float iconSize = 32;

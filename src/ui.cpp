@@ -324,6 +324,40 @@ void Text_Field::insert_line()
     m_selection_end = m_selection_start;
 }
 
+Rectangle ResizeInfo::calculate_new_area(vec2 mouse_position, int min, int max) const
+{
+    Rectangle area = initialArea;
+    vec2 p = area.get_point_at_direction(direction);
+    vec2 d = mouse_position - p;
+
+    if (direction & DirEast)
+    {
+        area.x += d.x / 2;
+        area.w += d.x;
+    }
+    else if (direction & DirWest)
+    {
+        area.x += d.x / 2;
+        area.w -= d.x;
+    }
+
+    if (direction & DirNorth)
+    {
+        area.y += d.y / 2;
+        area.h += d.y;
+    }
+    else if (direction & DirSouth)
+    {
+        area.y += d.y / 2;
+        area.h -= d.y;
+    }
+
+    area.w = cobot::clamp(min, max, area.w);
+    area.h = cobot::clamp(min, max, area.h);
+
+    return area;
+}
+
 void UiState::update_state(vec2 window_size, const RenderContext& render, const AssetCatalog& catalog) {
     float y_factor = window_size.y / assumed_window_size.y;
     float x_factor = window_size.x / assumed_window_size.x;
@@ -378,6 +412,14 @@ void UiState::update_state(vec2 window_size, const RenderContext& render, const 
         ds.element_scale.x *= x_factor;
         ds.element_scale.y *= y_factor;
         ds.element_gap *= ds.vertical ? y_factor : x_factor;
+    }
+
+    for (auto& p : panel)
+    {
+        p.area.x *= x_factor;
+        p.area.y *= y_factor;
+        p.area.w *= x_factor;
+        p.area.h *= y_factor;
     }
 
     for (auto& vp : value_panel)
@@ -548,6 +590,10 @@ ValuePanel* UiState::get_value_panel(UiElementId id)
     }
 }
 
+Rectangle Panel::get_title_area() const
+{
+    return Rectangle(area.x, area.y - (area.h + title_height) / 2, area.w, title_height);    
+}
 
 Rectangle Panel::get_icon_area(int index) const {
     ASSERT(index < tabs.get(activeTab).icons.size());
@@ -556,7 +602,7 @@ Rectangle Panel::get_icon_area(int index) const {
     int rowCount = area.h / length_per_icon;
     int row = index % rowCount;
     int column = index / rowCount;
-    return Rectangle(area.get_position() + vec2(column, row) * length_per_icon,
+    return Rectangle(area.get_top_left() + vec2(column, row) * length_per_icon,
                      vec2(iconSize));
 }
 
@@ -566,8 +612,8 @@ Rectangle Panel::get_tab_header_area(int index) const {
     int rowCount = area.h / (tabHeaderSize * 2);
     int row = index % rowCount;
     int column = index / rowCount;
-    return Rectangle(area.x + area.w + tabHeaderSize / 2 + column * tabHeaderSize,
-                     area.y + tabHeaderSize / 2 + row * tabHeaderSize * 2,
+    return Rectangle(area.x + area.w / 2 + tabHeaderSize / 2 + column * tabHeaderSize,
+                     area.y - area.h / 2 + tabHeaderSize / 2 + row * tabHeaderSize * 2,
                      tabHeaderSize, tabHeaderSize);
 }
 

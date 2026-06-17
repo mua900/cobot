@@ -56,6 +56,8 @@ struct ResizeInfo {
     Rectangle initialArea = {};
     Direction direction = {};
     bool resize = false;
+
+    Rectangle calculate_new_area(vec2 mouse_position, int min, int max) const;
 };
 
 struct Label {
@@ -539,7 +541,11 @@ struct PanelTab {
 
 struct Panel {
     UiElementId id = {};
+    DragInfo drag = {};
+    ResizeInfo resize = {};
     Rectangle area = {};
+    float title_height = 0;
+    Color title_bar_color = Color();
     int activeTab = 0;
     float tabHeaderSize = 0;
     float iconSize = 0;
@@ -548,6 +554,8 @@ struct Panel {
 
     Panel() {}
     Panel(UiElementId id, Rectangle area, float headerSize, float icoSize, float margin) : id(id), area(area), tabHeaderSize(headerSize), iconSize(icoSize), iconMargin(margin) {}
+
+    Rectangle get_title_area() const;
 
     Rectangle get_icon_area(int index) const;
     Rectangle get_tab_header_area(int index) const;
