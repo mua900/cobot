@@ -1,29 +1,32 @@
 #include "common.hpp"
 #include "math_util.hpp"
 
+namespace cobot
+{
+
 float Complex::magnitude() const
 {
-    return sqrtf(real*real+imaginary*imaginary);
+    return sqrtf(real * real + imaginary * imaginary);
 }
 
 float Complex::winding() const
 {
-	return atan2f(imaginary, real);
+    return atan2f(imaginary, real);
 }
 
 float snap_value(float val, float bound1, float bound2, float threshold)
 {
-  if (fabsf(val - bound1) <= threshold) {
-    val = bound1;
-  }
-  else if (fabsf(val - bound2) <= threshold) {
-    val = bound2;
-  }
-  else if (fabsf(val - (bound1 + bound2) / 2) <= threshold) {
-    val = (bound1 + bound2) / 2;
-  }
+    if (fabsf(val - bound1) <= threshold) {
+        val = bound1;
+    }
+    else if (fabsf(val - bound2) <= threshold) {
+        val = bound2;
+    }
+    else if (fabsf(val - (bound1 + bound2) / 2) <= threshold) {
+        val = (bound1 + bound2) / 2;
+    }
 
-  return val;
+    return val;
 }
 
 Color::Color(const ColorF& color) {
@@ -72,7 +75,7 @@ vec2 get_direction_vector(float angle)
 
 mat4x4 identity_matrix()
 {
-    return mat4x4 {
+    return mat4x4{
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
@@ -130,7 +133,7 @@ void get_rotation_z(mat3x3* mat, float angle)
 {
     *mat = {
         std::cos(angle), std::sin(angle), 0,
-       -std::sin(angle), std::cos(angle), 0,
+        -std::sin(angle), std::cos(angle), 0,
         0,               0,               1,
     };
 }
@@ -164,17 +167,17 @@ void mat4mul(mat4x4* dst, mat4x4* left, mat4x4* right)
 
 mat4x4 orthographic_projection_matrix(float left, float right, float bottom, float top, float near, float far)
 {
-    return mat4x4 {
-        2.0f / (right - left),  0,                      0,                      - (right + left) / (right - left),
-        0,                      2.0f / (top - bottom),  0,                      - (top + bottom) / (top - bottom),
-        0,                      0,                      -2.0f / (far - near),   - (far + near) / (far - near),
+    return mat4x4{
+        2.0f / (right - left),  0,                      0,                      -(right + left) / (right - left),
+        0,                      2.0f / (top - bottom),  0,                      -(top + bottom) / (top - bottom),
+        0,                      0,                      -2.0f / (far - near),   -(far + near) / (far - near),
         0,                      0,                      0,                      1.0
     };
 }
 
 mat4x4 camera_matrix(vec2 position, vec2 scale)
 {
-    return mat4x4 {
+    return mat4x4{
         scale.x, 0,       0, position.x,
         0,       scale.y, 0, position.y,
         0,       0,       1, 0,
@@ -194,7 +197,7 @@ Quad get_rotated_points(Rectangle rect, float angle)
     vec2 diag1 = vec2(-hw * c - hh * s, -hw * s + hh * c);
 
     return Quad(vec2(rect.x + diag1.x, rect.y + diag1.y), vec2(rect.x + diag0.x, rect.y + diag0.y), vec2(rect.x - diag0.x, rect.y - diag0.y),
-                vec2(rect.x - diag1.x, rect.y - diag1.y));
+        vec2(rect.x - diag1.x, rect.y - diag1.y));
 }
 
 Rectangle merge_volumes(Rectangle v1, Rectangle v2)
@@ -218,16 +221,16 @@ Rectangle merge_volumes(Rectangle v1, Rectangle v2)
 
 vec2 Rectangle::get_point_at_direction(Direction dir) const {
     switch (dir) {
-        case DirNone:      return vec2(x, y);  // ???
-        case DirEast:      return vec2(x + w / 2, y);
-        case DirWest:      return vec2(x - w / 2, y);
-        case DirSouth:     return vec2(x, y - h / 2);
-        case DirNorth:     return vec2(x, y + h / 2);
-        case DirNorthEast: return vec2(x + w / 2, y + h / 2);
-        case DirNorthWest: return vec2(x - w / 2, y + h / 2);
-        case DirSouthEast: return vec2(x + w / 2, y - h / 2);
-        case DirSouthWest: return vec2(x - w / 2, y - h / 2);
-        default:           panic("Invalid direction");
+    case DirNone:      return vec2(x, y);  // ???
+    case DirEast:      return vec2(x + w / 2, y);
+    case DirWest:      return vec2(x - w / 2, y);
+    case DirSouth:     return vec2(x, y - h / 2);
+    case DirNorth:     return vec2(x, y + h / 2);
+    case DirNorthEast: return vec2(x + w / 2, y + h / 2);
+    case DirNorthWest: return vec2(x - w / 2, y + h / 2);
+    case DirSouthEast: return vec2(x + w / 2, y - h / 2);
+    case DirSouthWest: return vec2(x - w / 2, y - h / 2);
+    default:           panic("Invalid direction");
     }
 }
 
@@ -258,3 +261,5 @@ float cobot::smoothstep(float a, float b, float x)
     float t = cobot::clamp(0, 1, (x - a) / (b - a));
     return t * t * (3.0 - 2.0 * t);
 }
+
+}  // namespace

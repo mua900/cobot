@@ -5,7 +5,7 @@
 // @todo voronoise https://iquilezles.org/articles/voronoise/
 // @todo domain warping
 // @todo use parameters
-SDL_Texture* generate_map(SDL_Renderer* renderer, u64 seed, int width, int height, float scale, ColorF tint)
+SDL_Texture* generate_map(SDL_Renderer* renderer, u64 seed, int width, int height, float scale, cobot::ColorF tint)
 {
     int numPixel = width * height;
     MapPixel* heightmap = new MapPixel[numPixel];

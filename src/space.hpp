@@ -42,14 +42,14 @@ struct Body {
     float mass = 0;
     float radius = 0;
 
-    vec3 position = {};
-    vec3 velocity = {};
-    vec3 acceleration = {};
+    cobot::vec3 position = {};
+    cobot::vec3 velocity = {};
+    cobot::vec3 acceleration = {};
 
     OrbitalParameters parameters = {};
 
     Body() {}
-    Body(float mass, float radius, vec3 init_position, vec3 init_velocity)
+    Body(float mass, float radius, cobot::vec3 init_position, cobot::vec3 init_velocity)
         : mass(mass), radius(radius), position(init_position), velocity(init_velocity)
     {}
     Body(float mass, float radius, float semi_major_axis, float eccentricity, float true_anomaly, float longitude_of_ascending_node, float argument_of_periapsis, float inclination)
@@ -86,14 +86,14 @@ struct CelestialRotation {
 struct Planet {
     PlanetId id = {};
     String name = {};
-    ColorF color = {};
+    cobot::ColorF color = {};
     CelestialRotation rotation = {};
     Atmosphere atmosphere = {};
     SDL_Texture* map = {};
     Body body = {};
 
     Planet() {}
-    Planet(String name, ColorF color, const Body &body) : name(name), color(color), body(body) {}
+    Planet(String name, cobot::ColorF color, const Body &body) : name(name), color(color), body(body) {}
 };
 
 struct Star {

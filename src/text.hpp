@@ -44,10 +44,10 @@ struct Text {
 
 struct Icon {
     SDL_Texture* texture = nullptr;
-    Color background = {};
+    cobot::Color background = {};
 
     Icon () {}
-    Icon (SDL_Texture* tex, Color bground) : texture(tex), background(bground) {}
+    Icon (SDL_Texture* tex, cobot::Color bground) : texture(tex), background(bground) {}
 };
 
 struct IconButton {
@@ -55,11 +55,11 @@ struct IconButton {
     UserData data = {};
 
     IconButton() {}
-    IconButton(SDL_Texture* tex, Color background) : icon(tex, background) {}
-    IconButton(SDL_Texture* tex, Color background, s64 n) : icon(tex, background) {
+    IconButton(SDL_Texture* tex, cobot::Color background) : icon(tex, background) {}
+    IconButton(SDL_Texture* tex, cobot::Color background, s64 n) : icon(tex, background) {
         data.number = n;
     }
-    IconButton(SDL_Texture* tex, Color background, void* ptr) : icon(tex, background) {
+    IconButton(SDL_Texture* tex, cobot::Color background, void* ptr) : icon(tex, background) {
         data.ptr = ptr;
     }
 };

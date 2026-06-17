@@ -10,8 +10,8 @@
 #include "lua.hpp"
 
 struct VehicleProgram {
-    vec2 target = {};
-    vec2 turnTarget = {};
+    cobot::vec2 target = {};
+    cobot::vec2 turnTarget = {};
 };
 
 enum CommandType {

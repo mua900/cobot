@@ -2,7 +2,7 @@
 
 VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child)
 {
-    vec2 position = parent.position + (child.position * parent.scale).rotated(parent.rotation);
+    cobot::vec2 position = parent.position + (child.position * parent.scale).rotated(parent.rotation);
     float rotation = parent.rotation + child.rotation;
     float scale = parent.scale * child.scale;
     return VPartTransform(position, rotation, scale);
@@ -12,14 +12,14 @@ bool Vehicle::execute_command(VehicleCommand& command)
 {
     if (command.type == CommandMove)
     {
-        vec2 difference = command.program.target - worldPosition;
+        cobot::vec2 difference = command.program.target - worldPosition;
         float angle = atan2f(difference.y, difference.x);
         float distance = difference.magnitude();
         bool arrived = distance < 0.01;
         bool turned = fabsf(orientation - angle) < 0.05;
         if (!arrived)
         {
-            vec2 direction = difference / distance;
+            cobot::vec2 direction = difference / distance;
             velocity = speed * direction;
         }
         if (!turned)
@@ -38,9 +38,9 @@ VPartTransform Vehicle::get_vehicle_transform() const
     return VPartTransform(worldPosition, orientation, 1.0);
 }
 
-vec2 Vehicle::forward() const
+cobot::vec2 Vehicle::forward() const
 {
-    return vec2(std::cosf(orientation), std::sinf(orientation));
+    return cobot::vec2(std::cosf(orientation), std::sinf(orientation));
 }
 
 VPartTransform Vehicle::getWorldTransform(PartId part) const
@@ -103,7 +103,7 @@ const char* get_controller_name(ControllerKind kind) {
 }
 
 
-vec2 get_part_scale(PartKindId id)
+cobot::vec2 get_part_scale(PartKindId id)
 {
     PartKind kind = get_part_kind(id);
     u16 subKind = get_subkind(id);
@@ -116,16 +116,16 @@ vec2 get_part_scale(PartKindId id)
     }
 }
 
-vec2 get_chassis_scale(ChassisKind kind) {
-    return vec2(100, 100);
+cobot::vec2 get_chassis_scale(ChassisKind kind) {
+    return cobot::vec2(100, 100);
 }
 
-vec2 get_tire_scale(TireKind kind) {
-    return vec2(25, 25);
+cobot::vec2 get_tire_scale(TireKind kind) {
+    return cobot::vec2(25, 25);
 }
 
-vec2 get_controller_scale(ControllerKind kind) {
-    return vec2(10, 10);
+cobot::vec2 get_controller_scale(ControllerKind kind) {
+    return cobot::vec2(10, 10);
 }
 
 
@@ -150,7 +150,7 @@ PartId Vehicle::add_tire(Tire& t) {
     PartId thisPart = PartId(PART_TIRE, index);
 
     VPartTransform transform = getWorldTransform(PartId(PART_TIRE, index));
-    volume = merge_volumes(volume, Rectangle(transform.position, transform.scale * get_tire_scale(t.kind)));
+    volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_tire_scale(t.kind)));
 
     return thisPart;
 }
@@ -173,7 +173,7 @@ PartId Vehicle::add_chassis(Chassis& c) {
     }
 
     VPartTransform transform = getWorldTransform(thisPart);
-    volume = merge_volumes(volume, Rectangle(transform.position, transform.scale * get_chassis_scale(c.kind)));
+    volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_chassis_scale(c.kind)));
 
     return thisPart;
 }
@@ -184,7 +184,7 @@ PartId Vehicle::add_controller(Controller& c) {
     PartId thisPart = PartId(PART_CONTROLLER, index);
 
     VPartTransform transform = getWorldTransform(PartId(PART_CONTROLLER, index));
-    volume = merge_volumes(volume, Rectangle(transform.position, transform.scale * get_controller_scale(c.kind)));
+    volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_controller_scale(c.kind)));
 
     return thisPart;
 }
@@ -215,7 +215,7 @@ int Vehicle::add_root(PartId part)
     return rootParts.add(part);
 }
 
-PartId Vehicle::getPartAt(vec2 position) const
+PartId Vehicle::getPartAt(cobot::vec2 position) const
 {
     position -= worldPosition;
     for (int i = 0; i < rootParts.size(); i++)
@@ -230,14 +230,14 @@ PartId Vehicle::getPartAt(vec2 position) const
     return NullPartId;
 }
 
-PartId Vehicle::get_part_on_location(PartId part, vec2 location, VPartTransform parent) const
+PartId Vehicle::get_part_on_location(PartId part, cobot::vec2 location, VPartTransform parent) const
 {
     switch (part.kind)
     {
         case PART_CHASSIS: {
             Chassis& cha = chassis[part.index];
             VPartTransform t = chain_part_transform(parent, cha.part.transform);
-            vec2 scale = get_chassis_scale(cha.kind) * t.scale;
+            cobot::vec2 scale = get_chassis_scale(cha.kind) * t.scale;
 
             switch (cha.kind) {
                 case ChassisBasic: {
@@ -255,7 +255,7 @@ PartId Vehicle::get_part_on_location(PartId part, vec2 location, VPartTransform 
                 default: panic("Invalid chasis kind");
             }
 
-            if (Rectangle(t.position, scale * t.scale).contains_centered(location)) {
+            if (cobot::Rectangle(t.position, scale * t.scale).contains_centered(location)) {
                 return part;
             }
             else {
@@ -265,8 +265,8 @@ PartId Vehicle::get_part_on_location(PartId part, vec2 location, VPartTransform 
         case PART_TIRE: {
             Tire& tr = tire[part.index];
             VPartTransform t = chain_part_transform(parent, tr.part.transform);
-            vec2 scale = get_tire_scale(tr.kind);
-            if (Rectangle(t.position, scale * t.scale).contains_centered(location)) {
+            cobot::vec2 scale = get_tire_scale(tr.kind);
+            if (cobot::Rectangle(t.position, scale * t.scale).contains_centered(location)) {
                 return part;
             }
             else {
@@ -276,8 +276,8 @@ PartId Vehicle::get_part_on_location(PartId part, vec2 location, VPartTransform 
         case PART_CONTROLLER: {
             Controller& con = controller[part.index];
             VPartTransform t = chain_part_transform(parent, con.part.transform);
-            vec2 scale = get_controller_scale(controller[part.index].kind);
-            if (Rectangle(t.position, scale * t.scale).contains_centered(location)) {
+            cobot::vec2 scale = get_controller_scale(controller[part.index].kind);
+            if (cobot::Rectangle(t.position, scale * t.scale).contains_centered(location)) {
                 return part;
             }
             else {
@@ -295,8 +295,8 @@ Vehicle get_default_vehicle()
     vehicle.name = String("Default");
     vehicle.speed = 10;
 
-    vehicle.worldPosition = vec2(600, 300);
-    vehicle.volume = Rectangle(vehicle.worldPosition, vec2());
+    vehicle.worldPosition = cobot::vec2(600, 300);
+    vehicle.volume = cobot::Rectangle(vehicle.worldPosition, cobot::vec2());
 
     Chassis chasis = {};
     chasis.kind = ChassisBasic;
@@ -314,10 +314,10 @@ Vehicle get_default_vehicle()
 
     int hDist = 25;
     int vDist = 36;
-    tires[0].part.transform.position = vec2( hDist, -vDist);
-    tires[1].part.transform.position = vec2( hDist,  vDist);
-    tires[2].part.transform.position = vec2(-hDist, -vDist);
-    tires[3].part.transform.position = vec2(-hDist,  vDist);
+    tires[0].part.transform.position = cobot::vec2( hDist, -vDist);
+    tires[1].part.transform.position = cobot::vec2( hDist,  vDist);
+    tires[2].part.transform.position = cobot::vec2(-hDist, -vDist);
+    tires[3].part.transform.position = cobot::vec2(-hDist,  vDist);
 
     PartId fl = vehicle.add_tire(tires[0]);
     PartId fr = vehicle.add_tire(tires[1]);
@@ -360,7 +360,7 @@ SDL_Texture* get_part_texture(PartKindId partKind, AssetCatalog& catalog)
     return catalog.get_image(id);
 }
 
-bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog)
+bool load_tire_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog)
 {
     for (int i = 0; i < (int)TireKindCount; i++)
     {
@@ -375,7 +375,7 @@ bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& 
     return true;
 }
 
-bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog) {
+bool load_chasis_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog) {
     for (int i = 0; i < (int)ChassisKindCount; i++)
     {
         const char* name = get_chassis_name(ChassisKind(i));
@@ -389,7 +389,7 @@ bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog
     return true;
 }
 
-bool load_controller_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog) {
+bool load_controller_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog) {
     for (int i = 0; i < (int)ControllerKindCount; i++)
     {
         const char* name = get_controller_name(ControllerKind(i));

@@ -9,7 +9,7 @@
 
 #define GRAPHICS_DEBUG 1
 
-static const ColorF DEBUG_COLOR =  ColorF(0.6, 0.5, 0.4, 1.0);
+static const auto DEBUG_COLOR = cobot::ColorF(0.6, 0.5, 0.4, 1.0);
 
 #ifdef _WIN32
 #if GRAPHICS_DEBUG
@@ -84,7 +84,7 @@ struct FrameContext {
 };
 
 struct RenderContext {
-    vec2 render_size = {};
+    cobot::vec2 render_size = {};
     SDL_Renderer* renderer = nullptr;
     DArray<SDL_GPURenderState*> render_states = {};
 
@@ -93,7 +93,7 @@ struct RenderContext {
 
     SDL_GPUDevice* device = nullptr;
 
-    mat4x4 mvp = {};
+    cobot::mat4x4 mvp = {};
 
     GPUBuffer vertex_buffer = {};
     GPUBuffer index_buffer = {};
@@ -152,32 +152,32 @@ void end_frame(RenderContext& context);
 
 bool loadShader(RenderContext& context, Shader& shader, const char* path);
 
-void draw_segment(const RenderContext& context, vec2 start, vec2 end, float thick, ColorF color);
-void draw_arrow(const RenderContext& context, vec2 start, vec2 end, float thick, float head_ratio, ColorF color);
-void draw_circle(const RenderContext& context, vec2 position, float radius, ColorF color);
-void draw_circle_with_texture(const RenderContext& context, vec2 position, float radius, SDL_Texture* texture, ColorF color);
-void draw_arc(const RenderContext& context, vec2 center, float inner_radius, float outer_radius, float start_angle, float arc, ColorF color);
-void draw_capsule(const RenderContext& context, vec2 center0, vec2 center1, float radius, ColorF color);
-void draw_polygon(RenderContext& context, vec2 points[], int numPoints, ColorF color);
-void draw_path(RenderContext& context, vec2 points[], int numPoints, float thick, ColorF color);
-void draw_closed_path(RenderContext& context, vec2 points[], int numPoints, float thick, ColorF color);
-void draw_quadratic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, float thick, ColorF color);
-void draw_cubic_bezier(const RenderContext& context, vec2 p0, vec2 p1, vec2 p2, vec2 p3, float thick, ColorF color);
-void draw_quad(const RenderContext& context, Quad quad, ColorF color);
-void draw_quad_with_texture(const RenderContext& context, Quad quad, SDL_Texture* texture, ColorF color);
+void draw_segment(const RenderContext& context, cobot::vec2 start, cobot::vec2 end, float thick, cobot::ColorF color);
+void draw_arrow(const RenderContext& context, cobot::vec2 start, cobot::vec2 end, float thick, float head_ratio, cobot::ColorF color);
+void draw_circle(const RenderContext& context, cobot::vec2 position, float radius, cobot::ColorF color);
+void draw_circle_with_texture(const RenderContext& context, cobot::vec2 position, float radius, SDL_Texture* texture, cobot::ColorF color);
+void draw_arc(const RenderContext& context, cobot::vec2 center, float inner_radius, float outer_radius, float start_angle, float arc, cobot::ColorF color);
+void draw_capsule(const RenderContext& context, cobot::vec2 center0, cobot::vec2 center1, float radius, cobot::ColorF color);
+void draw_polygon(RenderContext& context, cobot::vec2 points[], int numPoints, cobot::ColorF color);
+void draw_path(RenderContext& context, cobot::vec2 points[], int numPoints, float thick, cobot::ColorF color);
+void draw_closed_path(RenderContext& context, cobot::vec2 points[], int numPoints, float thick, cobot::ColorF color);
+void draw_quadratic_bezier(const RenderContext& context, cobot::vec2 p0, cobot::vec2 p1, cobot::vec2 p2, float thick, cobot::ColorF color);
+void draw_cubic_bezier(const RenderContext& context, cobot::vec2 p0, cobot::vec2 p1, cobot::vec2 p2, cobot::vec2 p3, float thick, cobot::ColorF color);
+void draw_quad(const RenderContext& context, cobot::Quad quad, cobot::ColorF color);
+void draw_quad_with_texture(const RenderContext& context, cobot::Quad quad, SDL_Texture* texture, cobot::ColorF color);
 
-void draw_texture(const RenderContext& context, Rectangle area, SDL_Texture* texture);
+void draw_texture(const RenderContext& context, cobot::Rectangle area, SDL_Texture* texture);
 
-SDL_Texture* render_text(SDL_Renderer* renderer, String text, Font font, Color color);
-Text create_text(SDL_Renderer* renderer, String text, Font font, Color color);
+SDL_Texture* render_text(SDL_Renderer* renderer, String text, Font font, cobot::Color color);
+Text create_text(SDL_Renderer* renderer, String text, Font font, cobot::Color color);
 
-void render_texture(const RenderContext& render, Rectangle area, Texture* texture, bool strech = false);
-void render_texture_rotate(const RenderContext& render, Rectangle area, Texture* texture, float angle, Flip flip, bool strech = false);
-void render_textured_rectangle(const RenderContext& render, Rectangle rect, Texture* texture, Color color, bool strech = false, bool center = true);
-void render_texture_with_tint(const RenderContext& render, Rectangle area, Texture* texture, ColorF tint, bool strech = false);
+void render_texture(const RenderContext& render, cobot::Rectangle area, Texture* texture, bool strech = false);
+void render_texture_rotate(const RenderContext& render, cobot::Rectangle area, Texture* texture, float angle, Flip flip, bool strech = false);
+void render_textured_rectangle(const RenderContext& render, cobot::Rectangle rect, Texture* texture, cobot::Color color, bool strech = false, bool center = true);
+void render_texture_with_tint(const RenderContext& render, cobot::Rectangle area, Texture* texture, cobot::ColorF tint, bool strech = false);
 
 
-void render_text_size(SDL_Renderer* renderer, Text text, vec2 where, vec2 absolute_scale = vec2(0, 0));
-void render_text_scale(SDL_Renderer* renderer, Text text, vec2 where, vec2 scale_factor = vec2(0,0));
+void render_text_size(SDL_Renderer* renderer, Text text, cobot::vec2 where, cobot::vec2 absolute_scale = cobot::vec2(0, 0));
+void render_text_scale(SDL_Renderer* renderer, Text text, cobot::vec2 where, cobot::vec2 scale_factor = cobot::vec2(0,0));
 
 #endif // _DRAW_H

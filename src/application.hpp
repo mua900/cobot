@@ -56,15 +56,15 @@ enum Events {
 };
 
 struct ApplicationMessage {
-    vec2 where = {};
-    vec2 scale = {};
+    cobot::vec2 where = {};
+    cobot::vec2 scale = {};
     const char* message = nullptr;
     float expire = 0;
     SDL_Texture* texture = nullptr;
-    Color background = {};
+    cobot::Color background = {};
 
     ApplicationMessage() {}
-    ApplicationMessage(vec2 w, vec2 s, const char* m, Color color) : where(w), scale(s), message(m), background(color) {}
+    ApplicationMessage(cobot::vec2 w, cobot::vec2 s, const char* m, cobot::Color color) : where(w), scale(s), message(m), background(color) {}
 };
 
 enum MeshType {
@@ -99,7 +99,7 @@ public:
     AssetCatalog m_catalog = {};
 
     UiState m_ui[UiCount];
-    Color m_background_color = DEFAULT_BACKGROUND_COLOR;
+    cobot::Color m_background_color = DEFAULT_BACKGROUND_COLOR;
 
     TimeInfo m_time = {};
 
@@ -152,13 +152,13 @@ private:
     UiState& get_active_ui();
 
     void timeout();
-    void update_ui_state(vec2 window_size);
+    void update_ui_state(cobot::vec2 window_size);
     void update_ui_pos();
 
     void set_event_active(int event_index, double timeout_seconds);
     void set_event_deactive(int event_index);
 
-    int display_message(vec2 where, vec2 scale, const char* message, float duration, Color color, Color background);
+    int display_message(cobot::vec2 where, cobot::vec2 scale, const char* message, float duration, cobot::Color color, cobot::Color background);
 
     void draw_game();
     void draw_solar_system();
@@ -172,7 +172,7 @@ private:
     void on_mouse_up(int button);
     void on_mouse_move();
 
-    void set_text_editor_cursor(Rectangle text_area, Direction dir);
+    void set_text_editor_cursor(cobot::Rectangle text_area, cobot::Direction dir);
 
     bool mouse_input_game();
     bool mouse_input_menu();
@@ -197,12 +197,12 @@ private:
 
     bool read_asset_catalog(String_Builder& path);
 
-    void render_rectangle_outline(Rectangle rect, Color color, bool center = true) const;
-    void render_rectangle(Rectangle rect, Color color, bool center = true) const;
+    void render_rectangle_outline(cobot::Rectangle rect, cobot::Color color, bool center = true) const;
+    void render_rectangle(cobot::Rectangle rect, cobot::Color color, bool center = true) const;
 
-    Icon create_icon(AssetId image, Color background);
+    Icon create_icon(AssetId image, cobot::Color background);
 
-    void render_slider(Rectangle area, vec2 knob_scale, float value, Color slider_color, Color knob_color, const Text& text) const;
+    void render_slider(cobot::Rectangle area, cobot::vec2 knob_scale, float value, cobot::Color slider_color, cobot::Color knob_color, const Text& text) const;
     void render_text_field(const Text_Field& text_field) const;
     void render_text_editor(const TextEditor& editor) const;
     void render_dropdown(const Drop_Down_List& list) const;
@@ -223,7 +223,7 @@ private:
     bool is_minimized() const;
     bool is_maximized() const;
     bool is_fullscreen() const;
-    vec2 get_window_size() const;
+    cobot::vec2 get_window_size() const;
 };
 
 void get_base_path(String_Builder& builder);

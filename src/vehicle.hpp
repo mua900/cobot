@@ -29,13 +29,13 @@ struct PartId {
 static const PartId NullPartId = PartId();
 
 struct VPartTransform {
-    vec2 position = {};
+    cobot::vec2 position = {};
     float rotation = 0;  // radians
     float scale = 0;
 
     VPartTransform() {}
-    VPartTransform(vec2 pos, float sca) : position(pos), scale(sca) {}
-    VPartTransform(vec2 pos, float rot, float sca) : position(pos), rotation(rot), scale(sca) {}
+    VPartTransform(cobot::vec2 pos, float sca) : position(pos), scale(sca) {}
+    VPartTransform(cobot::vec2 pos, float rot, float sca) : position(pos), rotation(rot), scale(sca) {}
 };
 
 VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child);
@@ -46,9 +46,9 @@ struct VPartData {
     float weight = 0;
 
     VPartData() {}
-    VPartData(vec2 position) : transform(position, 1.0) {}
-    VPartData(vec2 position, float scale) : transform(position, scale) {}
-    VPartData(PartId parent, vec2 position, float scale) : parent(parent), transform(position, scale) {}
+    VPartData(cobot::vec2 position) : transform(position, 1.0) {}
+    VPartData(cobot::vec2 position, float scale) : transform(position, scale) {}
+    VPartData(PartId parent, cobot::vec2 position, float scale) : parent(parent), transform(position, scale) {}
 };
 
 struct AttachmentPoint {
@@ -168,11 +168,11 @@ constexpr VehicleId NullVehicleId = -1;
 
 struct Vehicle {
     String name = {};  // @todo this would need to change when we need to get names from user
-    vec2 worldPosition = {};
-    vec2 velocity = {};
+    cobot::vec2 worldPosition = {};
+    cobot::vec2 velocity = {};
     float speed = 0;
     float orientation = 0;  // radians, 0 looking up
-    Rectangle volume = {};
+    cobot::Rectangle volume = {};
 
     DArray<PartId> rootParts = {};
     
@@ -195,14 +195,14 @@ struct Vehicle {
     VPartData& getPartData(PartId id) const;
     PartId& getParentRef(PartId part);
 
-    vec2 forward() const;
+    cobot::vec2 forward() const;
     VPartTransform get_vehicle_transform() const;
 
     bool execute_command(VehicleCommand& command);
 
-    PartId getPartAt(vec2 position) const;
+    PartId getPartAt(cobot::vec2 position) const;
 private:
-    PartId get_part_on_location(PartId part, vec2 location, VPartTransform parent) const;
+    PartId get_part_on_location(PartId part, cobot::vec2 location, VPartTransform parent) const;
 };
 
 // the lower 16 bits are the subkind and the higher 16 bits are the kind
@@ -217,16 +217,16 @@ const char* get_chassis_name(ChassisKind kind);
 const char* get_tire_name(TireKind kind);
 const char* get_controller_name(ControllerKind kind);
 
-vec2 get_part_scale(PartKindId id);
-vec2 get_chassis_scale(ChassisKind kind);
-vec2 get_tire_scale(TireKind kind);
-vec2 get_controller_scale(ControllerKind kind);
+cobot::vec2 get_part_scale(PartKindId id);
+cobot::vec2 get_chassis_scale(ChassisKind kind);
+cobot::vec2 get_tire_scale(TireKind kind);
+cobot::vec2 get_controller_scale(ControllerKind kind);
 
 SDL_Texture* get_part_texture(PartKindId partKind, AssetCatalog& catalog);
 
-bool load_tire_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
-bool load_chasis_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
-bool load_controller_icons(DArray<IconButton>& icons, Color background, AssetCatalog& catalog);
+bool load_tire_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
+bool load_chasis_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
+bool load_controller_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
 
 Vehicle get_default_vehicle();
 

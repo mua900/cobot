@@ -75,7 +75,7 @@ void keyboardVehicle(GameState* game, KeyboardState* keyboard) {
         vehicle.velocity = -vehicle.speed * vehicle.forward();
     }
     else {
-        vehicle.velocity = vec2(0);
+        vehicle.velocity = cobot::vec2(0);
     }
 
     if (keyboard->key_pressed(KEY_LEFT)) {
@@ -89,12 +89,12 @@ void keyboardVehicle(GameState* game, KeyboardState* keyboard) {
 void keyboardStarSystem(GameState* game, KeyboardState* keyboard) {}
 
 
-Rectangle GameState::get_planet_screen_area(vec2 ws, int planet) const
+cobot::Rectangle GameState::get_planet_screen_area(cobot::vec2 ws, int planet) const
 {
-    vec2 origin = ws / 2;
+    cobot::vec2 origin = ws / 2;
     const Planet& p = starSystem.planets.get_ref(planet);
-    vec2 pos = origin + p.body.position.xy();
-    return Rectangle(pos, vec2(p.body.radius));
+    cobot::vec2 pos = origin + p.body.position.xy();
+    return cobot::Rectangle(pos, cobot::vec2(p.body.radius));
 }
 
 Vehicle& GameState::get_active_vehicle() const
@@ -136,7 +136,7 @@ void draw_chasis(const Chassis& chasis, VPartTransform parent, const RenderConte
     SDL_Texture* texture = catalog.get_image(imageId);
 
     VPartTransform transform = chain_part_transform(parent, chasis.part.transform);
-    Rectangle area = Rectangle(transform.position, get_chassis_scale(chasis.kind) * transform.scale);
+    cobot::Rectangle area = cobot::Rectangle(transform.position, get_chassis_scale(chasis.kind) * transform.scale);
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 
     switch (chasis.kind) {
@@ -156,7 +156,7 @@ void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& con
     SDL_Texture* texture = catalog.get_image(imageId);
 
     VPartTransform transform = chain_part_transform(parent, tire.part.transform);
-    Rectangle area = Rectangle(transform.position, get_tire_scale(tire.kind) * transform.scale);
+    cobot::Rectangle area = cobot::Rectangle(transform.position, get_tire_scale(tire.kind) * transform.scale);
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 }
 
@@ -166,7 +166,7 @@ void draw_controller(const Controller& controller, VPartTransform parent, const 
     SDL_Texture* texture = catalog.get_image(imageId);
 
     VPartTransform transform = chain_part_transform(parent, controller.part.transform);
-    Rectangle area = Rectangle(transform.position, get_controller_scale(controller.kind) * transform.scale);
+    cobot::Rectangle area = cobot::Rectangle(transform.position, get_controller_scale(controller.kind) * transform.scale);
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 }
 
@@ -197,8 +197,8 @@ void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& 
 
     for (auto& controller : vehicle.controller)
     {
-        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_start()->program.target, 10, ColorF(1, 0, 0));
-        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_start()->program.turnTarget, 10, ColorF(0, 1, 0));
+        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_start()->program.target, 10, cobot::ColorF(1, 0, 0));
+        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_start()->program.turnTarget, 10, cobot::ColorF(0, 1, 0));
     }
 }
 
@@ -220,11 +220,11 @@ void draw_vehicle_simulation(const RenderContext& context, const AssetCatalog& c
 
 void draw_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
 {
-    vec2 render_size = context.render_size;
+    cobot::vec2 render_size = context.render_size;
     auto& system = game.starSystem;
 
-    vec2 center = render_size / 2;
-    draw_circle(context, center, system.star.radius, ColorF(0.6, 0.5, 0.1));
+    cobot::vec2 center = render_size / 2;
+    draw_circle(context, center, system.star.radius, cobot::ColorF(0.6, 0.5, 0.1));
 
     // @todo fix
     // SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 0, nullptr, sizeof(nullptr));
@@ -233,12 +233,12 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
     float maxDepth = 10;
     for (auto& planet : system.planets)
     {
-        vec2 pos = vec2(planet.body.position.x, planet.body.position.y);
+        cobot::vec2 pos = cobot::vec2(planet.body.position.x, planet.body.position.y);
         float zdistance = cobot::smoothstep(-maxDepth / 2, maxDepth / 2, planet.body.position.z);
         // remap to 0.5 - 1.0 range
         zdistance = (zdistance + 1.0f) / 2;
         // draw_circle(context, center + pos, planet.body.radius, ColorF(planet.color, zdistance));
-        draw_circle_with_texture(context, center + pos, planet.body.radius, planet.map, ColorF(planet.color, zdistance));
+        draw_circle_with_texture(context, center + pos, planet.body.radius, planet.map, cobot::ColorF(planet.color, zdistance));
     }
 
     SDL_SetGPURenderState(context.renderer, nullptr);
@@ -252,23 +252,23 @@ void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const Game
     }
 }
 
-void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset, double centralBodyMass, float thick)
+void draw_planet_orbit(RenderContext& context, const Planet& planet, cobot::vec2 offset, double centralBodyMass, float thick)
 {
     Body body = planet.body;
-    ColorF color = planet.color;
+    cobot::ColorF color = planet.color;
 
     constexpr float stepSize = 0.01;
     constexpr int numSteps = CONSTANT_TAU / stepSize;
-    vec2 points[numSteps];
+    cobot::vec2 points[numSteps];
 
     float angle = 0;
     for (int index = 0; index < numSteps; index += 1)
     {
         body.parameters.trueAnomaly = angle;
         body.determine_state_vector(centralBodyMass);
-        vec3 p = body.position;
+        cobot::vec3 p = body.position;
 
-        points[index] = offset + vec2(p.x, p.y);
+        points[index] = offset + cobot::vec2(p.x, p.y);
         angle += stepSize;
     }
 
@@ -277,7 +277,7 @@ void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset
 
 void draw_planet_outline(RenderContext& context, const GameState& game, int planetIndex)
 {
-    vec2 origin = context.render_size / 2;
+    cobot::vec2 origin = context.render_size / 2;
     Planet& planet = game.starSystem.planets.get_ref(planetIndex);
     draw_arc(context, origin + planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(10), cobot::degree_to_radian_f(70), planet.color);
     draw_arc(context, origin + planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(100), cobot::degree_to_radian_f(70), planet.color);

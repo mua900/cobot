@@ -52,7 +52,7 @@ struct MouseCursor {
 };
 
 struct MouseState {
-    vec2 pos = {};
+    cobot::vec2 pos = {};
     SDL_MouseButtonFlags buttonFlags = {};
     MouseCursor cursor = {};
     bool down = false;

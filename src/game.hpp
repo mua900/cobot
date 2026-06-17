@@ -16,7 +16,7 @@
 
 // @todo use
 struct Camera {
-    vec2 position = {};
+    cobot::vec2 position = {};
     float zoom = 0;
 };
 
@@ -52,7 +52,7 @@ struct GameState {
     Vehicle& get_active_vehicle() const;
     void update(TimeInfo time);
     bool load_part_images(AssetCatalog& catalog);
-    Rectangle get_planet_screen_area(vec2 ws, int planet) const;
+    cobot::Rectangle get_planet_screen_area(cobot::vec2 ws, int planet) const;
 };
 
 void idleUpdate(GameState* game, TimeInfo time);
@@ -70,7 +70,7 @@ void keyboardStarSystem(GameState* game, KeyboardState* keyboard);
 
 void draw_vehicle_simulation(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
-void draw_planet_orbit(RenderContext& context, const Planet& planet, vec2 offset, double centralBodyMass, float thick);
+void draw_planet_orbit(RenderContext& context, const Planet& planet, cobot::vec2 offset, double centralBodyMass, float thick);
 void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_planet_outline(RenderContext& context, const GameState& game, int planet);
 void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);

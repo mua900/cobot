@@ -10,7 +10,7 @@ struct MapPixel {
     u8 r = 0;
 };
 
-SDL_Texture* generate_map(SDL_Renderer* renderer, u64 seed, int width, int height, float scale, ColorF tint);
+SDL_Texture* generate_map(SDL_Renderer* renderer, u64 seed, int width, int height, float scale, cobot::ColorF tint);
 
 // @todo
 struct Map {

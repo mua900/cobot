@@ -12,7 +12,7 @@
 #define INIT_WINDOW_WIDTH  1440
 #define INIT_WINDOW_HEIGHT 810
 
-#define DEFAULT_BACKGROUND_COLOR Color{ 0x88, 0x33, 0x66, 0xff }
+#define DEFAULT_BACKGROUND_COLOR cobot::Color{ 0x88, 0x33, 0x66, 0xff }
 
 struct Window {
     SDL_Window* window;
@@ -47,28 +47,28 @@ struct UiElementInfo {
 };
 
 struct DragInfo {
-    vec2 start = {};
+    cobot::vec2 start = {};
     bool drag = false;
 };
 
 struct ResizeInfo {
-    vec2 start = {};
-    Rectangle initialArea = {};
-    Direction direction = {};
+    cobot::vec2 start = {};
+    cobot::Rectangle initialArea = {};
+    cobot::Direction direction = {};
     bool resize = false;
 
-    Rectangle calculate_new_area(vec2 mouse_position, int min, int max) const;
+    cobot::Rectangle calculate_new_area(cobot::vec2 mouse_position, int min, int max) const;
 };
 
 struct Label {
     UiElementId id = {};
     Text text = {};
-    vec2 position = {};  // center
-    vec2 scale = {};
-    Color background = {};
+    cobot::vec2 position = {};  // center
+    cobot::vec2 scale = {};
+    cobot::Color background = {};
 
     Label() {}
-    Label(Text p_text, vec2 pos, vec2 sca, Color back) : text(p_text), position(pos), scale(sca), background(back) {}
+    Label(Text p_text, cobot::vec2 pos, cobot::vec2 sca, cobot::Color back) : text(p_text), position(pos), scale(sca), background(back) {}
 };
 
 struct TextButton {
@@ -76,12 +76,12 @@ struct TextButton {
     UiElementInfo info = {};
     UserData data = {};
     Text text = {};
-    vec2 position = {};
-    vec2 scale = {};
-    Color background = {};
+    cobot::vec2 position = {};
+    cobot::vec2 scale = {};
+    cobot::Color background = {};
 
     TextButton() {}
-    TextButton(Text p_text, vec2 pos, vec2 sca, Color back, bool visible = true) : info(visible), text(p_text), position(pos), scale(sca), background(back) {}
+    TextButton(Text p_text, cobot::vec2 pos, cobot::vec2 sca, cobot::Color back, bool visible = true) : info(visible), text(p_text), position(pos), scale(sca), background(back) {}
 };
 
 struct ImageButton {
@@ -89,12 +89,12 @@ struct ImageButton {
     UiElementInfo info = {};
     UserData data = {};
     SDL_Texture* image = {};
-    vec2 position = {};
-    vec2 scale = {};
-    Color background = {};
+    cobot::vec2 position = {};
+    cobot::vec2 scale = {};
+    cobot::Color background = {};
 
     ImageButton() {}
-    ImageButton(SDL_Texture* image, vec2 pos, vec2 sca, Color back, bool visible = true) : info(visible), image(image), position(pos), scale(sca), background(back) {}
+    ImageButton(SDL_Texture* image, cobot::vec2 pos, cobot::vec2 sca, cobot::Color back, bool visible = true) : info(visible), image(image), position(pos), scale(sca), background(back) {}
 };
 
 struct ButtonGroup {
@@ -102,13 +102,13 @@ struct ButtonGroup {
     UiElementInfo info = {};
     UserData user = {};
     DArray<SDL_Texture*> buttons = {};
-    vec2 button_scale = {};
-    vec2 position = {};
-    vec2 scale = {};
-    Color background = {};
+    cobot::vec2 button_scale = {};
+    cobot::vec2 position = {};
+    cobot::vec2 scale = {};
+    cobot::Color background = {};
 
     ButtonGroup() {}
-    ButtonGroup(UiElementId ident, vec2 pos, vec2 sca, Color back) : id(ident), position(pos), scale(sca), background(back) {}
+    ButtonGroup(UiElementId ident, cobot::vec2 pos, cobot::vec2 sca, cobot::Color back) : id(ident), position(pos), scale(sca), background(back) {}
 };
 
 struct GapBuffer {
@@ -172,16 +172,16 @@ enum Text_Input_Target : u8 {
     NO_TARGET,
 };
 
-constexpr Color TextCursorColor (0x33, 0x56, 0x74, 0xaa);
+constexpr cobot::Color TextCursorColor (0x33, 0x56, 0x74, 0xaa);
 
 struct Text_Field
 {
     UiElementId id = {};
     UiElementInfo info = {};
 
-    Rectangle m_area = {};
-    Color background = {};
-    Color text_color = {};
+    cobot::Rectangle m_area = {};
+    cobot::Color background = {};
+    cobot::Color text_color = {};
 
     GapBuffer m_buffer = {};
     String_Builder m_text = {};
@@ -201,7 +201,7 @@ struct Text_Field
     Text_Field() {}
 
     // height -> empty height
-    Text_Field(AssetId font, float height, Color background_color, Color textColor)
+    Text_Field(AssetId font, float height, cobot::Color background_color, cobot::Color textColor)
     {
         m_font_size = height;
         fontId = font;
@@ -209,7 +209,7 @@ struct Text_Field
         text_color = textColor;
     }
 
-    Text_Field(Rectangle area, AssetId font, Color background_color, Color textColor)
+    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor)
     {
         fontId = font;
         background = background_color;
@@ -217,7 +217,7 @@ struct Text_Field
         m_area = area;
     }
 
-    Text_Field(Rectangle area, AssetId font, Color background_color, Color textColor, UiElementId ident) : id(ident)
+    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, UiElementId ident) : id(ident)
     {
         fontId = font;
         background = background_color;
@@ -342,9 +342,9 @@ struct Text_Field
     }
 
     void calculate_cursor_from_selection(String string, Font font, bool wrapped);
-    size_t calculate_cursor_from_mouse(vec2 mouse_position, String string, Font font, bool wrapped);
+    size_t calculate_cursor_from_mouse(cobot::vec2 mouse_position, String string, Font font, bool wrapped);
 
-    bool render_text_field_texture(SDL_Renderer* renderer, Font font, Color color, bool wrapped);
+    bool render_text_field_texture(SDL_Renderer* renderer, Font font, cobot::Color color, bool wrapped);
 };
 
 struct TextEditor {
@@ -352,8 +352,8 @@ struct TextEditor {
     MutableString name = {};
     SDL_Texture* title_texture = nullptr;  // rendered name or something else
     float title_height = 0;
-    Color title_color = Color();  // color of the title text
-    Color title_bar_color = Color();
+    cobot::Color title_color = cobot::Color();  // color of the title text
+    cobot::Color title_bar_color = cobot::Color();
 
     Icon icon1 = {};
     Icon icon2 = {};
@@ -365,7 +365,7 @@ struct TextEditor {
     UserData user = {};
 
     TextEditor() {}
-    TextEditor(Rectangle area, AssetId font, Color background_color, Color textColor, Color titleColor, Color titleBarColor, String editor_name, float title_height)
+    TextEditor(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, cobot::Color titleColor, cobot::Color titleBarColor, String editor_name, float title_height)
         :
         field(area, font, background_color, textColor),
         name(editor_name),
@@ -373,7 +373,7 @@ struct TextEditor {
         title_color(titleColor),
         title_bar_color(titleBarColor)
     {}
-    TextEditor(UiElementId ident, Rectangle area, AssetId font, Color background_color, Color textColor, Color titleColor, Color titleBarColor, String editor_name, float title_height)
+    TextEditor(UiElementId ident, cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, cobot::Color titleColor, cobot::Color titleBarColor, String editor_name, float title_height)
         :
         field(area, font, background_color, textColor, ident),
         name(editor_name),
@@ -382,30 +382,30 @@ struct TextEditor {
         title_bar_color(titleBarColor)
     {}
 
-    void rescale(vec2 scale, const RenderContext& render, const AssetCatalog& catalog);
+    void rescale(cobot::vec2 scale, const RenderContext& render, const AssetCatalog& catalog);
 
-    Rectangle get_title_area() const {
-        return Rectangle(field.m_area.x, field.m_area.y - (field.m_area.h + title_height) / 2, field.m_area.w, title_height);
+    cobot::Rectangle get_title_area() const {
+        return cobot::Rectangle(field.m_area.x, field.m_area.y - (field.m_area.h + title_height) / 2, field.m_area.w, title_height);
     }
 
-    Rectangle get_text_area() const {
+    cobot::Rectangle get_text_area() const {
         return field.m_area;
     }
 
-    Rectangle get_icon1_area() const {
+    cobot::Rectangle get_icon1_area() const {
         float iconScale = title_height;
-        return Rectangle(get_title_area().get_position() + vec2(get_title_area().w / 2, 0) - vec2(iconScale, 0) * 1, vec2(iconScale));
+        return cobot::Rectangle(get_title_area().get_position() + cobot::vec2(get_title_area().w / 2, 0) - cobot::vec2(iconScale, 0) * 1, cobot::vec2(iconScale));
     }
-    Rectangle get_icon2_area() const {
+    cobot::Rectangle get_icon2_area() const {
         float iconScale = title_height;
-        return Rectangle(get_title_area().get_position() + vec2(get_title_area().w / 2, 0) - vec2(iconScale, 0) * 3, vec2(iconScale));
+        return cobot::Rectangle(get_title_area().get_position() + cobot::vec2(get_title_area().w / 2, 0) - cobot::vec2(iconScale, 0) * 3, cobot::vec2(iconScale));
     }
-    Rectangle get_icon3_area() const {
+    cobot::Rectangle get_icon3_area() const {
         float iconScale = title_height;
-        return Rectangle(get_title_area().get_position() + vec2(get_title_area().w / 2, 0) - vec2(iconScale, 0) * 5, vec2(iconScale));
+        return cobot::Rectangle(get_title_area().get_position() + cobot::vec2(get_title_area().w / 2, 0) - cobot::vec2(iconScale, 0) * 5, cobot::vec2(iconScale));
     }
 
-    void set_position(vec2 pos) {
+    void set_position(cobot::vec2 pos) {
         field.m_area.x = pos.x;
         field.m_area.y = pos.y;
     }
@@ -431,20 +431,20 @@ struct Drop_Down_List {
 
     UiElementId id = {};
 
-    vec2 pos = {};
-    vec2 scale = {};
+    cobot::vec2 pos = {};
+    cobot::vec2 scale = {};
     int selected = DROP_DOWN_LIST_SELECTED_SENTINEL;
     Text title = {};
     DArray<Entry> options = {};
-    Color title_color = {};
-    Color option_color = {};
+    cobot::Color title_color = {};
+    cobot::Color option_color = {};
     bool open = false;
 
     void toggle() {
         open = !open;
     }
 
-    void set_area(vec2 p_pos, vec2 p_scale) {
+    void set_area(cobot::vec2 p_pos, cobot::vec2 p_scale) {
         pos = p_pos; scale = p_scale;
     }
 
@@ -485,19 +485,19 @@ struct Drop_Down_List {
         return options.get(index).index;
     }
 
-    Rectangle get_area() const
+    cobot::Rectangle get_area() const
     {
         if (open) {
             int count = options.size();
-            return Rectangle(pos.x, pos.y + (float(count) / 2) * scale.y, scale.x, scale.y * count);
+            return cobot::Rectangle(pos.x, pos.y + (float(count) / 2) * scale.y, scale.x, scale.y * count);
         }
         else {
-            return Rectangle(pos, scale);
+            return cobot::Rectangle(pos, scale);
         }
     }
 
-    Rectangle get_option_area(int i) const {
-        return Rectangle(pos.x, pos.y + scale.y * (i+1), scale.x, scale.y);
+    cobot::Rectangle get_option_area(int i) const {
+        return cobot::Rectangle(pos.x, pos.y + scale.y * (i+1), scale.x, scale.y);
     }
 
     void remove_option(int index) {
@@ -518,7 +518,7 @@ struct Drop_Down_List {
     }
 
     Drop_Down_List() {}
-    Drop_Down_List(vec2 p_pos, vec2 p_scale) : pos(p_pos), scale(p_scale) {}
+    Drop_Down_List(cobot::vec2 p_pos, cobot::vec2 p_scale) : pos(p_pos), scale(p_scale) {}
 
     void reset() {
         title.clear();
@@ -533,19 +533,19 @@ struct Drop_Down_List {
 struct PanelTab {
     Icon tabIcon = {};
     DArray<IconButton> icons = {};
-    Color color = {};
+    cobot::Color color = {};
 
     PanelTab() {}
-    PanelTab(Icon tab, DArray<IconButton> icons, Color color) : tabIcon(tab), icons(icons), color(color) {}
+    PanelTab(Icon tab, DArray<IconButton> icons, cobot::Color color) : tabIcon(tab), icons(icons), color(color) {}
 };
 
 struct Panel {
     UiElementId id = {};
     DragInfo drag = {};
     ResizeInfo resize = {};
-    Rectangle area = {};
+    cobot::Rectangle area = {};
     float title_height = 0;
-    Color title_bar_color = Color();
+    cobot::Color title_bar_color = cobot::Color();
     int activeTab = 0;
     float tabHeaderSize = 0;
     float iconSize = 0;
@@ -553,12 +553,12 @@ struct Panel {
     DArray<PanelTab> tabs = {};
 
     Panel() {}
-    Panel(UiElementId id, Rectangle area, float headerSize, float icoSize, float margin) : id(id), area(area), tabHeaderSize(headerSize), iconSize(icoSize), iconMargin(margin) {}
+    Panel(UiElementId id, cobot::Rectangle area, float headerSize, float icoSize, float margin) : id(id), area(area), tabHeaderSize(headerSize), iconSize(icoSize), iconMargin(margin) {}
 
-    Rectangle get_title_area() const;
+    cobot::Rectangle get_title_area() const;
 
-    Rectangle get_icon_area(int index) const;
-    Rectangle get_tab_header_area(int index) const;
+    cobot::Rectangle get_icon_area(int index) const;
+    cobot::Rectangle get_tab_header_area(int index) const;
 };
 
 enum ValueType {
@@ -592,7 +592,7 @@ enum PlanetPanelTabs {
 
 struct ValuePanelTab {
     Icon tabIcon = {};
-    Color color = {};
+    cobot::Color color = {};
     float field_height = 0;
     float field_margin = 0;
     DArray<ValueField> fields = {};
@@ -600,15 +600,15 @@ struct ValuePanelTab {
 
 struct ValuePanel {
     UiElementId id = {};
-    Rectangle area = {};
+    cobot::Rectangle area = {};
     int activeTab = 0;
     float fieldSize = 0;
     float tabHeaderSize = 0;
-    Direction direction = {};
+    cobot::Direction direction = {};
     DArray<ValuePanelTab> tabs = {};
 
     ValuePanel() {}
-    ValuePanel(UiElementId ident, Rectangle area, float field_size, float tab_header_size, Direction dir)
+    ValuePanel(UiElementId ident, cobot::Rectangle area, float field_size, float tab_header_size, cobot::Direction dir)
         :
         id(ident),
         area(area),
@@ -617,19 +617,19 @@ struct ValuePanel {
         direction(dir)
     {}
 
-    Rectangle get_tab_header_area(int index) const;
+    cobot::Rectangle get_tab_header_area(int index) const;
     float get_field_width() const { return area.w * 0.95; }
-    Rectangle get_field_area(int tab, int field, const UiState* ui) const;
-    Rectangle get_field_title_area(int tab, int field) const;
+    cobot::Rectangle get_field_area(int tab, int field, const UiState* ui) const;
+    cobot::Rectangle get_field_title_area(int tab, int field) const;
 };
 
 struct ControlMenu {
     DragInfo drag = {};
-    vec2* anchorPosition = nullptr;
-    vec2 position = {};
-    vec2 scale = {};
+    cobot::vec2* anchorPosition = nullptr;
+    cobot::vec2 position = {};
+    cobot::vec2 scale = {};
     DArray<Entry> buttons = {};
-    Color background = {};
+    cobot::Color background = {};
     bool visible = false;
 
     void add_button(Text text, void* data) {
@@ -665,21 +665,21 @@ struct ControlMenu {
 struct DiscreteSlider {
     UiElementId id = {};
 
-    vec2 position = vec2();
-    vec2 element_scale = {};
+    cobot::vec2 position = cobot::vec2();
+    cobot::vec2 element_scale = {};
     int element_count = 0;
     int selected = 0;
     float element_gap = 0;
     bool vertical = false;
     Texture* texture = nullptr;
-    ColorF outlineColor = {};
-    ColorF buttonColor = {};
-    ColorF inactiveColor = {};
-    ColorF startColor = {};
-    ColorF endColor = {};
+    cobot::ColorF outlineColor = {};
+    cobot::ColorF buttonColor = {};
+    cobot::ColorF inactiveColor = {};
+    cobot::ColorF startColor = {};
+    cobot::ColorF endColor = {};
 
     DiscreteSlider() {}
-    DiscreteSlider(UiElementId ident, vec2 pos, vec2 elem_scale, int elem_count, float elem_gap, bool vert, ColorF outline_color, ColorF button_color, ColorF inactive_color, ColorF start_color, ColorF end_color)
+    DiscreteSlider(UiElementId ident, cobot::vec2 pos, cobot::vec2 elem_scale, int elem_count, float elem_gap, bool vert, cobot::ColorF outline_color, cobot::ColorF button_color, cobot::ColorF inactive_color, cobot::ColorF start_color, cobot::ColorF end_color)
         :
         id(ident),
         position(pos),
@@ -694,10 +694,10 @@ struct DiscreteSlider {
         endColor(end_color)
     {}
 
-    Rectangle get_bounds() const;
-    vec2 get_start() const;
-    vec2 get_step() const;
-    vec2 get_button_scale() const;
+    cobot::Rectangle get_bounds() const;
+    cobot::vec2 get_start() const;
+    cobot::vec2 get_step() const;
+    cobot::vec2 get_button_scale() const;
 };
 
 #define TEXT_INPUT_TARGET_IS_VALID     BIT(0)
@@ -722,9 +722,9 @@ struct UiState {
     DArray<ButtonGroup> button_group = {};
 
     TextInputTarget text_input_target = {};
-    vec2 assumed_window_size = {};
+    cobot::vec2 assumed_window_size = {};
 
-    void update_state(vec2 window_size, const RenderContext& render, const AssetCatalog& catalog);
+    void update_state(cobot::vec2 window_size, const RenderContext& render, const AssetCatalog& catalog);
 
     Text_Field* get_selected_text_field();
 
