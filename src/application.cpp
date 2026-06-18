@@ -676,6 +676,8 @@ bool Application::mouse_input_vehicle_editor()
                     return true;
                 }
             }
+
+            
         }
     }
 

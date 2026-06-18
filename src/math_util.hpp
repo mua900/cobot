@@ -85,6 +85,11 @@ inline float dot2(vec2 a, vec2 b)
     return a.x * b.x + a.y * b.y;
 }
 
+inline float distance2(vec2 a, vec2 b)
+{
+    return vec2(a.x - b.x, a.y - b.y).magnitude();
+}
+
 inline vec2 operator-(const vec2 v)
 { return vec2(-v.x, -v.y); }
 

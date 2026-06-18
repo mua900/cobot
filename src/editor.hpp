@@ -6,6 +6,8 @@
 struct VehicleEditor {
     Vehicle vehicle = {};
     VehiclePart selectedPart = {};
+
+    bool place_part(cobot::vec2 where, PartKindId partKind);
 };
 
 #endif // _EDITOR_H

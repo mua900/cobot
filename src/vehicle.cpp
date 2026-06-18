@@ -8,6 +8,11 @@ VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child)
     return VPartTransform(position, rotation, scale);
 }
 
+VPartTransform VPartTransform::inverse() const
+{
+    return VPartTransform(-position, -rotation, 1.0 / scale);
+}
+
 bool Vehicle::execute_command(VehicleCommand& command)
 {
     if (command.type == CommandMove)
@@ -228,6 +233,107 @@ PartId Vehicle::getPartAt(cobot::vec2 position) const
     }
 
     return NullPartId;
+}
+
+AttachmentDistance Vehicle::getAttachmentPointClosest(cobot::vec2 position, float radius)
+{
+    position -= worldPosition;
+
+    AttachmentDistance distance = { nullptr, radius + 1 };
+    for (int i = 0; i < rootParts.size(); i++)
+    {
+        auto point = get_attachment_point_near(rootParts.get_ref(i), get_vehicle_transform(), position, radius);
+        if (point.point)
+        {
+            if (point.distance < distance.distance)
+            {
+                distance = point;
+            }
+        }
+    }
+
+    return distance;
+}
+
+AttachmentDistance Vehicle::get_attachment_point_near(PartId part, VPartTransform parent, cobot::vec2 position, float radius)
+{
+    switch (part.kind)
+    {
+        case PART_CHASSIS:
+        {
+            Chassis& c = chassis[part.index];
+            VPartTransform t = chain_part_transform(parent, c.part.transform);
+            cobot::vec2 scale = get_chassis_scale(c.kind) * t.scale;
+
+            switch (c.kind)
+            {
+                case ChassisBasic:
+                {
+                    float dist[4];
+
+                    dist[0] = distance2(position, chain_part_transform(t, getPartData(c.basic.frontLeft.part).transform).position);
+                    dist[1] = distance2(position, chain_part_transform(t, getPartData(c.basic.frontRight.part).transform).position);
+                    dist[2] = distance2(position, chain_part_transform(t, getPartData(c.basic.backLeft.part).transform).position);
+                    dist[3] = distance2(position, chain_part_transform(t, getPartData(c.basic.backRight.part).transform).position);
+
+                    float m = dist[0];
+                    int index = 0;
+                    for (int i = 1; i < 4; i++) { if (dist[i] < m) { m = dist[i]; index = i; } }
+
+                    AttachmentPoint* p = nullptr;
+                    if (m < radius)
+                    {
+                        switch (index)
+                        {
+                            case 0:
+                                p = &c.basic.frontLeft;
+                            case 1:
+                                p = &c.basic.frontRight;
+                            case 2:
+                                p = &c.basic.backLeft;
+                            case 3:
+                                p = &c.basic.backRight;
+                            default:
+                                p = nullptr;
+                        }
+
+                        return { p, m };
+                    }
+                    else
+                    {
+                        AttachmentDistance attachDist[4];
+
+                        attachDist[0] = get_attachment_point_near(c.basic.frontLeft.part, t, position, radius);
+                        attachDist[1] = get_attachment_point_near(c.basic.frontRight.part, t, position, radius);
+                        attachDist[2] = get_attachment_point_near(c.basic.backLeft.part, t, position, radius);
+                        attachDist[3] = get_attachment_point_near(c.basic.backRight.part, t, position, radius);
+
+                        AttachmentDistance d = attachDist[0];
+                        int index = 0;
+                        for (int i = 1; i < 4; i++) {
+                            if (attachDist[i].point && attachDist[i].distance < d.distance) {
+                                d = attachDist[i]; index = i;
+                            }
+                        }
+
+                        if (d.distance < radius)
+                        {
+                            return d;
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            break;
+        }
+        case PART_CONTROLLER: break;
+        case PART_TIRE: break;
+        default: break;
+    }
+
+    return {};
 }
 
 PartId Vehicle::get_part_on_location(PartId part, cobot::vec2 location, VPartTransform parent) const

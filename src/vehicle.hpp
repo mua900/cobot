@@ -36,6 +36,8 @@ struct VPartTransform {
     VPartTransform() {}
     VPartTransform(cobot::vec2 pos, float sca) : position(pos), scale(sca) {}
     VPartTransform(cobot::vec2 pos, float rot, float sca) : position(pos), rotation(rot), scale(sca) {}
+
+    VPartTransform inverse() const;
 };
 
 VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child);
@@ -66,6 +68,11 @@ struct AttachmentPoint {
         part = part_id;
         return true;
     }
+};
+
+struct AttachmentDistance {
+    AttachmentPoint* point;
+    float distance;
 };
 
 enum TireKind {
@@ -201,7 +208,9 @@ struct Vehicle {
     bool execute_command(VehicleCommand& command);
 
     PartId getPartAt(cobot::vec2 position) const;
+    AttachmentDistance getAttachmentPointClosest(cobot::vec2 position, float radius);
 private:
+    AttachmentDistance get_attachment_point_near(PartId part, VPartTransform parent, cobot::vec2 position, float radius);
     PartId get_part_on_location(PartId part, cobot::vec2 location, VPartTransform parent) const;
 };
 
