@@ -15,6 +15,8 @@ enum PartKind : u16 {
     PART_KIND_SENTINEL = 4,
 };
 
+#define PART_KIND_MASK(partKind) BIT(partKind)
+
 struct PartId {
     PartKind kind = PART_KIND_SENTINEL;
     u16 index = 0;
@@ -54,14 +56,15 @@ struct VPartData {
 };
 
 struct AttachmentPoint {
-    u32 kindMask = 0;  // what kind of parts can be attached (it is ignored if it's 0)
+    cobot::vec2 position = {};
     PartId part = {};  // the part that is attached
+    u32 kindMask = 0;  // what kind of parts can be attached (it is ignored if it's 0)
 
     AttachmentPoint() {}
     AttachmentPoint(u32 kind_mask) : kindMask(kind_mask) {}
 
     bool attach(PartId part_id) {
-        if (kindMask != 0 && !(kindMask & part_id.kind)) {
+        if (kindMask != 0 && !(kindMask & BIT(part_id.kind))) {
             return false;
         }
 
@@ -205,11 +208,15 @@ struct Vehicle {
     cobot::vec2 forward() const;
     VPartTransform get_vehicle_transform() const;
 
+    cobot::Rectangle calculate_volume() const;
+    cobot::Rectangle calculate_part_volume(PartId part) const;
+
     bool execute_command(VehicleCommand& command);
 
     PartId getPartAt(cobot::vec2 position) const;
     AttachmentDistance getAttachmentPointClosest(cobot::vec2 position, float radius);
 private:
+    cobot::Rectangle calculate_part_volume_with_parent(VPartTransform parent, PartId part) const;
     AttachmentDistance get_attachment_point_near(PartId part, VPartTransform parent, cobot::vec2 position, float radius);
     PartId get_part_on_location(PartId part, cobot::vec2 location, VPartTransform parent) const;
 };

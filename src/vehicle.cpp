@@ -1,4 +1,5 @@
 #include "vehicle.hpp"
+#include "log.hpp"
 
 VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child)
 {
@@ -30,6 +31,7 @@ bool Vehicle::execute_command(VehicleCommand& command)
         if (!turned)
         {
             orientation += (angle - orientation) > 0 ? 0.1 : -0.1;
+            orientation = cobot::normalize_angle_radians_f(orientation);
         }
 
         return turned && arrived;
@@ -41,6 +43,68 @@ bool Vehicle::execute_command(VehicleCommand& command)
 VPartTransform Vehicle::get_vehicle_transform() const
 {
     return VPartTransform(worldPosition, orientation, 1.0);
+}
+
+cobot::Rectangle Vehicle::calculate_volume() const
+{
+    cobot::Rectangle volume = {};
+    VPartTransform t = get_vehicle_transform();
+    for (auto& root : rootParts)
+    {
+        cobot::Rectangle partVolume = calculate_part_volume_with_parent(t, root);
+        cobot::merge_volumes(volume, partVolume);
+    }
+
+    return volume;
+}
+
+cobot::Rectangle Vehicle::calculate_part_volume(PartId part) const
+{
+    return calculate_part_volume_with_parent(get_vehicle_transform(), part);
+}
+
+cobot::Rectangle Vehicle::calculate_part_volume_with_parent(VPartTransform parent, PartId part) const
+{
+    cobot::Rectangle volume {};
+    VPartTransform global = {};
+    cobot::vec2 scale = {};
+    switch (part.kind)
+    {
+        case PART_CHASSIS: {
+            Chassis& c = chassis.get_ref(part.index);
+            global = chain_part_transform(parent, c.part.transform);
+            scale = get_chassis_scale(c.kind);
+            volume = cobot::Rectangle(global.position, global.scale * scale);
+            switch (c.kind)
+            {
+                case ChassisBasic:
+                {
+                    if (c.basic.frontLeft.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, c.basic.frontLeft.part));
+                    if (c.basic.frontRight.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, c.basic.frontRight.part));
+                    if (c.basic.backLeft.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, c.basic.backLeft.part));
+                    if (c.basic.backRight.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, c.basic.backRight.part));
+                    break;
+                }
+            }
+            break;
+        }
+        case PART_CONTROLLER: {
+            global = chain_part_transform(parent, controller.get_ref(part.index).part.transform);
+            scale = get_controller_scale(controller.get_ref(part.index).kind);
+            volume = cobot::Rectangle(global.position, global.scale * scale);
+            break;
+        }
+        case PART_TIRE: {
+            global = chain_part_transform(parent, tire.get_ref(part.index).part.transform);
+            scale = get_tire_scale(tire.get_ref(part.index).kind);
+            volume = cobot::Rectangle(global.position, global.scale * scale);
+            break;
+        }
+        default:
+            panic("Invalid part kind");
+    }
+
+    return volume;
 }
 
 cobot::vec2 Vehicle::forward() const
@@ -257,72 +321,52 @@ AttachmentDistance Vehicle::getAttachmentPointClosest(cobot::vec2 position, floa
 
 AttachmentDistance Vehicle::get_attachment_point_near(PartId part, VPartTransform parent, cobot::vec2 position, float radius)
 {
+    if (part.is_null())
+    {
+        return {};
+    }
+
     switch (part.kind)
     {
         case PART_CHASSIS:
         {
             Chassis& c = chassis[part.index];
             VPartTransform t = chain_part_transform(parent, c.part.transform);
-            cobot::vec2 scale = get_chassis_scale(c.kind) * t.scale;
 
             switch (c.kind)
             {
                 case ChassisBasic:
                 {
-                    float dist[4];
+                    AttachmentDistance d = { nullptr, radius + 1 };
+                    AttachmentPoint* points[4] = {
+                        &c.basic.frontLeft,
+                        &c.basic.frontRight,
+                        &c.basic.backLeft,
+                        &c.basic.backRight,
+                    };
 
-                    dist[0] = distance2(position, chain_part_transform(t, getPartData(c.basic.frontLeft.part).transform).position);
-                    dist[1] = distance2(position, chain_part_transform(t, getPartData(c.basic.frontRight.part).transform).position);
-                    dist[2] = distance2(position, chain_part_transform(t, getPartData(c.basic.backLeft.part).transform).position);
-                    dist[3] = distance2(position, chain_part_transform(t, getPartData(c.basic.backRight.part).transform).position);
-
-                    float m = dist[0];
-                    int index = 0;
-                    for (int i = 1; i < 4; i++) { if (dist[i] < m) { m = dist[i]; index = i; } }
-
-                    AttachmentPoint* p = nullptr;
-                    if (m < radius)
+                    for (int i = 0; i < 4; i++)
                     {
-                        switch (index)
+                        AttachmentDistance dist = {};
+                        if (points[i]->part.is_valid())
                         {
-                            case 0:
-                                p = &c.basic.frontLeft;
-                            case 1:
-                                p = &c.basic.frontRight;
-                            case 2:
-                                p = &c.basic.backLeft;
-                            case 3:
-                                p = &c.basic.backRight;
-                            default:
-                                p = nullptr;
+                            dist = get_attachment_point_near(points[i]->part, t, position, radius);
+                        }
+                        else
+                        {
+                            dist = { points[i], distance2(position, chain_part_transform(t, VPartTransform(points[i]->position, 1)).position) };
                         }
 
-                        return { p, m };
-                    }
-                    else
-                    {
-                        AttachmentDistance attachDist[4];
-
-                        attachDist[0] = get_attachment_point_near(c.basic.frontLeft.part, t, position, radius);
-                        attachDist[1] = get_attachment_point_near(c.basic.frontRight.part, t, position, radius);
-                        attachDist[2] = get_attachment_point_near(c.basic.backLeft.part, t, position, radius);
-                        attachDist[3] = get_attachment_point_near(c.basic.backRight.part, t, position, radius);
-
-                        AttachmentDistance d = attachDist[0];
-                        int index = 0;
-                        for (int i = 1; i < 4; i++) {
-                            if (attachDist[i].point && attachDist[i].distance < d.distance) {
-                                d = attachDist[i]; index = i;
+                        if (dist.distance < radius)
+                        {
+                            if (!d.point || dist.distance < d.distance)
+                            {
+                                d = dist;
                             }
                         }
-
-                        if (d.distance < radius)
-                        {
-                            return d;
-                        }
                     }
 
-                    break;
+                    return d;
                 }
             }
 
@@ -404,11 +448,18 @@ Vehicle get_default_vehicle()
     vehicle.worldPosition = cobot::vec2(600, 300);
     vehicle.volume = cobot::Rectangle(vehicle.worldPosition, cobot::vec2());
 
-    Chassis chasis = {};
-    chasis.kind = ChassisBasic;
-    chasis.part.transform.scale = 1.0;
+    Chassis chassis = {};
+    chassis.kind = ChassisBasic;
+    chassis.part.transform.scale = 1.0;
 
-    PartId chasis_id = vehicle.add_chassis(chasis);
+    int hDist = 25;
+    int vDist = 36;
+    chassis.basic.frontLeft.position = cobot::vec2( hDist, -vDist);
+    chassis.basic.frontRight.position = cobot::vec2( hDist,  vDist);
+    chassis.basic.backLeft.position = cobot::vec2(-hDist, -vDist);
+    chassis.basic.backRight.position = cobot::vec2(-hDist,  vDist);
+
+    PartId chasis_id = vehicle.add_chassis(chassis);
 
     Tire tires[4] = {};
     for (auto& t : tires) {
@@ -417,13 +468,6 @@ Vehicle get_default_vehicle()
         t.basic.size = 5;
         t.part.parent = chasis_id;
     }
-
-    int hDist = 25;
-    int vDist = 36;
-    tires[0].part.transform.position = cobot::vec2( hDist, -vDist);
-    tires[1].part.transform.position = cobot::vec2( hDist,  vDist);
-    tires[2].part.transform.position = cobot::vec2(-hDist, -vDist);
-    tires[3].part.transform.position = cobot::vec2(-hDist,  vDist);
 
     PartId fl = vehicle.add_tire(tires[0]);
     PartId fr = vehicle.add_tire(tires[1]);

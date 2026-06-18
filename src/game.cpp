@@ -141,10 +141,10 @@ void draw_chasis(const Chassis& chasis, VPartTransform parent, const RenderConte
 
     switch (chasis.kind) {
         case ChassisBasic: {
-            draw_vehicle_part(chasis.basic.frontLeft.part, transform, context, catalog, game);
-            draw_vehicle_part(chasis.basic.frontRight.part, transform, context, catalog, game);
-            draw_vehicle_part(chasis.basic.backLeft.part, transform, context, catalog, game);
-            draw_vehicle_part(chasis.basic.backRight.part, transform, context, catalog, game);
+            draw_vehicle_part(chasis.basic.frontLeft.part, chain_part_transform(transform, VPartTransform(chasis.basic.frontLeft.position, 1)), context, catalog, game);
+            draw_vehicle_part(chasis.basic.frontRight.part, chain_part_transform(transform, VPartTransform(chasis.basic.frontRight.position, 1)), context, catalog, game);
+            draw_vehicle_part(chasis.basic.backLeft.part, chain_part_transform(transform, VPartTransform(chasis.basic.backLeft.position, 1)), context, catalog, game);
+            draw_vehicle_part(chasis.basic.backRight.part, chain_part_transform(transform, VPartTransform(chasis.basic.backRight.position, 1)), context, catalog, game);
             break;
         }
     }

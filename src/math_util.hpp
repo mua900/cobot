@@ -5,6 +5,11 @@
 
 namespace cobot {
 
+#define CONSTANT_HALF_PI  1.57079632679
+#define CONSTANT_PI  3.14159265359
+#define CONSTANT_E   2.71828182846
+#define CONSTANT_TAU 6.28318530717
+
 float snap_value(float val, float bound1, float bound2, float threshold);
 
 struct ivec2 {
@@ -250,6 +255,22 @@ mat4x4 camera_matrix(vec2 position, vec2 scale);
 
 // @todo quaternions
 
+inline float normalize_angle_radians_f(float x) {
+    return std::fmodf(x, CONSTANT_TAU);
+}
+
+inline float normalize_angle_degrees_f(float x) {
+    return std::fmodf(x, 360.0f);
+}
+
+inline double normalize_angle_radians(double x) {
+    return std::fmod(x, CONSTANT_TAU);
+}
+
+inline double normalize_angle_degrees(double x) {
+    return std::fmod(x, 360.0);
+}
+
 struct ColorF;
 
 struct Color {
@@ -305,11 +326,6 @@ inline Complex operator*(const Complex lhs, const Complex rhs)
 {
 	return Complex(lhs.real * rhs.real - lhs.imaginary * rhs.imaginary, lhs.real * rhs.imaginary + lhs.imaginary * rhs.real);
 }
-
-#define CONSTANT_HALF_PI  1.57079632679
-#define CONSTANT_PI  3.14159265359
-#define CONSTANT_E   2.71828182846
-#define CONSTANT_TAU (CONSTANT_PI * 2.0)
 
 struct Rectangle {
     float x = 0.0f;
