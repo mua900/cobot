@@ -303,7 +303,7 @@ AttachmentDistance Vehicle::getAttachmentPointClosest(cobot::vec2 position, floa
 {
     position -= worldPosition;
 
-    AttachmentDistance distance = { nullptr, radius + 1 };
+    AttachmentDistance distance = { nullptr, NullPartId, radius + 1 };
     for (int i = 0; i < rootParts.size(); i++)
     {
         auto point = get_attachment_point_near(rootParts.get_ref(i), get_vehicle_transform(), position, radius);
@@ -337,7 +337,7 @@ AttachmentDistance Vehicle::get_attachment_point_near(PartId part, VPartTransfor
             {
                 case ChassisBasic:
                 {
-                    AttachmentDistance d = { nullptr, radius + 1 };
+                    AttachmentDistance d = { nullptr, NullPartId, radius + 1 };
                     AttachmentPoint* points[4] = {
                         &c.basic.frontLeft,
                         &c.basic.frontRight,
@@ -354,7 +354,7 @@ AttachmentDistance Vehicle::get_attachment_point_near(PartId part, VPartTransfor
                         }
                         else
                         {
-                            dist = { points[i], distance2(position, chain_part_transform(t, VPartTransform(points[i]->position, 1)).position) };
+                            dist = { points[i], part, distance2(position, chain_part_transform(t, VPartTransform(points[i]->position, 1)).position) };
                         }
 
                         if (dist.distance < radius)
@@ -490,6 +490,79 @@ Vehicle get_default_vehicle()
     vehicle.add_root(chasis_id);
 
     return vehicle;
+}
+
+void draw_chasis(const Chassis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
+{
+    AssetId imageId = partImages.partImages[PART_CHASSIS][chasis.kind];
+    SDL_Texture* texture = catalog.get_image(imageId);
+
+    VPartTransform transform = chain_part_transform(parent, chasis.part.transform);
+    cobot::Rectangle area = cobot::Rectangle(transform.position, get_chassis_scale(chasis.kind) * transform.scale);
+    render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
+
+    switch (chasis.kind) {
+        case ChassisBasic: {
+            draw_vehicle_part(chasis.basic.frontLeft.part, chain_part_transform(transform, VPartTransform(chasis.basic.frontLeft.position, 1)), context, catalog, vehicle, partImages);
+            draw_vehicle_part(chasis.basic.frontRight.part, chain_part_transform(transform, VPartTransform(chasis.basic.frontRight.position, 1)), context, catalog, vehicle, partImages);
+            draw_vehicle_part(chasis.basic.backLeft.part, chain_part_transform(transform, VPartTransform(chasis.basic.backLeft.position, 1)), context, catalog, vehicle, partImages);
+            draw_vehicle_part(chasis.basic.backRight.part, chain_part_transform(transform, VPartTransform(chasis.basic.backRight.position, 1)), context, catalog, vehicle, partImages);
+            break;
+        }
+    }
+}
+
+void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
+{
+    AssetId imageId = partImages.partImages[PART_TIRE][tire.kind];
+    SDL_Texture* texture = catalog.get_image(imageId);
+
+    VPartTransform transform = chain_part_transform(parent, tire.part.transform);
+    cobot::Rectangle area = cobot::Rectangle(transform.position, get_tire_scale(tire.kind) * transform.scale);
+    render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
+}
+
+void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
+{
+    AssetId imageId = partImages.partImages[PART_CONTROLLER][controller.kind];
+    SDL_Texture* texture = catalog.get_image(imageId);
+
+    VPartTransform transform = chain_part_transform(parent, controller.part.transform);
+    cobot::Rectangle area = cobot::Rectangle(transform.position, get_controller_scale(controller.kind) * transform.scale);
+    render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
+}
+
+void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
+{
+    switch (part.kind)
+    {
+        case PART_CHASSIS: {
+            const Chassis& chasis = vehicle.chassis[part.index];
+            draw_chasis(chasis, parent, context, catalog, vehicle, partImages);
+            break;
+        }
+        case PART_TIRE: {
+            const Tire& tire = vehicle.tire[part.index];
+            draw_tire(tire, parent, context, catalog, vehicle, partImages);
+            break;
+        }
+        case PART_CONTROLLER: {
+            const Controller& controller = vehicle.controller[part.index];
+            draw_controller(controller, parent, context, catalog, vehicle, partImages);
+            break;
+        }
+        default: panic("Invalid part type");
+    }
+}
+
+void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
+{
+    for (int i = 0; i < vehicle.rootParts.size(); i++)
+    {
+        VPartData part_data = vehicle.getPartData(vehicle.rootParts[i]);
+        VPartTransform vtransform = vehicle.get_vehicle_transform();
+        draw_vehicle_part(vehicle.rootParts[i], vtransform, context, catalog, vehicle, partImages);
+    }
 }
 
 SDL_Texture* get_part_texture(PartKindId partKind, AssetCatalog& catalog)

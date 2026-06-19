@@ -96,7 +96,7 @@ bool Application::initialize()
 
     // game state
     {
-        if (!game.load_part_images(m_catalog))
+        if (!load_part_images(partImages, m_catalog))
         {
             return false;
         }
@@ -132,6 +132,8 @@ bool Application::initialize()
     }
     m_font = fontId;
     m_editor_font = editorFontId;
+
+    editor.vehicle = get_default_vehicle();
 
     if (!init_ui()) {
         log_error("Couldn't initialize user interface.");
@@ -1076,6 +1078,7 @@ bool Application::mouse_input_menu()
 bool Application::mouse_input_mission_editor()
 {
     UiState& ui = m_ui[UiMissionEditor];
+    cobot::vec2 ws = get_window_size();
     cobot::vec2 mouse_pos = m_input.mouse.pos;
 
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
@@ -1108,6 +1111,10 @@ bool Application::mouse_input_mission_editor()
                             int mission = game.mission.add(edit_mission);
                             load_mission(game.mission.get_ref(mission));
                             switch_modes(ModeGame);
+                        }
+                        else
+                        {
+                            display_message(ws / 2, cobot::vec2(ws.x * 0.2, ws.y * 0.1), "Invalid mission setting", 2, cobot::Color(0x66, 0x44, 0x33), cobot::Color(0x22, 0x33, 0x44));
                         }
                     }
                 }
@@ -1817,7 +1824,7 @@ cobot::vec2 Application::get_window_size() const {
 
 void Application::draw_game()
 {
-    draw_vehicle_simulation(m_render, m_catalog, game);
+    draw_vehicle_simulation(m_render, m_catalog, game.get_active_vehicle(), partImages);
 }
 
 void Application::draw_vehicle_editor()
@@ -1830,6 +1837,8 @@ void Application::draw_vehicle_editor()
         cobot::Quad points = area.get_points();
         draw_quad_with_texture(m_render, points, texture, cobot::ColorF(0.9,0.9,0.9,0.5));
     }
+
+    draw_vehicle(m_render, m_catalog, editor.vehicle, partImages);
 }
 
 void Application::draw_solar_system()

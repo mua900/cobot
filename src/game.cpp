@@ -102,120 +102,35 @@ Vehicle& GameState::get_active_vehicle() const
     return vehicles.get_ref(active_vehicle);
 }
 
-bool GameState::load_part_images(AssetCatalog& catalog)
+bool load_part_images(VPartImages& images, AssetCatalog& catalog)
 {
     for (int i = 0; i < ChassisKindCount; i++) {
         String name = String(get_chassis_name(ChassisKind(i)));
         AssetId id = get_asset(name, catalog);
         if (!id.is_valid()) return false;
-        partImages[PART_CHASSIS][i] = id;
+        images.partImages[PART_CHASSIS][i] = id;
     }
     
     for (int i = 0; i < TireKindCount; i++) {
         String name = String(get_tire_name(TireKind(i)));
         AssetId id = get_asset(name, catalog);
         if (!id.is_valid()) return false;
-        partImages[PART_TIRE][i] = id;
+        images.partImages[PART_TIRE][i] = id;
     }
 
     for (int i = 0; i < ControllerKindCount; i++) {
         String name = String(get_controller_name(ControllerKind(i)));
         AssetId id = get_asset(name, catalog);
         if (!id.is_valid()) return false;
-        partImages[PART_CONTROLLER][i] = id;
+        images.partImages[PART_CONTROLLER][i] = id;
     }
 
     return true;
 }
 
-void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
-
-void draw_chasis(const Chassis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+void draw_vehicle_simulation(const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partimages)
 {
-    AssetId imageId = game.partImages[PART_CHASSIS][chasis.kind];
-    SDL_Texture* texture = catalog.get_image(imageId);
-
-    VPartTransform transform = chain_part_transform(parent, chasis.part.transform);
-    cobot::Rectangle area = cobot::Rectangle(transform.position, get_chassis_scale(chasis.kind) * transform.scale);
-    render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
-
-    switch (chasis.kind) {
-        case ChassisBasic: {
-            draw_vehicle_part(chasis.basic.frontLeft.part, chain_part_transform(transform, VPartTransform(chasis.basic.frontLeft.position, 1)), context, catalog, game);
-            draw_vehicle_part(chasis.basic.frontRight.part, chain_part_transform(transform, VPartTransform(chasis.basic.frontRight.position, 1)), context, catalog, game);
-            draw_vehicle_part(chasis.basic.backLeft.part, chain_part_transform(transform, VPartTransform(chasis.basic.backLeft.position, 1)), context, catalog, game);
-            draw_vehicle_part(chasis.basic.backRight.part, chain_part_transform(transform, VPartTransform(chasis.basic.backRight.position, 1)), context, catalog, game);
-            break;
-        }
-    }
-}
-
-void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
-{
-    AssetId imageId = game.partImages[PART_TIRE][tire.kind];
-    SDL_Texture* texture = catalog.get_image(imageId);
-
-    VPartTransform transform = chain_part_transform(parent, tire.part.transform);
-    cobot::Rectangle area = cobot::Rectangle(transform.position, get_tire_scale(tire.kind) * transform.scale);
-    render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
-}
-
-void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
-{
-    AssetId imageId = game.partImages[PART_CONTROLLER][controller.kind];
-    SDL_Texture* texture = catalog.get_image(imageId);
-
-    VPartTransform transform = chain_part_transform(parent, controller.part.transform);
-    cobot::Rectangle area = cobot::Rectangle(transform.position, get_controller_scale(controller.kind) * transform.scale);
-    render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
-}
-
-
-void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
-{
-    Vehicle& vehicle = game.get_active_vehicle();
-
-    switch (part.kind)
-    {
-        case PART_CHASSIS: {
-            const Chassis& chasis = vehicle.chassis[part.index];
-            draw_chasis(chasis, parent, context, catalog, game);
-            break;
-        }
-        case PART_TIRE: {
-            const Tire& tire = vehicle.tire[part.index];
-            draw_tire(tire, parent, context, catalog, game);
-            break;
-        }
-        case PART_CONTROLLER: {
-            const Controller& controller = vehicle.controller[part.index];
-            draw_controller(controller, parent, context, catalog, game);
-            break;
-        }
-        default: panic("Invalid part type");
-    }
-
-    for (auto& controller : vehicle.controller)
-    {
-        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_start()->program.target, 10, cobot::ColorF(1, 0, 0));
-        draw_circle(context, game.scripts.get_ref(controller.script).commands.get_start()->program.turnTarget, 10, cobot::ColorF(0, 1, 0));
-    }
-}
-
-void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
-{
-    Vehicle& vehicle = game.get_active_vehicle();
-    for (int i = 0; i < vehicle.rootParts.size(); i++)
-    {
-        VPartData part_data = vehicle.getPartData(vehicle.rootParts[i]);
-        VPartTransform vtransform = vehicle.get_vehicle_transform();
-        draw_vehicle_part(vehicle.rootParts[i], vtransform, context, catalog, game);
-    }
-}
-
-void draw_vehicle_simulation(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
-{
-    draw_vehicle(context, catalog, game);
+    draw_vehicle(context, catalog, vehicle, partimages);
 }
 
 void draw_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)

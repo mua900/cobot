@@ -45,13 +45,11 @@ struct GameState {
     StarSystem starSystem = {};
     DArray<Script> scripts = {};
 
-    AssetId partImages [PART_KIND_COUNT][MaxPartCount] = {};
     UpdateState* updateState = nullptr;
     KeyboardCallback keyboard = nullptr;
 
     Vehicle& get_active_vehicle() const;
     void update(TimeInfo time);
-    bool load_part_images(AssetCatalog& catalog);
     cobot::Rectangle get_planet_screen_area(cobot::vec2 ws, int planet) const;
 };
 
@@ -68,11 +66,10 @@ void keyboardIdle(GameState* game, KeyboardState* keyboard);
 void keyboardVehicle(GameState* game, KeyboardState* keyboard);
 void keyboardStarSystem(GameState* game, KeyboardState* keyboard);
 
-void draw_vehicle_simulation(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
+void draw_vehicle_simulation(const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
 void draw_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_planet_orbit(RenderContext& context, const Planet& planet, cobot::vec2 offset, double centralBodyMass, float thick);
 void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_planet_outline(RenderContext& context, const GameState& game, int planet);
-void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 
 #endif // _GAME_H

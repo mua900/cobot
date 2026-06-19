@@ -118,6 +118,7 @@ public:
     Mission edit_mission = {};
     VehicleEditor editor = {};
     GameInfo gameInfo = {};
+    VPartImages partImages = {};
 
     DArray<ApplicationMessage> messages = {};
 

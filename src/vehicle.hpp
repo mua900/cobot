@@ -33,7 +33,7 @@ static const PartId NullPartId = PartId();
 struct VPartTransform {
     cobot::vec2 position = {};
     float rotation = 0;  // radians
-    float scale = 0;
+    float scale = 1;
 
     VPartTransform() {}
     VPartTransform(cobot::vec2 pos, float sca) : position(pos), scale(sca) {}
@@ -75,6 +75,7 @@ struct AttachmentPoint {
 
 struct AttachmentDistance {
     AttachmentPoint* point;
+    PartId parent;
     float distance;
 };
 
@@ -173,6 +174,12 @@ struct VehiclePart {
     VehiclePart(Controller* c) : kind(PART_CONTROLLER), controller(c) {}
 };
 
+// the lower 16 bits are the subkind and the higher 16 bits are the kind
+using PartKindId = u32;
+PartKindId get_part_kind_id(PartKind kind, u16 subkind);
+PartKind get_part_kind(PartKindId kindId);
+u16 get_subkind(PartKindId kindId);
+
 typedef u32 VehicleId;
 constexpr VehicleId NullVehicleId = -1;
 
@@ -221,12 +228,6 @@ private:
     PartId get_part_on_location(PartId part, cobot::vec2 location, VPartTransform parent) const;
 };
 
-// the lower 16 bits are the subkind and the higher 16 bits are the kind
-using PartKindId = u32;
-PartKindId get_part_kind_id(PartKind kind, u16 subkind);
-PartKind get_part_kind(PartKindId kindId);
-u16 get_subkind(PartKindId kindId);
-
 constexpr static int MaxPartCount = cobot::max(cobot::max(ChassisKindCount, TireKindCount), ControllerKindCount);
 
 const char* get_chassis_name(ChassisKind kind);
@@ -245,5 +246,18 @@ bool load_chasis_icons(DArray<IconButton>& icons, cobot::Color background, Asset
 bool load_controller_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
 
 Vehicle get_default_vehicle();
+
+struct VPartImages {
+    AssetId partImages [PART_KIND_COUNT][MaxPartCount] = {};
+};
+
+bool load_part_images(VPartImages& images, AssetCatalog& catalog);
+
+void draw_chasis(const Chassis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
+void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
+void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
+void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
+
+void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
 
 #endif // _VEHICLE_H
