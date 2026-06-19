@@ -1,6 +1,6 @@
 #include "editor.hpp"
 
-bool VehicleEditor::place_part(cobot::vec2 where, PartKindId partKind)
+bool VehicleEditor::place_part(cobot::vec2 where, PartKindId partKind, bool root)
 {
     AttachmentDistance dist = vehicle.getAttachmentPointClosest(where, 20);
     if (dist.point)

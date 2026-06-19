@@ -133,8 +133,6 @@ bool Application::initialize()
     m_font = fontId;
     m_editor_font = editorFontId;
 
-    editor.vehicle = get_default_vehicle();
-
     if (!init_ui()) {
         log_error("Couldn't initialize user interface.");
         return false;
@@ -428,10 +426,28 @@ bool Application::keyboard_input_down(SDL_KeyboardEvent keyboard)
             {
                 return keyboard_input_down_solar_system(keyboard);
             }
+            case ModeVehicleEditor:
+            {
+                return keyboard_input_down_vehicle_editor(keyboard);
+            }
         }
 
         return false;
     }
+}
+
+bool Application::keyboard_input_down_vehicle_editor(KeyboardEvent keyboard)
+{
+    switch (keyboard.scancode)
+    {
+        case SDL_SCANCODE_R:
+        {
+            gameInfo.editor.rootPart = !gameInfo.editor.rootPart;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool Application::keyboard_input_down_game(KeyboardEvent keyboard)
@@ -661,14 +677,14 @@ bool Application::mouse_input_vehicle_editor()
                     PartKindId partKindId = (tab.icons.get_ref(i).data.number);
                     if (area.contains_top_left(mouse_pos))
                     {
-                        gameInfo.selectedPartKind = partKindId;
-                        gameInfo.haveSeletedPart = true;
+                        gameInfo.editor.selectedPartKind = partKindId;
+                        gameInfo.editor.haveSeletedPart = true;
                         return true;
                     }
                 }
 
-                gameInfo.selectedPartKind = {};
-                gameInfo.haveSeletedPart = false;
+                gameInfo.editor.selectedPartKind = {};
+                gameInfo.editor.haveSeletedPart = false;
                 return true;
             }
 
@@ -679,7 +695,10 @@ bool Application::mouse_input_vehicle_editor()
                 }
             }
 
-            
+            if (gameInfo.editor.haveSeletedPart)
+            {
+                editor.place_part(mouse_pos, gameInfo.editor.selectedPartKind, gameInfo.editor.rootPart);
+            }
         }
     }
 
@@ -1829,9 +1848,9 @@ void Application::draw_game()
 
 void Application::draw_vehicle_editor()
 {
-    if (gameInfo.haveSeletedPart)
+    if (gameInfo.editor.haveSeletedPart)
     {
-        SDL_Texture* texture = get_part_texture(gameInfo.selectedPartKind, m_catalog);
+        SDL_Texture* texture = get_part_texture(gameInfo.editor.selectedPartKind, m_catalog);
     
         auto area = cobot::RectangleRot(m_input.mouse.pos, cobot::vec2(100, 100), 0);
         cobot::Quad points = area.get_points();

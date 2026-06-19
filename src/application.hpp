@@ -83,8 +83,7 @@ struct GameInfo {
     bool wantPause = false;
     double selectedTimescale = 0;
     int selectedPlanet = -1;
-    PartKindId selectedPartKind = {};
-    bool haveSeletedPart = false;
+    EditorContext editor = {};
 };
 
 class Application {
@@ -191,6 +190,7 @@ private:
     bool keyboard_input_down_common(KeyboardEvent keyboard);
     bool keyboard_input_down_game(KeyboardEvent keyboard);
     bool keyboard_input_down_solar_system(KeyboardEvent keyboard);
+    bool keyboard_input_down_vehicle_editor(KeyboardEvent keyboard);
 
     void text_input_start();
     void text_input_stop();
