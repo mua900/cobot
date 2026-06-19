@@ -1,5 +1,5 @@
-#ifndef _VEHICLE_H
-#define _VEHICLE_H
+#ifndef VEHICLE_HPP
+#define VEHICLE_HPP
 
 #include "template.hpp"
 #include "math_util.hpp"
@@ -260,4 +260,4 @@ void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& 
 
 void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
 
-#endif // _VEHICLE_H
+#endif // VEHICLE_HPP

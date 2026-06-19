@@ -1,5 +1,5 @@
-#ifndef _LOG_H
-#define _LOG_H
+#ifndef LOG_HPP
+#define LOG_HPP
 
 #include <cstdarg>
 
@@ -9,4 +9,4 @@ void log_info(const char* format, ...);
 void log_warning(const char* format, ...);
 void log_error(const char* format, ...);
 
-#endif // _LOG_H
+#endif // LOG_HPP

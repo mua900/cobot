@@ -1,5 +1,5 @@
-#ifndef _UI_H
-#define _UI_H
+#ifndef UI_HPP
+#define UI_HPP
 
 #include <SDL3/SDL.h>
 
@@ -738,4 +738,4 @@ struct UiState {
     ~UiState();
 };
 
-#endif // _UI_H
+#endif // UI_HPP

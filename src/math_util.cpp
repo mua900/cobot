@@ -246,17 +246,17 @@ bool Rectangle::contains_centered(vec2 p) const
         p.y >= y - h / 2 && p.y <= y + h / 2;
 }
 
-float cobot::lerp(float a, float b, float t)
+float lerp(float a, float b, float t)
 {
     return a * (1.0f - t) + b * t;
 }
 
-float cobot::clamp(float a, float b, float x)
+float clamp(float a, float b, float x)
 {
     return (a > x) ? a : (b < x) ? b : x;
 }
 
-float cobot::smoothstep(float a, float b, float x)
+float smoothstep(float a, float b, float x)
 {
     float t = cobot::clamp(0, 1, (x - a) / (b - a));
     return t * t * (3.0 - 2.0 * t);

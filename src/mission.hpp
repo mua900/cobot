@@ -1,5 +1,5 @@
-#ifndef _MISSSION_H
-#define _MISSION_H
+#ifndef MISSION_HPP
+#define MISSION_HPP
 
 #include "common.hpp"
 #include "vehicle.hpp"
@@ -22,4 +22,4 @@ struct Mission {
     }
 };
 
-#endif // _MISSION_H
+#endif // MISSION_HPP

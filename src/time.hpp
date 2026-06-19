@@ -1,5 +1,5 @@
-#ifndef _TIME_H
-#define _TIME_H
+#ifndef TIME_HPP
+#define TIME_HPP
 
 #include "common.hpp"
 
@@ -15,4 +15,4 @@ struct TimeInfo {
 #define MILLISECONDS_PER_SECOND 1'000
 
 
-#endif // _TIME_H
+#endif // TIME_HPP

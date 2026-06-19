@@ -1,5 +1,5 @@
-#ifndef _SPACE_H
-#define _SPACE_H
+#ifndef SPACE_HPP
+#define SPACE_HPP
 
 #include "common.hpp"
 #include "math_util.hpp"
@@ -112,4 +112,4 @@ struct StarSystem {
 
 StarSystem get_default_star_system(SDL_Renderer* renderer);
 
-#endif // _SPACE_H
+#endif // SPACE_HPP

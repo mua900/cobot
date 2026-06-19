@@ -1,5 +1,5 @@
-#ifndef _ASSET_H
-#define _ASSET_H
+#ifndef ASSET_HPP
+#define ASSET_HPP
 
 #include "common.hpp"
 #include "template.hpp"
@@ -173,4 +173,4 @@ AssetKind get_asset_kind(String file_extension);
 void get_base_path(String_Builder& builder);
 void get_to_run_tree_path(String_Builder& builder, const char* path);
 
-#endif // _ASSET_H
+#endif // ASSET_HPP

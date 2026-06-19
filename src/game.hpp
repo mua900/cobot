@@ -1,5 +1,5 @@
-#ifndef _GAME_H
-#define _GAME_H
+#ifndef GAME_HPP
+#define GAME_HPP
 
 #include "common.hpp"
 #include "template.hpp"
@@ -72,4 +72,4 @@ void draw_planet_orbit(RenderContext& context, const Planet& planet, cobot::vec2
 void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_planet_outline(RenderContext& context, const GameState& game, int planet);
 
-#endif // _GAME_H
+#endif // GAME_HPP

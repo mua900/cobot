@@ -353,6 +353,16 @@ bool loadShader(RenderContext& context, Shader& shader, const char* path)
         return false;
     }
 
+    String extension = string_get_extension(String(path));
+    if (string_compare(extension, String("dxil")))
+    {
+        format = SDL_GPU_SHADERFORMAT_DXIL;
+    }
+    else if (string_compare(extension, String("spv")))
+    {
+        format = SDL_GPU_SHADERFORMAT_SPIRV;
+    }
+
     SDL_GPUShaderCreateInfo info = {};
     info.code_size = code.size;
     info.code = code.data;

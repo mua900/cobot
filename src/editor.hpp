@@ -1,5 +1,5 @@
-#ifndef _EDITOR_H
-#define _EDITOR_H
+#ifndef EDITOR_HPP
+#define EDITOR_HPP
 
 #include "vehicle.hpp"
 
@@ -16,4 +16,4 @@ struct VehicleEditor {
     bool place_part(cobot::vec2 where, PartKindId partKind, bool root);
 };
 
-#endif // _EDITOR_H
+#endif // EDITOR_HPP

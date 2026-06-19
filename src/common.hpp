@@ -26,7 +26,7 @@ constexpr s64 MAX_SIGNED_64_BIT = s64(0x7FFFFFFFFFFFFFFF);
 
 constexpr int MAX_INTEGER = int(-1) ^ (1 << (sizeof(int) * 8 - 1));
 
-unsigned int pop_count(u64 x);
+u64 pop_count(u64 x);
 
 #ifdef _MSC_VER
 
@@ -331,7 +331,7 @@ struct String_Builder {
     String slice(int start, int length) const;
     String get_string(StringReference ref) const { return slice(ref.offset, ref.length); }
     StringReference get_reference(String s) const {
-        s64 offset = ptrdiff_t(s.data - buffer);
+        s64 offset = std::ptrdiff_t(s.data - buffer);
         if (offset > 100000 || offset < 0) {
             panic("Probably wrong pointers");
         }

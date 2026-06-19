@@ -1,5 +1,5 @@
-#ifndef _SCRIPT_H
-#define _SCRIPT_H
+#ifndef SCRIPT_HPP
+#define SCRIPT_HPP
 
 #include "common.hpp"
 #include "math_util.hpp"
@@ -63,4 +63,4 @@ lua_State* init_lua();
 int move(lua_State* L);   // float x, y
 int lookat(lua_State* L); // float x, y
 
-#endif // _SCRIPT_H
+#endif // SCRIPT_HPP

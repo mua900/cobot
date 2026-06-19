@@ -1,5 +1,5 @@
-#ifndef _MAP_H
-#define _MAP_H
+#ifndef MAP_HPP
+#define MAP_HPP
 
 #include "draw.hpp"
 
@@ -26,4 +26,4 @@ struct Map {
 
 bool load_map(const char* path, Map* map, SDL_Renderer* renderer);
 
-#endif // _MAP_H
+#endif // MAP_HPP

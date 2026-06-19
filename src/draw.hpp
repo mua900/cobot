@@ -1,5 +1,5 @@
-#ifndef _DRAW_H
-#define _DRAW_H
+#ifndef DRAW_HPP
+#define DRAW_HPP
 
 #include <SDL3/SDL.h>
 #include "common.hpp"
@@ -180,4 +180,4 @@ void render_texture_with_tint(const RenderContext& render, cobot::Rectangle area
 void render_text_size(SDL_Renderer* renderer, Text text, cobot::vec2 where, cobot::vec2 absolute_scale = cobot::vec2(0, 0));
 void render_text_scale(SDL_Renderer* renderer, Text text, cobot::vec2 where, cobot::vec2 scale_factor = cobot::vec2(0,0));
 
-#endif // _DRAW_H
+#endif // DRAW_HPP

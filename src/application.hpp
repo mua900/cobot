@@ -1,5 +1,5 @@
-#ifndef _APPLICATION_H
-#define _APPLICATION_H
+#ifndef APPLICATION_HPP
+#define APPLICATION_HPP
 
 #include "common.hpp"
 #include "template.hpp"
@@ -233,4 +233,4 @@ lua_State* init_lua(VehicleProgram* program);
 
 void initialize_libraries();
 
-#endif // _APPLICATION_H
+#endif // APPLICATION_HPP

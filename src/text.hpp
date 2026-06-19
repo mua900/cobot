@@ -1,5 +1,5 @@
-#ifndef _TEXT_H
-#define _TEXT_H
+#ifndef TEXT_HPP
+#define TEXT_HPP
 
 #include "math_util.hpp"
 #include <SDL3_ttf/SDL_ttf.h>
@@ -64,4 +64,4 @@ struct IconButton {
     }
 };
 
-#endif // _TEXT_H
+#endif // TEXT_HPP

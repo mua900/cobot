@@ -4,7 +4,7 @@
 #include <array>
 
 
-unsigned int pop_count(u64 x)
+u64 pop_count(u64 x)
 {
     x = (x & (u64)0x5555555555555555) + ((x >> 1)  & (u64)0x5555555555555555);
     x = (x & (u64)0x3333333333333333) + ((x >> 2)  & (u64)0x3333333333333333);
@@ -12,7 +12,7 @@ unsigned int pop_count(u64 x)
     x = (x & (u64)0x00FF00FF00FF00FF) + ((x >> 8)  & (u64)0x00FF00FF00FF00FF);
     x = (x & (u64)0x0000FFFF0000FFFF) + ((x >> 16) & (u64)0x0000FFFF0000FFFF);
     x = (x & (u64)0x00000000FFFFFFFF) + ((x >> 32) & (u64)0x00000000FFFFFFFF);
-    return unsigned int(x);
+    return x;
 }
 
 NORETURN

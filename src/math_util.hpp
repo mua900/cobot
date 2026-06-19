@@ -1,5 +1,5 @@
-#ifndef _MATH_UTIL_H
-#define _MATH_UTIL_H
+#ifndef MATH_UTIL_HPP
+#define MATH_UTIL_HPP
 
 #include <cmath>
 
@@ -451,4 +451,4 @@ constexpr double degree_to_radian(double angle) { return angle * DEGREE_TO_RADIA
 
 }  // namespace
 
-#endif // _MATH_UTIL_H
+#endif // MATH_UTIL_HPP
