@@ -443,6 +443,7 @@ bool Application::keyboard_input_down_vehicle_editor(KeyboardEvent keyboard)
         case SDL_SCANCODE_R:
         {
             gameInfo.editor.rootPart = !gameInfo.editor.rootPart;
+            log_info("Root part: %s", gameInfo.editor.rootPart ? "true" : "false");
             return true;
         }
     }
@@ -698,6 +699,7 @@ bool Application::mouse_input_vehicle_editor()
             if (gameInfo.editor.haveSeletedPart)
             {
                 editor.place_part(mouse_pos, gameInfo.editor.selectedPartKind, gameInfo.editor.rootPart);
+                gameInfo.editor = {};
             }
         }
     }
@@ -1715,7 +1717,7 @@ bool Application::init_vehicle_editor_ui() {
     cobot::vec2 ws = get_window_size();
     UiState& ui = m_ui[UiEditor];
 
-    cobot::Rectangle panel_area = { 0, 0, ws.x * 0.3f, ws.y };
+    cobot::Rectangle panel_area = { 0.1f, 0.1f, ws.x * 0.3f, ws.y * 0.9f };
     cobot::Color panel_color = cobot::Color(0x33, 0x44, 0x44);
     Panel partsPanel (PartsPanel, panel_area.to_center(), 32, 48, 16);
     partsPanel.title_height = 10;
@@ -1734,7 +1736,7 @@ bool Application::init_vehicle_editor_ui() {
     if (!chasisIconId.is_valid()) return false;
     Icon chasisIcon = Icon(m_catalog.get_image(chasisIconId), tabIconColor);
     DArray<IconButton> chasisTabIcons;
-    if (!load_chasis_icons(chasisTabIcons, iconColor, m_catalog)) return false;
+    if (!load_chassis_icons(chasisTabIcons, iconColor, m_catalog)) return false;
 
     AssetId controllerIconId = get_asset(String("controllerTabIcon"), m_catalog);
     if (!controllerIconId.is_valid()) return false;

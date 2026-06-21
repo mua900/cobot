@@ -588,6 +588,8 @@ ValuePanel* UiState::get_value_panel(UiElementId id)
             return &element;
         }
     }
+
+    return nullptr;
 }
 
 cobot::Rectangle Panel::get_title_area() const
@@ -660,6 +662,9 @@ cobot::Rectangle ValuePanel::get_field_area(int tabIndex, int fieldIndex, const 
             return cobot::Rectangle(position, scale);
         }
         case ValueButton: {
+            return cobot::Rectangle();
+        }
+        default: {
             return cobot::Rectangle();
         }
     }

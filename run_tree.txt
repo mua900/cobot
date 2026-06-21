@@ -14,10 +14,11 @@ image timescaleIcon icon/timescaleIcon.svg optional
 image folder Parts parts
 
 # shader
-# shader file VertexShader shader/binary/vertex.spv     stage=vertex   nUniforms=1
-# shader file FragmentShader shader/binary/fragment.spv stage=fragment
-shader file VertexShader shader/binary/vertex.dxil      stage=vertex   nUniforms=1
-shader file FragmentShader shader/binary/fragment.dxil  stage=fragment
+# @todo a way to select the appropriate one for the platform more automatically
+shader file VertexShader shader/binary/vertex.spv     stage=vertex   nUniforms=1
+shader file FragmentShader shader/binary/fragment.spv stage=fragment
+# shader file VertexShader shader/binary/vertex.dxil      stage=vertex   nUniforms=1
+# shader file FragmentShader shader/binary/fragment.dxil  stage=fragment
 
-# shader file PlanetFrag shader/binary/planet.spv stage=fragment
-shader file PlanetFrag shader/binary/planet.dxil stage=fragment
+shader file PlanetFrag shader/binary/planet.spv stage=fragment
+# shader file PlanetFrag shader/binary/planet.dxil stage=fragment

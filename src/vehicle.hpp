@@ -242,7 +242,7 @@ cobot::vec2 get_controller_scale(ControllerKind kind);
 SDL_Texture* get_part_texture(PartKindId partKind, AssetCatalog& catalog);
 
 bool load_tire_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
-bool load_chasis_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
+bool load_chassis_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
 bool load_controller_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
 
 Vehicle get_default_vehicle();
@@ -253,7 +253,7 @@ struct VPartImages {
 
 bool load_part_images(VPartImages& images, AssetCatalog& catalog);
 
-void draw_chasis(const Chassis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
+void draw_chassis(const Chassis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
 void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
 void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
 void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);

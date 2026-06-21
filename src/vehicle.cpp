@@ -160,7 +160,7 @@ VPartData& Vehicle::getPartData(PartId id) const
 }
 
 const char* get_chassis_name(ChassisKind kind) {
-    return "BasicChasis";
+    return "BasicChassis";
 }
 
 const char* get_tire_name(TireKind kind) {
@@ -238,7 +238,7 @@ PartId Vehicle::add_chassis(Chassis& c) {
             if (c.basic.backRight.part.is_valid())  getParentRef(c.basic.backRight.part) = thisPart;
             break;
         }
-        default: panic("Invalid chasis kind");
+        default: panic("Invalid chassis kind");
     }
 
     VPartTransform transform = getWorldTransform(thisPart);
@@ -402,7 +402,7 @@ PartId Vehicle::get_part_on_location(PartId part, cobot::vec2 location, VPartTra
                     if (part.is_valid()) return part;
                     break;
                 }
-                default: panic("Invalid chasis kind");
+                default: panic("Invalid chassis kind");
             }
 
             if (cobot::Rectangle(t.position, scale * t.scale).contains_centered(location)) {
@@ -459,14 +459,14 @@ Vehicle get_default_vehicle()
     chassis.basic.backLeft.position = cobot::vec2(-hDist, -vDist);
     chassis.basic.backRight.position = cobot::vec2(-hDist,  vDist);
 
-    PartId chasis_id = vehicle.add_chassis(chassis);
+    PartId chassis_id = vehicle.add_chassis(chassis);
 
     Tire tires[4] = {};
     for (auto& t : tires) {
         t.kind = TireBasic;
         t.part.transform.scale = 1.0;
         t.basic.size = 5;
-        t.part.parent = chasis_id;
+        t.part.parent = chassis_id;
     }
 
     PartId fl = vehicle.add_tire(tires[0]);
@@ -474,7 +474,7 @@ Vehicle get_default_vehicle()
     PartId bl = vehicle.add_tire(tires[2]);
     PartId br = vehicle.add_tire(tires[3]);
 
-    Chassis* ch = vehicle.get_chassis(chasis_id);
+    Chassis* ch = vehicle.get_chassis(chassis_id);
     ch->basic.frontLeft.attach(fl);
     ch->basic.frontRight.attach(fr);
     ch->basic.backLeft.attach(bl);
@@ -487,26 +487,38 @@ Vehicle get_default_vehicle()
     con.basic.codeSizeLimit = 128;
     vehicle.add_controller(con);
 
-    vehicle.add_root(chasis_id);
+    vehicle.add_root(chassis_id);
 
     return vehicle;
 }
 
-void draw_chasis(const Chassis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
+void draw_chassis(const Chassis& chassis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
 {
-    AssetId imageId = partImages.partImages[PART_CHASSIS][chasis.kind];
+    AssetId imageId = partImages.partImages[PART_CHASSIS][chassis.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
-    VPartTransform transform = chain_part_transform(parent, chasis.part.transform);
-    cobot::Rectangle area = cobot::Rectangle(transform.position, get_chassis_scale(chasis.kind) * transform.scale);
+    VPartTransform transform = chain_part_transform(parent, chassis.part.transform);
+    cobot::Rectangle area = cobot::Rectangle(transform.position, get_chassis_scale(chassis.kind) * transform.scale);
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 
-    switch (chasis.kind) {
+    switch (chassis.kind) {
         case ChassisBasic: {
-            draw_vehicle_part(chasis.basic.frontLeft.part, chain_part_transform(transform, VPartTransform(chasis.basic.frontLeft.position, 1)), context, catalog, vehicle, partImages);
-            draw_vehicle_part(chasis.basic.frontRight.part, chain_part_transform(transform, VPartTransform(chasis.basic.frontRight.position, 1)), context, catalog, vehicle, partImages);
-            draw_vehicle_part(chasis.basic.backLeft.part, chain_part_transform(transform, VPartTransform(chasis.basic.backLeft.position, 1)), context, catalog, vehicle, partImages);
-            draw_vehicle_part(chasis.basic.backRight.part, chain_part_transform(transform, VPartTransform(chasis.basic.backRight.position, 1)), context, catalog, vehicle, partImages);
+            if (chassis.basic.frontLeft.part.is_valid())
+            {
+                draw_vehicle_part(chassis.basic.frontLeft.part, chain_part_transform(transform, VPartTransform(chassis.basic.frontLeft.position, 1)), context, catalog, vehicle, partImages);
+            }
+            if (chassis.basic.frontRight.part.is_valid())
+            {
+                draw_vehicle_part(chassis.basic.frontRight.part, chain_part_transform(transform, VPartTransform(chassis.basic.frontRight.position, 1)), context, catalog, vehicle, partImages);
+            }
+            if (chassis.basic.backLeft.part.is_valid())
+            {
+                draw_vehicle_part(chassis.basic.backLeft.part, chain_part_transform(transform, VPartTransform(chassis.basic.backLeft.position, 1)), context, catalog, vehicle, partImages);
+            }
+            if (chassis.basic.backRight.part.is_valid())
+            {
+                draw_vehicle_part(chassis.basic.backRight.part, chain_part_transform(transform, VPartTransform(chassis.basic.backRight.position, 1)), context, catalog, vehicle, partImages);
+            }
             break;
         }
     }
@@ -537,8 +549,8 @@ void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& 
     switch (part.kind)
     {
         case PART_CHASSIS: {
-            const Chassis& chasis = vehicle.chassis[part.index];
-            draw_chasis(chasis, parent, context, catalog, vehicle, partImages);
+            const Chassis& chassis = vehicle.chassis[part.index];
+            draw_chassis(chassis, parent, context, catalog, vehicle, partImages);
             break;
         }
         case PART_TIRE: {
@@ -598,7 +610,7 @@ bool load_tire_icons(DArray<IconButton>& icons, cobot::Color background, AssetCa
     return true;
 }
 
-bool load_chasis_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog) {
+bool load_chassis_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog) {
     for (int i = 0; i < (int)ChassisKindCount; i++)
     {
         const char* name = get_chassis_name(ChassisKind(i));
