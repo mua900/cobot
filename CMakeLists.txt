@@ -39,6 +39,8 @@ add_executable(cobot
 	src/math_util.cpp
 	src/script.hpp
 	src/script.cpp
+	src/parts.hpp
+	src/parts.cpp
 	src/vehicle.hpp
 	src/vehicle.cpp
 	src/map.hpp
