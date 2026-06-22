@@ -702,7 +702,7 @@ struct DiscreteSlider {
 
 struct TextBox {
     Text text = {};
-    ColorF background = {};
+    cobot::ColorF background = {};
 };
 
 #define TEXT_INPUT_TARGET_IS_VALID     BIT(0)

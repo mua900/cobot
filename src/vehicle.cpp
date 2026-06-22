@@ -383,14 +383,8 @@ Vehicle get_default_vehicle()
 
     Chassis chassis = {};
     chassis.kind = ChassisBasic;
+    chassis.basic = getBasicChassis();
     chassis.part.transform.scale = 1.0;
-
-    int hDist = 25;
-    int vDist = 36;
-    chassis.basic.frontLeft.position = cobot::vec2( hDist, -vDist);
-    chassis.basic.frontRight.position = cobot::vec2( hDist,  vDist);
-    chassis.basic.backLeft.position = cobot::vec2(-hDist, -vDist);
-    chassis.basic.backRight.position = cobot::vec2(-hDist,  vDist);
 
     PartId chassis_id = vehicle.add_chassis(chassis);
 
@@ -461,7 +455,7 @@ void draw_chassis(const Chassis& chassis, VPartTransform parent, const RenderCon
                 }
                 else if (parameters.in_editor)
                 {
-                    draw_attachment_point(points[i], transform, context, 20);
+                    draw_attachment_point(points[i], transform, context, 10);
                 }
             }
             break;

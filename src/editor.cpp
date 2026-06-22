@@ -16,6 +16,14 @@ bool VehicleEditor::place_part(cobot::vec2 where, PartKindId partKind, bool root
             Chassis chassis = Chassis();
             chassis.kind = ChassisKind(subkind);
             chassis.part.parent = dist.parent;
+            switch (subkind)
+            {
+                case ChassisBasic:
+                {
+                    chassis.basic = getBasicChassis();
+                    break;
+                }
+            }
             id = vehicle.add_chassis(chassis);
             break;
         }

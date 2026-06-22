@@ -15,8 +15,15 @@ VPartTransform VPartTransform::inverse() const
 
 BasicChassis getBasicChassis()
 {
-	// @todo
-	return BasicChassis();
+    int hDist = 25;
+    int vDist = 36;
+
+    BasicChassis c;
+    c.frontLeft.position = cobot::vec2( hDist, -vDist);
+    c.frontRight.position = cobot::vec2( hDist,  vDist);
+    c.backLeft.position = cobot::vec2(-hDist, -vDist);
+    c.backRight.position = cobot::vec2(-hDist,  vDist);
+	return c;
 }
 
 
