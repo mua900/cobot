@@ -425,14 +425,14 @@ Vehicle get_default_vehicle()
     return vehicle;
 }
 
-void draw_attachment_point(AttachmentPoint point, VPartTransform parent, const RenderContext& context)
+void draw_attachment_point(AttachmentPoint point, VPartTransform parent, const RenderContext& context, float radius)
 {
     VPartTransform t = chain_part_transform(parent, VPartTransform(point.position, 1));
 
-    draw_circle_segment(context, t.position, 10, t.rotation, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.7, 0.1));
-    draw_circle_segment(context, t.position, 10, t.rotation + CONSTANT_HALF_PI, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.1, 0.1));
-    draw_circle_segment(context, t.position, 10, t.rotation + CONSTANT_PI, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.7, 0.1));
-    draw_circle_segment(context, t.position, 10, t.rotation + CONSTANT_ONE_AND_HALF_PI, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.1, 0.1));
+    draw_circle_segment(context, t.position, radius, t.rotation, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.7, 0.1));
+    draw_circle_segment(context, t.position, radius, t.rotation + CONSTANT_HALF_PI, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.1, 0.1));
+    draw_circle_segment(context, t.position, radius, t.rotation + CONSTANT_PI, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.7, 0.1));
+    draw_circle_segment(context, t.position, radius, t.rotation + CONSTANT_ONE_AND_HALF_PI, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.1, 0.1));
 }
 
 void draw_chassis(const Chassis& chassis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
@@ -461,7 +461,7 @@ void draw_chassis(const Chassis& chassis, VPartTransform parent, const RenderCon
                 }
                 else if (parameters.in_editor)
                 {
-                    draw_attachment_point(points[i], transform, context);
+                    draw_attachment_point(points[i], transform, context, 20);
                 }
             }
             break;

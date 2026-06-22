@@ -73,7 +73,7 @@ private:
 
 Vehicle get_default_vehicle();
 
-void draw_attachment_point(AttachmentPoint point, VPartTransform parent, const RenderContext& context);
+void draw_attachment_point(AttachmentPoint point, VPartTransform parent, const RenderContext& context, float radius);
 
 struct VehicleDrawParameters {
     const VPartImages* partImages;

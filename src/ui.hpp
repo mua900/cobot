@@ -700,6 +700,11 @@ struct DiscreteSlider {
     cobot::vec2 get_button_scale() const;
 };
 
+struct TextBox {
+    Text text = {};
+    ColorF background = {};
+};
+
 #define TEXT_INPUT_TARGET_IS_VALID     BIT(0)
 #define TEXT_INPUT_TARGET_IS_EDITOR    BIT(1)
 
@@ -720,6 +725,8 @@ struct UiState {
     DArray<ControlMenu> control = {};
     DArray<DiscreteSlider> discrete_slider = {};
     DArray<ButtonGroup> button_group = {};
+
+    TextBox hoverText = {};
 
     TextInputTarget text_input_target = {};
     cobot::vec2 assumed_window_size = {};

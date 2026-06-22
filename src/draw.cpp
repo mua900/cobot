@@ -704,15 +704,14 @@ void draw_circle_segment_with_texture(const RenderContext& context, cobot::vec2 
     vertices[0] = center;
 
     // the angle between vertices and it's sin and cos
-    const float step_angle = CONSTANT_TAU / float(NVERTICES);
+    // if we have n vertices than we have n - 1 gaps between them so divide the angle by the number of gaps to fill
+    const float step_angle = angle / float(NVERTICES - 1);
     const float c = std::cosf(step_angle);
     const float s = std::sinf(step_angle);
 
-    int nsteps = float(NVERTICES) * (angle / CONSTANT_TAU);
-
     float xcomp = std::cosf(start_angle);
     float ycomp = std::sinf(start_angle);
-    for (int i = 1; i <= nsteps; i++)
+    for (int i = 1; i <= NVERTICES; i++)
     {
         vertices[i].position.x = center.position.x + xcomp * radius;
         vertices[i].position.y = center.position.y + ycomp * radius;
@@ -728,22 +727,22 @@ void draw_circle_segment_with_texture(const RenderContext& context, cobot::vec2 
     }
 
     int indices[NVERTICES * 3];
-    for (int i = 0; i < nsteps - 1; i++)
+    for (int i = 0; i < NVERTICES - 1; i++)
     {
         indices[i * 3 + 0] = 0;
         indices[i * 3 + 1] = i + 1;
         indices[i * 3 + 2] = i + 2;
     }
 
-    bool full_circle = nsteps == NVERTICES;
-    if (full_circle)
+    bool fullCircle = cobot::normalize_angle_radians_f(angle) == 0;
+    if (fullCircle)
     {
         indices[(NVERTICES - 1) * 3 + 0] = 0;
         indices[(NVERTICES - 1) * 3 + 1] = NVERTICES;
         indices[(NVERTICES - 1) * 3 + 2] = 1;
     }
 
-    SDL_RenderGeometry(context.renderer, texture, vertices, nsteps + 1, indices, (full_circle ? nsteps : nsteps - 1) * 3);
+    SDL_RenderGeometry(context.renderer, texture, vertices, ARRAY_SIZE(vertices), indices, (fullCircle ? NVERTICES : NVERTICES - 1) * 3);
     #undef NVERTICES
 }
 
