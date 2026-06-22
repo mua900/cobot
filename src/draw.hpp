@@ -156,6 +156,8 @@ void draw_segment(const RenderContext& context, cobot::vec2 start, cobot::vec2 e
 void draw_arrow(const RenderContext& context, cobot::vec2 start, cobot::vec2 end, float thick, float head_ratio, cobot::ColorF color);
 void draw_circle(const RenderContext& context, cobot::vec2 position, float radius, cobot::ColorF color);
 void draw_circle_with_texture(const RenderContext& context, cobot::vec2 position, float radius, SDL_Texture* texture, cobot::ColorF color);
+void draw_circle_segment(const RenderContext& context, cobot::vec2 position, float radius, float start_angle, float angle, cobot::ColorF color);
+void draw_circle_segment_with_texture(const RenderContext& context, cobot::vec2 position, float radius, float start_angle, float angle, SDL_Texture* texture, cobot::ColorF color);
 void draw_arc(const RenderContext& context, cobot::vec2 center, float inner_radius, float outer_radius, float start_angle, float arc, cobot::ColorF color);
 void draw_capsule(const RenderContext& context, cobot::vec2 center0, cobot::vec2 center1, float radius, cobot::ColorF color);
 void draw_polygon(RenderContext& context, cobot::vec2 points[], int numPoints, cobot::ColorF color);

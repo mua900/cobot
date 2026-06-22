@@ -36,9 +36,9 @@ struct Vehicle {
 
     DArray<PartId> rootParts = {};
     
-    DArray<Tire> tire = {};
-    DArray<Chassis> chassis = {};
-    DArray<Controller> controller = {};
+    BucketList<Tire> tire = {};
+    BucketList<Chassis> chassis = {};
+    BucketList<Controller> controller = {};
 
     PartId add_tire(Tire& t);
     PartId add_chassis(Chassis& c);
@@ -73,11 +73,27 @@ private:
 
 Vehicle get_default_vehicle();
 
-void draw_chassis(const Chassis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
-void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
-void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
-void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
+void draw_attachment_point(AttachmentPoint point, VPartTransform parent, const RenderContext& context);
 
-void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages);
+struct VehicleDrawParameters {
+    const VPartImages* partImages;
+    PartId selectedPart;
+    bool in_editor;
+
+    VehicleDrawParameters(const VPartImages* img, PartId selected, bool editor)
+        :
+        partImages(img),
+        selectedPart(selected),
+        in_editor(editor)
+    {}
+};
+
+void draw_chassis(const Chassis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
+void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
+void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
+
+void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
+
+void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
 
 #endif // VEHICLE_HPP

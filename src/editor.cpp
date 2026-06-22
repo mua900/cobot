@@ -44,6 +44,11 @@ bool VehicleEditor::place_part(cobot::vec2 where, PartKindId partKind, bool root
         // trying to attach a root part to an attachment point
         return false;
     }
+    if (!(dist.point || root))
+    {
+        // trying to attach a part that isn't root and also isn't attached to anything
+        return false;
+    }
 
     if (dist.point)
     {

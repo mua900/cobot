@@ -130,7 +130,7 @@ bool load_part_images(VPartImages& images, AssetCatalog& catalog)
 
 void draw_vehicle_simulation(const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partimages)
 {
-    draw_vehicle(context, catalog, vehicle, partimages);
+    draw_vehicle(context, catalog, vehicle, VehicleDrawParameters(&partimages, NullPartId, false));
 }
 
 void draw_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)

@@ -58,7 +58,7 @@ cobot::Rectangle Vehicle::calculate_part_volume_with_parent(VPartTransform paren
     switch (part.kind)
     {
         case PART_CHASSIS: {
-            Chassis& c = chassis.get_ref(part.index);
+            Chassis& c = chassis.get(part.index);
             global = chain_part_transform(parent, c.part.transform);
             scale = get_chassis_scale(c.kind);
             volume = cobot::Rectangle(global.position, global.scale * scale);
@@ -76,14 +76,14 @@ cobot::Rectangle Vehicle::calculate_part_volume_with_parent(VPartTransform paren
             break;
         }
         case PART_CONTROLLER: {
-            global = chain_part_transform(parent, controller.get_ref(part.index).part.transform);
-            scale = get_controller_scale(controller.get_ref(part.index).kind);
+            global = chain_part_transform(parent, controller.get(part.index).part.transform);
+            scale = get_controller_scale(controller.get(part.index).kind);
             volume = cobot::Rectangle(global.position, global.scale * scale);
             break;
         }
         case PART_TIRE: {
-            global = chain_part_transform(parent, tire.get_ref(part.index).part.transform);
-            scale = get_tire_scale(tire.get_ref(part.index).kind);
+            global = chain_part_transform(parent, tire.get(part.index).part.transform);
+            scale = get_tire_scale(tire.get(part.index).kind);
             volume = cobot::Rectangle(global.position, global.scale * scale);
             break;
         }
@@ -117,9 +117,9 @@ u16 Vehicle::getSubKind(PartId part)
 {
     switch (part.kind)
     {
-        case PART_CHASSIS:       return chassis.get_ref(part.index).kind;
-        case PART_TIRE:         return tire.get_ref(part.index).kind;
-        case PART_CONTROLLER:   return controller.get_ref(part.index).kind;
+        case PART_CHASSIS:       return chassis.get(part.index).kind;
+        case PART_TIRE:         return tire.get(part.index).kind;
+        case PART_CONTROLLER:   return controller.get(part.index).kind;
         default: panic("Unknown part kind");
     }
 }
@@ -239,7 +239,7 @@ AttachmentDistance Vehicle::getAttachmentPointClosest(cobot::vec2 position, floa
     AttachmentDistance distance = { nullptr, NullPartId, radius + 1 };
     for (int i = 0; i < rootParts.size(); i++)
     {
-        auto point = get_attachment_point_near(rootParts.get_ref(i), get_vehicle_transform(), position, radius);
+        auto point = get_attachment_point_near(rootParts.get(i), get_vehicle_transform(), position, radius);
         if (point.point)
         {
             if (point.distance < distance.distance)
@@ -425,9 +425,19 @@ Vehicle get_default_vehicle()
     return vehicle;
 }
 
-void draw_chassis(const Chassis& chassis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
+void draw_attachment_point(AttachmentPoint point, VPartTransform parent, const RenderContext& context)
 {
-    AssetId imageId = partImages.partImages[PART_CHASSIS][chassis.kind];
+    VPartTransform t = chain_part_transform(parent, VPartTransform(point.position, 1));
+
+    draw_circle_segment(context, t.position, 10, t.rotation, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.7, 0.1));
+    draw_circle_segment(context, t.position, 10, t.rotation + CONSTANT_HALF_PI, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.1, 0.1));
+    draw_circle_segment(context, t.position, 10, t.rotation + CONSTANT_PI, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.7, 0.1));
+    draw_circle_segment(context, t.position, 10, t.rotation + CONSTANT_ONE_AND_HALF_PI, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.1, 0.1));
+}
+
+void draw_chassis(const Chassis& chassis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
+{
+    AssetId imageId = parameters.partImages->partImages[PART_CHASSIS][chassis.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
     VPartTransform transform = chain_part_transform(parent, chassis.part.transform);
@@ -436,30 +446,32 @@ void draw_chassis(const Chassis& chassis, VPartTransform parent, const RenderCon
 
     switch (chassis.kind) {
         case ChassisBasic: {
-            if (chassis.basic.frontLeft.part.is_valid())
+            const AttachmentPoint points[4] = {
+                chassis.basic.frontLeft,
+                chassis.basic.frontRight,
+                chassis.basic.backLeft,
+                chassis.basic.backRight,
+            };
+
+            for (int i = 0; i < 4; i++)
             {
-                draw_vehicle_part(chassis.basic.frontLeft.part, chain_part_transform(transform, VPartTransform(chassis.basic.frontLeft.position, 1)), context, catalog, vehicle, partImages);
-            }
-            if (chassis.basic.frontRight.part.is_valid())
-            {
-                draw_vehicle_part(chassis.basic.frontRight.part, chain_part_transform(transform, VPartTransform(chassis.basic.frontRight.position, 1)), context, catalog, vehicle, partImages);
-            }
-            if (chassis.basic.backLeft.part.is_valid())
-            {
-                draw_vehicle_part(chassis.basic.backLeft.part, chain_part_transform(transform, VPartTransform(chassis.basic.backLeft.position, 1)), context, catalog, vehicle, partImages);
-            }
-            if (chassis.basic.backRight.part.is_valid())
-            {
-                draw_vehicle_part(chassis.basic.backRight.part, chain_part_transform(transform, VPartTransform(chassis.basic.backRight.position, 1)), context, catalog, vehicle, partImages);
+                if (points[i].part.is_valid())
+                {
+                    draw_vehicle_part(points[i].part, chain_part_transform(transform, VPartTransform(points[i].position, 1)), context, catalog, vehicle, parameters);
+                }
+                else if (parameters.in_editor)
+                {
+                    draw_attachment_point(points[i], transform, context);
+                }
             }
             break;
         }
     }
 }
 
-void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
+void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
 {
-    AssetId imageId = partImages.partImages[PART_TIRE][tire.kind];
+    AssetId imageId = parameters.partImages->partImages[PART_TIRE][tire.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
     VPartTransform transform = chain_part_transform(parent, tire.part.transform);
@@ -467,9 +479,9 @@ void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& con
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 }
 
-void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
+void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
 {
-    AssetId imageId = partImages.partImages[PART_CONTROLLER][controller.kind];
+    AssetId imageId = parameters.partImages->partImages[PART_CONTROLLER][controller.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
     VPartTransform transform = chain_part_transform(parent, controller.part.transform);
@@ -477,36 +489,36 @@ void draw_controller(const Controller& controller, VPartTransform parent, const 
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 }
 
-void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
+void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
 {
     switch (part.kind)
     {
         case PART_CHASSIS: {
             const Chassis& chassis = vehicle.chassis[part.index];
-            draw_chassis(chassis, parent, context, catalog, vehicle, partImages);
+            draw_chassis(chassis, parent, context, catalog, vehicle, parameters);
             break;
         }
         case PART_TIRE: {
             const Tire& tire = vehicle.tire[part.index];
-            draw_tire(tire, parent, context, catalog, vehicle, partImages);
+            draw_tire(tire, parent, context, catalog, vehicle, parameters);
             break;
         }
         case PART_CONTROLLER: {
             const Controller& controller = vehicle.controller[part.index];
-            draw_controller(controller, parent, context, catalog, vehicle, partImages);
+            draw_controller(controller, parent, context, catalog, vehicle, parameters);
             break;
         }
         default: panic("Invalid part type");
     }
 }
 
-void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VPartImages& partImages)
+void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
 {
     for (int i = 0; i < vehicle.rootParts.size(); i++)
     {
         VPartData part_data = vehicle.getPartData(vehicle.rootParts[i]);
         VPartTransform vtransform = vehicle.get_vehicle_transform();
-        draw_vehicle_part(vehicle.rootParts[i], vtransform, context, catalog, vehicle, partImages);
+        draw_vehicle_part(vehicle.rootParts[i], vtransform, context, catalog, vehicle, parameters);
     }
 }
 

@@ -3,12 +3,13 @@
 
 #include <cmath>
 
-namespace cobot {
+#define CONSTANT_HALF_PI          1.57079632679
+#define CONSTANT_PI               3.14159265359
+#define CONSTANT_ONE_AND_HALF_PI  4.71238898038
+#define CONSTANT_E                2.71828182846
+#define CONSTANT_TAU              6.28318530717
 
-#define CONSTANT_HALF_PI  1.57079632679
-#define CONSTANT_PI  3.14159265359
-#define CONSTANT_E   2.71828182846
-#define CONSTANT_TAU 6.28318530717
+namespace cobot {
 
 float snap_value(float val, float bound1, float bound2, float threshold);
 

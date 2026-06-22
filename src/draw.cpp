@@ -685,6 +685,68 @@ void draw_circle_with_texture(const RenderContext& context, cobot::vec2 position
     #undef NVERTICES
 }
 
+void draw_circle_segment(const RenderContext& context, cobot::vec2 position, float radius, float start_angle, float angle, cobot::ColorF color)
+{
+    draw_circle_segment_with_texture(context, position, radius, start_angle, angle, nullptr, color);
+}
+
+void draw_circle_segment_with_texture(const RenderContext& context, cobot::vec2 position, float radius, float start_angle, float angle, SDL_Texture* texture, cobot::ColorF color)
+{
+    // change the number of vertices to use to configure how fine of an approximation we get
+    #define NVERTICES 32
+    SDL_Vertex vertices[NVERTICES + 1];
+
+    SDL_Vertex center;
+    center.position = SDL_FPoint { position.x, position.y};
+    center.color = SDL_FColor { COLOR_ARG(color) };
+    center.tex_coord = SDL_FPoint { 0.5, 0.5 };
+
+    vertices[0] = center;
+
+    // the angle between vertices and it's sin and cos
+    const float step_angle = CONSTANT_TAU / float(NVERTICES);
+    const float c = std::cosf(step_angle);
+    const float s = std::sinf(step_angle);
+
+    int nsteps = float(NVERTICES) * (angle / CONSTANT_TAU);
+
+    float xcomp = std::cosf(start_angle);
+    float ycomp = std::sinf(start_angle);
+    for (int i = 1; i <= nsteps; i++)
+    {
+        vertices[i].position.x = center.position.x + xcomp * radius;
+        vertices[i].position.y = center.position.y + ycomp * radius;
+        vertices[i].color = SDL_FColor { color.r, color.g, color.b, color.a };
+        vertices[i].tex_coord.x = (xcomp + 1.0f) * 0.5f;
+        vertices[i].tex_coord.y = (ycomp + 1.0f) * 0.5f;
+
+        // rotate the vector
+        float n_xcomp = xcomp * c - ycomp * s;
+        float n_ycomp = xcomp * s + ycomp * c;
+        xcomp = n_xcomp;
+        ycomp = n_ycomp;
+    }
+
+    int indices[NVERTICES * 3];
+    for (int i = 0; i < nsteps - 1; i++)
+    {
+        indices[i * 3 + 0] = 0;
+        indices[i * 3 + 1] = i + 1;
+        indices[i * 3 + 2] = i + 2;
+    }
+
+    bool full_circle = nsteps == NVERTICES;
+    if (full_circle)
+    {
+        indices[(NVERTICES - 1) * 3 + 0] = 0;
+        indices[(NVERTICES - 1) * 3 + 1] = NVERTICES;
+        indices[(NVERTICES - 1) * 3 + 2] = 1;
+    }
+
+    SDL_RenderGeometry(context.renderer, texture, vertices, nsteps + 1, indices, (full_circle ? nsteps : nsteps - 1) * 3);
+    #undef NVERTICES
+}
+
 void draw_capsule(const RenderContext& context, cobot::vec2 center0, cobot::vec2 center1, float radius, cobot::ColorF color)
 {
     // total number of vertices used for either half circle sides of the capsule shape

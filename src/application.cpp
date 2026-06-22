@@ -1859,7 +1859,7 @@ void Application::draw_vehicle_editor()
         draw_quad_with_texture(m_render, points, texture, cobot::ColorF(0.9,0.9,0.9,0.5));
     }
 
-    draw_vehicle(m_render, m_catalog, editor.vehicle, partImages);
+    draw_vehicle(m_render, m_catalog, editor.vehicle, VehicleDrawParameters(&partImages, NullPartId, true));
 }
 
 void Application::draw_solar_system()

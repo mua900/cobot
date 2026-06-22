@@ -303,6 +303,14 @@ struct BucketList {
 		return buckets[bucket_index].elements[index];
 	}
 
+	T& operator[](int elem_index) const
+	{
+		int bucket_index = elem_index / BUCKET_SIZE;
+		int index = elem_index % BUCKET_SIZE;
+		
+		return buckets[bucket_index].elements[index];
+	}
+
 	T get_or_default(int elem_index) const {
 		int bucket_index = elem_index / BUCKET_SIZE;
 		int index = elem_index % BUCKET_SIZE;
