@@ -390,6 +390,13 @@ void UiState::update_state(cobot::vec2 window_size, const RenderContext& render,
         but.scale.y *= y_factor;
     }
 
+    for (auto& img : image_button) {
+        img.position.x *= x_factor;
+        img.position.y *= y_factor;
+        img.scale.x *= x_factor;
+        img.scale.y *= y_factor;
+    }
+
     for (auto& lbl : label) {
         lbl.position.x *= x_factor;
         lbl.position.y *= y_factor;

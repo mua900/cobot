@@ -83,7 +83,6 @@ struct GameInfo {
     bool wantPause = false;
     double selectedTimescale = 0;
     int selectedPlanet = -1;
-    EditorContext editor = {};
 };
 
 class Application {
@@ -171,6 +170,8 @@ private:
     bool on_mouse_down();
     void on_mouse_up(int button);
     void on_mouse_move();
+    void mouse_move_ui(UiState& ui);
+    void mouse_move_vehicle_editor();
 
     void set_text_editor_cursor(cobot::Rectangle text_area, cobot::Direction dir);
 

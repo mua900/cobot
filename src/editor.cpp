@@ -75,3 +75,26 @@ bool VehicleEditor::place_part(cobot::vec2 where, PartKindId partKind, bool root
 
     return true;
 }
+
+void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, VehicleEditor& editor, VPartImages& partImages)
+{
+    if (editor.haveSeletedPart)
+    {
+        SDL_Texture* texture = get_part_texture(editor.selectedPartKind, catalog);
+    
+        cobot::RectangleRot area = {};
+        if (editor.haveSnap)
+        {
+            area = cobot::RectangleRot(editor.snap.position, cobot::vec2(100, 100), editor.snap.rotation);
+        }
+        else
+        {
+            area = cobot::RectangleRot(input.mouse.pos, cobot::vec2(100, 100), 0);
+        }
+
+        cobot::Quad points = area.get_points();
+        draw_quad_with_texture(render, points, texture, cobot::ColorF(0.9,0.9,0.9,0.5));
+    }
+
+    draw_vehicle(render, catalog, editor.vehicle, VehicleDrawParameters(&partImages, NullPartId, true));
+}

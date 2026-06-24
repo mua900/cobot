@@ -330,6 +330,42 @@ void Application::on_mouse_move()
 {
     cobot::vec2 mouse_pos = m_input.mouse.pos;
     UiState& ui = get_active_ui();
+    mouse_move_ui(ui);
+
+    switch (m_mode)
+    {
+        case ModeVehicleEditor:
+        {
+            mouse_move_vehicle_editor();
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+}
+
+void Application::mouse_move_vehicle_editor()
+{
+    cobot::vec2 mouse_pos = m_input.mouse.pos;
+
+    AttachmentDistance distance = editor.vehicle.getAttachmentPointClosest(mouse_pos, 10);
+    if (distance.point)
+    {
+        editor.snap = chain_part_transform(editor.vehicle.getWorldTransform(distance.parent), VPartTransform(distance.point->position, 1));
+        editor.haveSnap = true;
+    }
+    else
+    {
+        editor.snap = VPartTransform();
+        editor.haveSnap = false;
+    }
+}
+
+void Application::mouse_move_ui(UiState& ui)
+{
+    cobot::vec2 mouse_pos = m_input.mouse.pos;
 
     for (auto& editor : ui.editor)
     {
@@ -442,8 +478,8 @@ bool Application::keyboard_input_down_vehicle_editor(KeyboardEvent keyboard)
     {
         case SDL_SCANCODE_R:
         {
-            gameInfo.editor.rootPart = !gameInfo.editor.rootPart;
-            log_info("Root part: %s", gameInfo.editor.rootPart ? "true" : "false");
+            editor.rootPart = !editor.rootPart;
+            log_info("Root part: %s", editor.rootPart ? "true" : "false");
             return true;
         }
     }
@@ -678,14 +714,14 @@ bool Application::mouse_input_vehicle_editor()
                     PartKindId partKindId = (tab.icons.get_ref(i).data.number);
                     if (area.contains_top_left(mouse_pos))
                     {
-                        gameInfo.editor.selectedPartKind = partKindId;
-                        gameInfo.editor.haveSeletedPart = true;
+                        editor.selectedPartKind = partKindId;
+                        editor.haveSeletedPart = true;
                         return true;
                     }
                 }
 
-                gameInfo.editor.selectedPartKind = {};
-                gameInfo.editor.haveSeletedPart = false;
+                editor.selectedPartKind = {};
+                editor.haveSeletedPart = false;
                 return true;
             }
 
@@ -696,10 +732,11 @@ bool Application::mouse_input_vehicle_editor()
                 }
             }
 
-            if (gameInfo.editor.haveSeletedPart)
+            if (editor.haveSeletedPart)
             {
-                editor.place_part(mouse_pos, gameInfo.editor.selectedPartKind, gameInfo.editor.rootPart);
-                gameInfo.editor = {};
+                editor.place_part(mouse_pos, editor.selectedPartKind, editor.rootPart);
+                editor.haveSeletedPart = false;
+                editor.selectedPartKind = {};
             }
         }
     }
@@ -1850,16 +1887,7 @@ void Application::draw_game()
 
 void Application::draw_vehicle_editor()
 {
-    if (gameInfo.editor.haveSeletedPart)
-    {
-        SDL_Texture* texture = get_part_texture(gameInfo.editor.selectedPartKind, m_catalog);
-    
-        auto area = cobot::RectangleRot(m_input.mouse.pos, cobot::vec2(100, 100), 0);
-        cobot::Quad points = area.get_points();
-        draw_quad_with_texture(m_render, points, texture, cobot::ColorF(0.9,0.9,0.9,0.5));
-    }
-
-    draw_vehicle(m_render, m_catalog, editor.vehicle, VehicleDrawParameters(&partImages, NullPartId, true));
+    draw_veditor(m_render, m_catalog, m_input, editor, partImages);
 }
 
 void Application::draw_solar_system()

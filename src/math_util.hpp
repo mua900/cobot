@@ -353,10 +353,19 @@ struct Rectangle {
     {
         vec2 topLeft = get_top_left();
         vec2 relative = position - topLeft;
-        Direction west = std::fabsf(relative.x) < d ? DirWest : DirNone;
-        Direction east = std::fabsf(relative.x - w) < d ? DirEast : DirNone;
-        Direction south = std::fabsf(relative.y) < d ? DirSouth : DirNone;
-        Direction north = std::fabsf(relative.y - h) < d ? DirNorth : DirNone;
+
+        bool left = std::fabsf(relative.x) < d;
+        bool right = std::fabsf(relative.x - w) < d;
+        bool down = std::fabsf(relative.y) < d;
+        bool up = std::fabsf(relative.y - h) < d;
+
+        bool horizontal = topLeft.x - d <= position.x && topLeft.x + w + d >= position.x;
+        bool vertical = topLeft.y - d <= position.y && topLeft.y + h + d >= position.y;
+
+        Direction west = (left && vertical) ? DirWest : DirNone;
+        Direction east = (right && vertical) ? DirEast : DirNone;
+        Direction south = (down && horizontal) ? DirSouth : DirNone;
+        Direction north = (up && horizontal) ? DirNorth : DirNone;
 
         return Direction(west | east | south | north);
     }
