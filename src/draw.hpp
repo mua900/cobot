@@ -152,6 +152,7 @@ void end_frame(RenderContext& context);
 
 bool loadShader(RenderContext& context, Shader& shader, const char* path);
 
+void draw_rectangle(const RenderContext& context, cobot::Rectangle area, cobot::ColorF color);
 void draw_segment(const RenderContext& context, cobot::vec2 start, cobot::vec2 end, float thick, cobot::ColorF color);
 void draw_arrow(const RenderContext& context, cobot::vec2 start, cobot::vec2 end, float thick, float head_ratio, cobot::ColorF color);
 void draw_circle(const RenderContext& context, cobot::vec2 position, float radius, cobot::ColorF color);

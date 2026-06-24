@@ -31,7 +31,7 @@ struct Vehicle {
     cobot::vec2 worldPosition = {};
     cobot::vec2 velocity = {};
     float speed = 0;
-    float orientation = 0;  // radians, 0 looking up
+    float orientation = 0;  // radians, 0 looking right
     cobot::Rectangle volume = {};
 
     DArray<PartId> rootParts = {};

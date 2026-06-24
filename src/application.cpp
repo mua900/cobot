@@ -678,8 +678,9 @@ bool Application::on_mouse_down()
 
 bool Application::mouse_input_vehicle_editor()
 {
-    UiState& ui = m_ui[UiEditor];
+    cobot::vec2 ws = get_window_size();
     cobot::vec2 mouse_pos = m_input.mouse.pos;
+    UiState& ui = m_ui[UiEditor];
 
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) {
         for (Panel& panel : ui.panel) {
@@ -734,7 +735,10 @@ bool Application::mouse_input_vehicle_editor()
 
             if (editor.haveSeletedPart)
             {
-                editor.place_part(mouse_pos, editor.selectedPartKind, editor.rootPart);
+                if (!editor.place_part(mouse_pos))
+                {
+                    display_message(ws * 0.5, ws * 0.1, "Couldn't place part", 1, cobot::Color(0xAA, 0xAA, 0xAA), cobot::Color(0xCC, 0x33, 0x33));
+                }
                 editor.haveSeletedPart = false;
                 editor.selectedPartKind = {};
             }

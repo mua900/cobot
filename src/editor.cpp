@@ -1,8 +1,26 @@
 #include "editor.hpp"
 
-bool VehicleEditor::place_part(cobot::vec2 where, PartKindId partKind, bool root)
+bool VehicleEditor::place_part(cobot::vec2 where)
 {
     AttachmentDistance dist = vehicle.getAttachmentPointClosest(where, 20);
+
+    if (!haveSeletedPart)
+    {
+        return false;
+    }
+
+    PartKindId partKind = selectedPartKind;
+
+    if (dist.point && rootPart)
+    {
+        // trying to attach a root part to an attachment point
+        return false;
+    }
+    if (!(dist.point || rootPart))
+    {
+        // trying to attach a part that isn't root and also isn't attached to anything
+        return false;
+    }
 
     PartKind kind = get_part_kind(partKind);
     u16 subkind = get_subkind(partKind);
@@ -47,23 +65,12 @@ bool VehicleEditor::place_part(cobot::vec2 where, PartKindId partKind, bool root
             break;
     }
 
-    if (dist.point && root)
-    {
-        // trying to attach a root part to an attachment point
-        return false;
-    }
-    if (!(dist.point || root))
-    {
-        // trying to attach a part that isn't root and also isn't attached to anything
-        return false;
-    }
-
     if (dist.point)
     {
         dist.point->attach(id);
     }
     
-    if (root)
+    if (rootPart)
     {
         if (vehicle.rootParts.size() == 0)
         {
@@ -78,6 +85,8 @@ bool VehicleEditor::place_part(cobot::vec2 where, PartKindId partKind, bool root
 
 void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, VehicleEditor& editor, VPartImages& partImages)
 {
+    cobot::vec2 ws = render.render_size;
+
     if (editor.haveSeletedPart)
     {
         SDL_Texture* texture = get_part_texture(editor.selectedPartKind, catalog);
@@ -97,4 +106,6 @@ void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, Ve
     }
 
     draw_vehicle(render, catalog, editor.vehicle, VehicleDrawParameters(&partImages, NullPartId, true));
+
+    draw_rectangle(render, cobot::Rectangle(ws.x * 0.9, ws.y * 0.1, ws.x * 0.1, ws.y * 0.1), editor.rootPart ? cobot::ColorF(0.1, 0.6, 0.1) : cobot::ColorF(0.6, 0.2, 0.2));
 }

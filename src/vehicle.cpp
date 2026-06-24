@@ -234,8 +234,6 @@ PartId Vehicle::getPartAt(cobot::vec2 position) const
 
 AttachmentDistance Vehicle::getAttachmentPointClosest(cobot::vec2 position, float radius)
 {
-    position -= worldPosition;
-
     AttachmentDistance distance = { nullptr, NullPartId, radius + 1 };
     for (int i = 0; i < rootParts.size(); i++)
     {

@@ -470,6 +470,13 @@ void RenderContext::draw_mesh(MeshReference mesh)
     }
 }
 
+void draw_rectangle(const RenderContext& context, cobot::Rectangle area, cobot::ColorF color)
+{
+    SDL_SetRenderDrawColorFloat(context.renderer, COLOR_ARG(color));
+    SDL_FRect dst = { area.x - area.w / 2, area.y - area.h / 2, area.w, area.h };
+    SDL_RenderFillRect(context.renderer, &dst);
+}
+
 void draw_segment(const RenderContext& context, cobot::vec2 start, cobot::vec2 end, float thick, cobot::ColorF color)
 {
     cobot::vec2 dir = (end - start).normalized();
