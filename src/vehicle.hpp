@@ -27,7 +27,7 @@ typedef u32 VehicleId;
 constexpr VehicleId NullVehicleId = -1;
 
 struct Vehicle {
-    String name = {};  // @todo this would need to change when we need to get names from user
+    MutableString name = {};
     cobot::vec2 worldPosition = {};
     cobot::vec2 velocity = {};
     float speed = 0;

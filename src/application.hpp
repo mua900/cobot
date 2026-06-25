@@ -175,6 +175,7 @@ private:
 
     void set_text_editor_cursor(cobot::Rectangle text_area, cobot::Direction dir);
 
+	bool mouse_input_common();
     bool mouse_input_game();
     bool mouse_input_menu();
     bool mouse_input_load();

@@ -445,13 +445,18 @@ bool Application::keyboard_input_up(SDL_KeyboardEvent keyboard)
 }
 
 bool Application::keyboard_input_down(SDL_KeyboardEvent keyboard)
-{
+{	
     if (keyboard_input_down_common(keyboard))
     {
         return true;
     }
     else
     {
+		if (!m_input.keyboard.do_input)
+		{
+			return false;
+		}
+		
         switch (m_mode)
         {
             case ModeGame:
@@ -655,6 +660,11 @@ bool Application::keyboard_input_down_solar_system(KeyboardEvent keyboard)
 
 bool Application::on_mouse_down()
 {
+	if (mouse_input_common())
+	{
+		return true;
+	}
+	
     if (m_mode == ModeGame)
     {
         return mouse_input_game();
@@ -674,6 +684,33 @@ bool Application::on_mouse_down()
     else {
         panic("Invalid application mode");
     }
+}
+
+bool Application::mouse_input_common()
+{
+	cobot::vec2 mouse_pos = m_input.mouse.pos;
+	UiState& ui = get_active_ui();
+	
+	for (int it = 0; it < ui.text_field.size(); it++)
+	{
+		auto& field = ui.text_field.get_ref(it);
+		cobot::Rectangle area = field.m_area;
+		if (area.contains_centered(mouse_pos)) {
+			text_input_start();
+
+			ui.text_input_target.index = it;
+			ui.text_input_target.flags = TEXT_INPUT_TARGET_IS_VALID;
+
+			cobot::vec2 relative = m_input.mouse.pos - area.get_top_left();
+			Font font = m_catalog.get_font(field.fontId);
+			field.m_selection_start = field.calculate_cursor_from_mouse(relative, field.get_string(), font, true);
+			field.m_selection_end = field.m_selection_start;
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool Application::mouse_input_vehicle_editor()
@@ -743,6 +780,26 @@ bool Application::mouse_input_vehicle_editor()
                 editor.selectedPartKind = {};
             }
         }
+		
+		for (auto& button : ui.button)
+		{
+			if (cobot::Rectangle(button.position, button.scale).contains_centered(mouse_pos))
+			{
+				switch (button.id)
+				{
+				case SaveVehicle:
+					{
+						Text_Field* nameField = ui.get_text_field(VehicleName);
+						ASSERT(nameField);
+						editor.vehicle.name = MutableString(nameField->get_string());
+						game.vehicles.add(editor.vehicle);
+						switch_modes(ModeMenu);
+						switch_menu(MenuMissionEditor);
+						break;
+					}
+				}
+			}
+		}
     }
 
     return false;
@@ -972,25 +1029,6 @@ bool Application::mouse_input_game()
 
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
     {
-        for (int it = 0; it < ui.text_field.size(); it++)
-        {
-            auto& field = ui.text_field.get_ref(it);
-            cobot::Rectangle area = field.m_area;
-            if (area.contains_centered(mouse_pos)) {
-                text_input_start();
-
-                ui.text_input_target.index = it;
-                ui.text_input_target.flags = TEXT_INPUT_TARGET_IS_VALID;
-
-                cobot::vec2 relative = m_input.mouse.pos - area.get_top_left();
-                Font font = m_catalog.get_font(field.fontId);
-                field.m_selection_start = field.calculate_cursor_from_mouse(relative, field.get_string(), font, true);
-                field.m_selection_end = field.m_selection_start;
-
-                return true;
-            }
-        }
-
         for (int it = 0; it < ui.editor.size(); it++)
         {
             auto& editor = ui.editor.get_ref(it);
@@ -1586,7 +1624,7 @@ bool Application::init_mission_editor_ui()
     for (int i = 0; i < game.vehicles.size(); i++)
     {
         Vehicle& vehicle = game.vehicles[i];
-        vehicle_list.add_option(create_text(m_render.renderer, vehicle.name, font, text_color), i);
+        vehicle_list.add_option(create_text(m_render.renderer, vehicle.name.to_string(), font, text_color), i);
     }
 
     for (int i = 0; i < game.starSystem.planets.size(); i++)
@@ -1757,6 +1795,7 @@ bool Application::init_load_ui() {
 bool Application::init_vehicle_editor_ui() {
     cobot::vec2 ws = get_window_size();
     UiState& ui = m_ui[UiEditor];
+    Font font = m_catalog.get_font(m_font);
 
     cobot::Rectangle panel_area = { 0.1f, 0.1f, ws.x * 0.3f, ws.y * 0.9f };
     cobot::Color panel_color = cobot::Color(0x33, 0x44, 0x44);
@@ -1789,7 +1828,16 @@ bool Application::init_vehicle_editor_ui() {
     partsPanel.tabs.add(PanelTab(chasisIcon, chasisTabIcons, panel_color));
     partsPanel.tabs.add(PanelTab(controllerIcon, controllerTabIcons, panel_color));
 
+    TextButton saveVehicle = TextButton(create_text(m_render.renderer, String("Save"), font, cobot::Color(0xAA, 0xAA, 0x66)),
+                                        ws * 0.9, ws * 0.1, cobot::Color(0x44, 0x88, 0x55));
+    saveVehicle.id = SaveVehicle;
+
+	float nameFieldHeight = 100;
+	float nameFieldWidth = 400;
+
     ui.panel.add(partsPanel);
+	ui.button.add(saveVehicle);
+	ui.text_field.add(Text_Field(cobot::Rectangle(ws.x * 0.5, nameFieldHeight / 2, nameFieldWidth, nameFieldHeight), m_font, cobot::Color(0x55, 0x33, 0x44), cobot::Color(0x99, 0xAA, 0xBB), VehicleName));
 
     return true;
 }
@@ -1986,6 +2034,8 @@ void Application::draw_ui_state(const UiState& state)
 }
 
 void Application::switch_modes(ApplicationMode mode) {
+	text_input_stop();
+	
     switch (mode)
     {
         case ModeSolarSystem:
@@ -2012,6 +2062,8 @@ void Application::switch_modes(ApplicationMode mode) {
 }
 
 void Application::switch_menu(MenuName menu) {
+	text_input_stop();
+	
     m_menu = menu;
 }
 

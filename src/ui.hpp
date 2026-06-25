@@ -36,6 +36,8 @@ enum UiElementId {
     AddMission,
     AddVehicle,
     VehicleList,
+    SaveVehicle,
+	VehicleName,
     PlanetList,
 };
 
@@ -201,28 +203,31 @@ struct Text_Field
     Text_Field() {}
 
     // height -> empty height
-    Text_Field(AssetId font, float height, cobot::Color background_color, cobot::Color textColor)
+    Text_Field(AssetId font, float height, cobot::Color background_color, cobot::Color textColor, bool visible = true)
     {
         m_font_size = height;
         fontId = font;
         background = background_color;
         text_color = textColor;
+		info.visible = visible;
     }
 
-    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor)
+    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, bool visible = true)
     {
         fontId = font;
         background = background_color;
         text_color = textColor;
         m_area = area;
+		info.visible = visible;
     }
 
-    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, UiElementId ident) : id(ident)
+    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, UiElementId ident, bool visible = true) : id(ident)
     {
         fontId = font;
         background = background_color;
         text_color = textColor;
         m_area = area;
+		info.visible = visible;
     }
 
     Text_Field(Text_Field&& other) = default;
