@@ -93,7 +93,7 @@ bool Application::initialize()
     {
         return false;
     }
-
+	
     // game state
     {
         if (!load_part_images(partImages, m_catalog))
@@ -138,7 +138,16 @@ bool Application::initialize()
         return false;
     }
 
-    quit = false;
+	{
+		cobot::Color textColor(0xBB, 0xAA, 0x88);
+		Font font = m_catalog.get_font(m_font);
+		m_rendered_text[TextFrontLeft] = create_text(m_render.renderer, String("FrontLeft"), font, textColor);
+		m_rendered_text[TextFrontRight] = create_text(m_render.renderer, String("FrontRight"), font, textColor);
+		m_rendered_text[TextBackLeft] = create_text(m_render.renderer, String("BackLeft"), font, textColor);
+		m_rendered_text[TextBackRight] = create_text(m_render.renderer, String("BackRight"), font, textColor);
+	}
+
+	quit = false;
 
     return true;
 }
@@ -227,7 +236,7 @@ UiState& Application::get_active_ui()
             return m_ui[UiGame];
         }
         case ModeVehicleEditor: {
-            return m_ui[UiEditor];
+            return m_ui[UiVehicleEditor];
         }
         case ModeSolarSystem: {
             return m_ui[UiSolarSystem];
@@ -349,17 +358,43 @@ void Application::on_mouse_move()
 void Application::mouse_move_vehicle_editor()
 {
     cobot::vec2 mouse_pos = m_input.mouse.pos;
+	UiState& ui = m_ui[UiVehicleEditor];
 
     AttachmentDistance distance = editor.vehicle.getAttachmentPointClosest(mouse_pos, 10);
     if (distance.point)
     {
         editor.snap = chain_part_transform(editor.vehicle.getWorldTransform(distance.parent), VPartTransform(distance.point->position, 1));
         editor.haveSnap = true;
-    }
+
+		log_info("%s", distance.name);
+		String name = String(distance.name);
+		if (string_compare(name, String("FrontLeft")))
+		{
+			ui.hoverText.text = m_rendered_text[TextFrontLeft];
+		}
+		else if (string_compare(name, String("FrontRight")))
+		{
+			ui.hoverText.text = m_rendered_text[TextFrontRight];
+		}
+		else if (string_compare(name, String("BackLeft")))
+		{
+			ui.hoverText.text = m_rendered_text[TextBackLeft];
+		}
+		else if (string_compare(name, String("BackRight")))
+		{
+			ui.hoverText.text = m_rendered_text[TextBackRight];
+		}
+		else
+		{
+			ui.hoverText.text = Text();
+		}
+	}
     else
     {
         editor.snap = VPartTransform();
         editor.haveSnap = false;
+
+		ui.hoverText.text = Text();
     }
 }
 
@@ -717,7 +752,7 @@ bool Application::mouse_input_vehicle_editor()
 {
     cobot::vec2 ws = get_window_size();
     cobot::vec2 mouse_pos = m_input.mouse.pos;
-    UiState& ui = m_ui[UiEditor];
+    UiState& ui = m_ui[UiVehicleEditor];
 
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) {
         for (Panel& panel : ui.panel) {
@@ -790,9 +825,18 @@ bool Application::mouse_input_vehicle_editor()
 				case SaveVehicle:
 					{
 						Text_Field* nameField = ui.get_text_field(VehicleName);
+						Drop_Down_List* vehicleList = m_ui[UiMissionEditor].get_drop_down(VehicleList);
 						ASSERT(nameField);
-						editor.vehicle.name = MutableString(nameField->get_string());
+						String name = nameField->get_string();
+						editor.vehicle.name = MutableString(name);
 						game.vehicles.add(editor.vehicle);
+						vehicleList->add_option(create_text(m_render.renderer, name, m_catalog.get_font(m_font), vehicleList->text_color), vehicleList->options.size() - 1);
+						switch_modes(ModeMenu);
+						switch_menu(MenuMissionEditor);
+						break;
+					}
+				case BackButton:
+					{
 						switch_modes(ModeMenu);
 						switch_menu(MenuMissionEditor);
 						break;
@@ -1565,7 +1609,7 @@ bool Application::init_ui()
     cobot::vec2 ws = get_window_size();
 
     for (auto& ui : m_ui) { ui.assumed_window_size = ws; }
-
+	
     cobot::vec2 button_scale = cobot::vec2(ws.x * 0.1, ws.y * 0.1);
     Font font = m_catalog.get_font(m_editor_font);
 
@@ -1613,6 +1657,7 @@ bool Application::init_mission_editor_ui()
     vehicle_list.set_title(create_text(m_render.renderer, String("Vehicle"), font, text_color));
     vehicle_list.set_area(cobot::vec2(ws.x * 0.1, ws.y * 0.1), list_scale);
     vehicle_list.option_color = option_color;
+	vehicle_list.text_color = text_color;
     vehicle_list.title_color = title_color;
     vehicle_list.id = VehicleList;
     planet_list.set_title(create_text(m_render.renderer, String("Planet"), font, text_color));
@@ -1794,7 +1839,7 @@ bool Application::init_load_ui() {
 
 bool Application::init_vehicle_editor_ui() {
     cobot::vec2 ws = get_window_size();
-    UiState& ui = m_ui[UiEditor];
+    UiState& ui = m_ui[UiVehicleEditor];
     Font font = m_catalog.get_font(m_font);
 
     cobot::Rectangle panel_area = { 0.1f, 0.1f, ws.x * 0.3f, ws.y * 0.9f };
@@ -1828,8 +1873,11 @@ bool Application::init_vehicle_editor_ui() {
     partsPanel.tabs.add(PanelTab(chasisIcon, chasisTabIcons, panel_color));
     partsPanel.tabs.add(PanelTab(controllerIcon, controllerTabIcons, panel_color));
 
-    TextButton saveVehicle = TextButton(create_text(m_render.renderer, String("Save"), font, cobot::Color(0xAA, 0xAA, 0x66)),
-                                        ws * 0.9, ws * 0.1, cobot::Color(0x44, 0x88, 0x55));
+	cobot::Color background = cobot::Color(0x44, 0x88, 0x55);
+	cobot::Color textColor = cobot::Color(0xAA, 0xAA, 0x66);
+	TextButton backButton = TextButton(create_text(m_render.renderer, String("Back"), font, textColor), cobot::vec2(ws.x * 0.95, ws.y * 0.05), ws * 0.1, background);
+	backButton.id = BackButton;
+	TextButton saveVehicle = TextButton(create_text(m_render.renderer, String("Save"), font, textColor), ws * 0.95, ws * 0.1, background);
     saveVehicle.id = SaveVehicle;
 
 	float nameFieldHeight = 100;
@@ -1837,6 +1885,7 @@ bool Application::init_vehicle_editor_ui() {
 
     ui.panel.add(partsPanel);
 	ui.button.add(saveVehicle);
+	ui.button.add(backButton);
 	ui.text_field.add(Text_Field(cobot::Rectangle(ws.x * 0.5, nameFieldHeight / 2, nameFieldWidth, nameFieldHeight), m_font, cobot::Color(0x55, 0x33, 0x44), cobot::Color(0x99, 0xAA, 0xBB), VehicleName));
 
     return true;
@@ -1965,6 +2014,8 @@ void Application::draw_messages() {
 
 void Application::draw_ui_state(const UiState& state)
 {
+	cobot::vec2 mouse_pos = m_input.mouse.pos;
+
     for (const TextEditor& editor : state.editor)
     {
         render_text_editor(editor);
@@ -2031,6 +2082,10 @@ void Application::draw_ui_state(const UiState& state)
             render_button_group(group);
         }
     }
+
+	float hoverWidth, hoverHeight = 0;
+	SDL_GetTextureSize(state.hoverText.text.texture, &hoverWidth, &hoverHeight);
+	render_textured_rectangle(m_render, cobot::Rectangle(mouse_pos.x, mouse_pos.y, hoverWidth, hoverHeight), state.hoverText.text.texture, state.hoverText.background);
 }
 
 void Application::switch_modes(ApplicationMode mode) {

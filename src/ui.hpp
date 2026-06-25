@@ -443,6 +443,7 @@ struct Drop_Down_List {
     DArray<Entry> options = {};
     cobot::Color title_color = {};
     cobot::Color option_color = {};
+	cobot::Color text_color = {};
     bool open = false;
 
     void toggle() {

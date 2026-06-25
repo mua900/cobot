@@ -276,6 +276,13 @@ AttachmentDistance Vehicle::get_attachment_point_near(PartId part, VPartTransfor
                         &c.basic.backRight,
                     };
 
+					const char* names [4] = {
+						"FrontLeft",
+						"FrontRight",
+						"BackLeft",
+						"BackRight",
+					};
+
                     for (int i = 0; i < 4; i++)
                     {
                         AttachmentDistance dist = {};
@@ -285,7 +292,7 @@ AttachmentDistance Vehicle::get_attachment_point_near(PartId part, VPartTransfor
                         }
                         else
                         {
-                            dist = { points[i], part, distance2(position, chain_part_transform(t, VPartTransform(points[i]->position, 1)).position) };
+                            dist = { points[i], part, distance2(position, chain_part_transform(t, VPartTransform(points[i]->position, 1)).position), names[i] };
                         }
 
                         if (dist.distance < radius)

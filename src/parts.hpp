@@ -84,6 +84,7 @@ struct AttachmentDistance {
     AttachmentPoint* point;
     PartId parent;
     float distance;
+	const char* name = nullptr;
 };
 
 enum TireKind {

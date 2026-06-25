@@ -34,7 +34,7 @@ enum UiId {
     UiMainMenu,
     UiSettings,
     UiMissionEditor,
-    UiEditor,
+    UiVehicleEditor,
     UiLoad,
     UiSolarSystem,
     UiGame,
@@ -85,6 +85,14 @@ struct GameInfo {
     int selectedPlanet = -1;
 };
 
+enum PreRenderedText {
+	TextFrontLeft,
+	TextFrontRight,
+	TextBackLeft,
+	TextBackRight,
+	PreRenderedTextCount,
+};
+
 class Application {
 public:
     ApplicationMode m_mode = ModeMenu;
@@ -103,7 +111,7 @@ public:
 
     Event_Timeout m_events[EVENT_COUNT] = {};
 
-    DArray<Text> m_rendered_text = {};
+    Text m_rendered_text [PreRenderedTextCount] = {};
 
     UpdateState m_update_states[UpdateStateCount];
 

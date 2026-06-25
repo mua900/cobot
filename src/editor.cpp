@@ -107,5 +107,5 @@ void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, Ve
 
     draw_vehicle(render, catalog, editor.vehicle, VehicleDrawParameters(&partImages, NullPartId, true));
 
-    draw_rectangle(render, cobot::Rectangle(ws.x * 0.9, ws.y * 0.1, ws.x * 0.1, ws.y * 0.1), editor.rootPart ? cobot::ColorF(0.1, 0.6, 0.1) : cobot::ColorF(0.6, 0.2, 0.2));
+    draw_rectangle(render, cobot::Rectangle(ws.x * 0.95, ws.y * 0.5, ws.x * 0.1, ws.y * 0.1), editor.rootPart ? cobot::ColorF(0.1, 0.6, 0.1) : cobot::ColorF(0.6, 0.2, 0.2));
 }
