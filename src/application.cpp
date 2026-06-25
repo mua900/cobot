@@ -784,7 +784,7 @@ bool Application::mouse_input_vehicle_editor()
                 PanelTab& tab = panel.tabs.get_ref(panel.activeTab);
                 for (int i = 0; i < tab.icons.size(); i++) {
                     cobot::Rectangle area = panel.get_icon_area(i);
-                    PartKindId partKindId = (tab.icons.get_ref(i).data.number);
+                    PartKindId partKindId = tab.icons.get_ref(i).data.number;
                     if (area.contains_top_left(mouse_pos))
                     {
                         editor.selectedPartKind = partKindId;
@@ -1780,21 +1780,6 @@ bool Application::init_game_ui() {
 
     add_button(UiGame, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background, true));
 
-    cobot::Color controlMenuButtonColor = cobot::Color(0x44, 0x66, 0x77);
-    ControlMenu menus[PART_KIND_COUNT] = {};
-
-    for (int i = 0; i < PART_KIND_COUNT; i++)
-    {
-        menus[i].scale = cobot::vec2(100, 50);
-    }
-
-    menus[PART_TIRE].add_button(create_text(m_render.renderer, String("Brake"), font, controlMenuButtonColor), 0);
-
-    for (int i = 0; i < PART_KIND_COUNT; i++)
-    {
-        ui.control.add(menus[i]);
-    }
-
     AssetId buildIcon = get_asset(String("buildIcon"), m_catalog);
     AssetId debugIcon = get_asset(String("debugIcon"), m_catalog);
     AssetId runIcon = get_asset(String("runIcon"), m_catalog);
@@ -1831,7 +1816,7 @@ bool Application::init_load_ui() {
     cobot::Color missionBackground = cobot::Color(0x44, 0x55, 0x55);
     cobot::Color missionTextColor = cobot::Color(0x66, 0x33, 0x77);
     TextButton testSave = TextButton(create_text(m_render.renderer, String("Test Save"), m_catalog.get_font(m_font), missionTextColor), cobot::vec2(buttonX, buttonY), buttonScale, missionBackground);
-    testSave.data.number = 0;  // the id of the mission this represents
+    testSave.data.number = 0;
     add_button(UiLoad, LoadButton, testSave);
 
     return true;
@@ -1855,19 +1840,19 @@ bool Application::init_vehicle_editor_ui() {
     if (!tireIconId.is_valid()) return false;
     Icon tireIcon = Icon(m_catalog.get_image(tireIconId), tabIconColor);
     DArray <IconButton> tireTabIcons;
-    if (!load_tire_icons(tireTabIcons, iconColor, m_catalog)) return false;
+    if (!load_ground_part_icons(tireTabIcons, iconColor, m_catalog)) return false;
 
     AssetId chasisIconId = get_asset(String("chasisTabIcon"), m_catalog);
     if (!chasisIconId.is_valid()) return false;
     Icon chasisIcon = Icon(m_catalog.get_image(chasisIconId), tabIconColor);
     DArray<IconButton> chasisTabIcons;
-    if (!load_chassis_icons(chasisTabIcons, iconColor, m_catalog)) return false;
+    if (!load_structure_part_icons(chasisTabIcons, iconColor, m_catalog)) return false;
 
     AssetId controllerIconId = get_asset(String("controllerTabIcon"), m_catalog);
     if (!controllerIconId.is_valid()) return false;
     Icon controllerIcon = Icon(m_catalog.get_image(controllerIconId), tabIconColor);
     DArray<IconButton> controllerTabIcons;
-    if (!load_controller_icons(controllerTabIcons, iconColor, m_catalog)) return false;
+    if (!load_computer_part_icons(controllerTabIcons, iconColor, m_catalog)) return false;
 
     partsPanel.tabs.add(PanelTab(tireIcon, tireTabIcons, panel_color));
     partsPanel.tabs.add(PanelTab(chasisIcon, chasisTabIcons, panel_color));

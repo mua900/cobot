@@ -8,5 +8,3 @@ imgui.ini
 tmp/
 *.pch
 *.gch
-# actually bundling binaries may be a good idea
-# asset/shader/binary/

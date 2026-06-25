@@ -13,12 +13,12 @@ VPartTransform VPartTransform::inverse() const
     return VPartTransform(-position, -rotation, 1.0 / scale);
 }
 
-BasicChassis getBasicChassis()
+Chassis getChassis()
 {
     int hDist = 25;
     int vDist = 36;
 
-    BasicChassis c;
+    Chassis c;
     c.frontLeft.position = cobot::vec2( hDist, -vDist);
     c.frontRight.position = cobot::vec2( hDist,  vDist);
     c.backLeft.position = cobot::vec2(-hDist, -vDist);
@@ -27,16 +27,40 @@ BasicChassis getBasicChassis()
 }
 
 
-const char* get_chassis_name(ChassisKind kind) {
-    return "BasicChassis";
+const char* get_structure_part_name(StructurePartKind kind) {
+    switch (kind)
+    {
+        case StructurePartChassis:
+            return "Chassis";
+        case StructurePartSentinel:
+        default:
+            panic("Invalid structure part type");
+    }
+    
 }
 
-const char* get_tire_name(TireKind kind) {
-    return "BasicTire";
+const char* get_ground_part_name(GroundPartKind kind) {
+    switch (kind)
+    {
+        case GroundPartWheel:
+        {
+            return "Wheel";
+        }
+        case GroundPartSentinel:
+        default:
+            panic("Invalid ground part type");
+    }
 }
 
-const char* get_controller_name(ControllerKind kind) {
-    return "BasicController";
+const char* get_computer_part_name(ComputerKind kind) {
+    switch (kind)
+    {
+        case ComputerBasic:
+            return "BasicComputer";
+        case ComputerSentinel:
+        default:
+            panic("Invalid computer part type");
+    }
 }
 
 
@@ -46,22 +70,22 @@ cobot::vec2 get_part_scale(PartKindId id)
     u16 subKind = get_subkind(id);
     switch (kind)
     {
-        case PART_TIRE:         return get_tire_scale(TireKind(subKind));
-        case PART_CHASSIS:       return get_chassis_scale(ChassisKind(subKind));
-        case PART_CONTROLLER:   return get_controller_scale(ControllerKind(subKind));
+        case PartGround:     return get_ground_part_scale(GroundPartKind(subKind));
+        case PartStructure:  return get_structure_part_scale(StructurePartKind(subKind));
+        case PartComputer:   return get_computer_part_scale(ComputerKind(subKind));
         default: panic("Unhandled part kind");
     }
 }
 
-cobot::vec2 get_chassis_scale(ChassisKind kind) {
+cobot::vec2 get_structure_part_scale(StructurePartKind kind) {
     return cobot::vec2(100, 100);
 }
 
-cobot::vec2 get_tire_scale(TireKind kind) {
+cobot::vec2 get_ground_part_scale(GroundPartKind kind) {
     return cobot::vec2(25, 25);
 }
 
-cobot::vec2 get_controller_scale(ControllerKind kind) {
+cobot::vec2 get_computer_part_scale(ComputerKind kind) {
     return cobot::vec2(10, 10);
 }
 
@@ -79,4 +103,49 @@ PartKind get_part_kind(PartKindId kindId)
 PartKindId get_part_kind_id(PartKind partKind, u16 subType)
 {
     return (partKind << 16) | (subType);
+}
+
+bool load_ground_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog)
+{
+    for (int i = 0; i < (int)GroundPartKindCount; i++)
+    {
+        const char* name = get_ground_part_name(GroundPartKind(i));
+        AssetId id = get_asset(String(name), catalog);
+        if (!id.is_valid()) return false;
+        SDL_Texture* texture = catalog.get_image(id);
+
+        icons.add(IconButton(texture, background, get_part_kind_id(PartGround, i)));
+    }
+
+    return true;
+}
+
+bool load_structure_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog)
+{
+    for (int i = 0; i < (int)StructurePartKindCount; i++)
+    {
+        const char* name = get_structure_part_name(StructurePartKind(i));
+        AssetId id = get_asset(String(name), catalog);
+        if (!id.is_valid()) return false;
+        SDL_Texture* texture = catalog.get_image(id);
+
+        icons.add(IconButton(texture, background, get_part_kind_id(PartStructure, i)));
+    }
+
+    return true;
+}
+
+bool load_computer_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog)
+{
+    for (int i = 0; i < (int)ComputerKindCount; i++)
+    {
+        const char* name = get_computer_part_name(ComputerKind(i));
+        AssetId id = get_asset(String(name), catalog);
+        if (!id.is_valid()) return false;
+        SDL_Texture* texture = catalog.get_image(id);
+
+        icons.add(IconButton(texture, background, get_part_kind_id(PartComputer, i)));
+    }
+
+    return true;
 }

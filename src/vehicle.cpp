@@ -57,33 +57,33 @@ cobot::Rectangle Vehicle::calculate_part_volume_with_parent(VPartTransform paren
     cobot::vec2 scale = {};
     switch (part.kind)
     {
-        case PART_CHASSIS: {
-            Chassis& c = chassis.get(part.index);
-            global = chain_part_transform(parent, c.part.transform);
-            scale = get_chassis_scale(c.kind);
+        case PartStructure: {
+            StructurePart& sp = structurePart.get(part.index);
+            global = chain_part_transform(parent, sp.part.transform);
+            scale = get_structure_part_scale(sp.kind);
             volume = cobot::Rectangle(global.position, global.scale * scale);
-            switch (c.kind)
+            switch (sp.kind)
             {
-                case ChassisBasic:
+                case StructurePartChassis:
                 {
-                    if (c.basic.frontLeft.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, c.basic.frontLeft.part));
-                    if (c.basic.frontRight.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, c.basic.frontRight.part));
-                    if (c.basic.backLeft.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, c.basic.backLeft.part));
-                    if (c.basic.backRight.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, c.basic.backRight.part));
+                    if (sp.chassis.frontLeft.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, sp.chassis.frontLeft.part));
+                    if (sp.chassis.frontRight.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, sp.chassis.frontRight.part));
+                    if (sp.chassis.backLeft.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, sp.chassis.backLeft.part));
+                    if (sp.chassis.backRight.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, sp.chassis.backRight.part));
                     break;
                 }
             }
             break;
         }
-        case PART_CONTROLLER: {
-            global = chain_part_transform(parent, controller.get(part.index).part.transform);
-            scale = get_controller_scale(controller.get(part.index).kind);
+        case PartComputer: {
+            global = chain_part_transform(parent, computerPart.get(part.index).part.transform);
+            scale = get_computer_part_scale(computerPart.get(part.index).kind);
             volume = cobot::Rectangle(global.position, global.scale * scale);
             break;
         }
-        case PART_TIRE: {
-            global = chain_part_transform(parent, tire.get(part.index).part.transform);
-            scale = get_tire_scale(tire.get(part.index).kind);
+        case PartGround: {
+            global = chain_part_transform(parent, groundPart.get(part.index).part.transform);
+            scale = get_ground_part_scale(groundPart.get(part.index).kind);
             volume = cobot::Rectangle(global.position, global.scale * scale);
             break;
         }
@@ -117,9 +117,9 @@ u16 Vehicle::getSubKind(PartId part)
 {
     switch (part.kind)
     {
-        case PART_CHASSIS:       return chassis.get(part.index).kind;
-        case PART_TIRE:         return tire.get(part.index).kind;
-        case PART_CONTROLLER:   return controller.get(part.index).kind;
+        case PartStructure: return structurePart.get(part.index).kind;
+        case PartGround:    return groundPart.get(part.index).kind;
+        case PartComputer:  return computerPart.get(part.index).kind;
         default: panic("Unknown part kind");
     }
 }
@@ -133,83 +133,83 @@ PartId& Vehicle::getParentRef(PartId part)
 VPartData& Vehicle::getPartData(PartId id) const
 {
     switch (id.kind) {
-        case PART_CHASSIS: {
-            return chassis[id.index].part;
+        case PartStructure: {
+            return structurePart[id.index].part;
         }
-        case PART_TIRE: {
-            return tire[id.index].part;
+        case PartGround: {
+            return groundPart[id.index].part;
         }
-        case PART_CONTROLLER: {
-            return controller[id.index].part;
+        case PartComputer: {
+            return computerPart[id.index].part;
         }
         default: panic("Invalid part type");
     }
 }
 
-PartId Vehicle::add_tire(Tire& t) {
-    int index = tire.add(t);
+PartId Vehicle::add_ground_part(GroundPart& g) {
+    int index = groundPart.add(g);
 
-    PartId thisPart = PartId(PART_TIRE, index);
+    PartId thisPart = PartId(PartGround, index);
 
-    VPartTransform transform = getWorldTransform(PartId(PART_TIRE, index));
-    volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_tire_scale(t.kind)));
+    VPartTransform transform = getWorldTransform(PartId(PartGround, index));
+    volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_ground_part_scale(g.kind)));
 
     return thisPart;
 }
 
-PartId Vehicle::add_chassis(Chassis& c) {
+PartId Vehicle::add_structure_part(StructurePart& sp) {
     
-    int index = chassis.add(c);
+    int index = structurePart.add(sp);
 
-    PartId thisPart = PartId(PART_CHASSIS, index);
-    switch (c.kind) {
-        case ChassisBasic:
+    PartId thisPart = PartId(PartStructure, index);
+    switch (sp.kind) {
+        case StructurePartChassis:
         {
-            if (c.basic.frontLeft.part.is_valid())  getParentRef(c.basic.frontLeft.part) = thisPart;
-            if (c.basic.frontRight.part.is_valid()) getParentRef(c.basic.frontRight.part) = thisPart;
-            if (c.basic.backLeft.part.is_valid())   getParentRef(c.basic.backLeft.part) = thisPart;
-            if (c.basic.backRight.part.is_valid())  getParentRef(c.basic.backRight.part) = thisPart;
+            if (sp.chassis.frontLeft.part.is_valid())  getParentRef(sp.chassis.frontLeft.part) = thisPart;
+            if (sp.chassis.frontRight.part.is_valid()) getParentRef(sp.chassis.frontRight.part) = thisPart;
+            if (sp.chassis.backLeft.part.is_valid())   getParentRef(sp.chassis.backLeft.part) = thisPart;
+            if (sp.chassis.backRight.part.is_valid())  getParentRef(sp.chassis.backRight.part) = thisPart;
             break;
         }
         default: panic("Invalid chassis kind");
     }
 
     VPartTransform transform = getWorldTransform(thisPart);
-    volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_chassis_scale(c.kind)));
+    volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_structure_part_scale(sp.kind)));
 
     return thisPart;
 }
 
-PartId Vehicle::add_controller(Controller& c) {
-    int index = controller.add(c);
+PartId Vehicle::add_computer_part(Computer& c) {
+    int index = computerPart.add(c);
 
-    PartId thisPart = PartId(PART_CONTROLLER, index);
+    PartId thisPart = PartId(PartComputer, index);
 
-    VPartTransform transform = getWorldTransform(PartId(PART_CONTROLLER, index));
-    volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_controller_scale(c.kind)));
+    VPartTransform transform = getWorldTransform(PartId(PartComputer, index));
+    volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_computer_part_scale(c.kind)));
 
     return thisPart;
 }
 
-Tire* Vehicle::get_tire(PartId t) {
-    if (t.kind != PART_TIRE) {
+GroundPart* Vehicle::get_ground_part(PartId t) {
+    if (t.kind != PartGround) {
         return nullptr;
     }
-    return tire.get_ptr(t.index);
+    return groundPart.get_ptr(t.index);
 }
 
-Chassis* Vehicle::get_chassis(PartId c) {
-    if (c.kind != PART_CHASSIS) {
+StructurePart* Vehicle::get_structure_part(PartId c) {
+    if (c.kind != PartStructure) {
         return nullptr;
     }
-    return chassis.get_ptr(c.index);
+    return structurePart.get_ptr(c.index);
 }
 
-Controller* Vehicle::get_controller(PartId c) {
-    if (c.kind != PART_CONTROLLER) {
+Computer* Vehicle::get_computer_part(PartId c) {
+    if (c.kind != PartComputer) {
         return nullptr;
     }
-    return controller.get_ptr(c.index);
+    return computerPart.get_ptr(c.index);
 }
 
 int Vehicle::add_root(PartId part)
@@ -259,21 +259,21 @@ AttachmentDistance Vehicle::get_attachment_point_near(PartId part, VPartTransfor
 
     switch (part.kind)
     {
-        case PART_CHASSIS:
+        case PartStructure:
         {
-            Chassis& c = chassis[part.index];
+            StructurePart& c = structurePart[part.index];
             VPartTransform t = chain_part_transform(parent, c.part.transform);
 
             switch (c.kind)
             {
-                case ChassisBasic:
+                case StructurePartChassis:
                 {
                     AttachmentDistance d = { nullptr, NullPartId, radius + 1 };
                     AttachmentPoint* points[4] = {
-                        &c.basic.frontLeft,
-                        &c.basic.frontRight,
-                        &c.basic.backLeft,
-                        &c.basic.backRight,
+                        &c.chassis.frontLeft,
+                        &c.chassis.frontRight,
+                        &c.chassis.backLeft,
+                        &c.chassis.backRight,
                     };
 
 					const char* names [4] = {
@@ -310,8 +310,8 @@ AttachmentDistance Vehicle::get_attachment_point_near(PartId part, VPartTransfor
 
             break;
         }
-        case PART_CONTROLLER: break;
-        case PART_TIRE: break;
+        case PartComputer: break;
+        case PartGround: break;
         default: break;
     }
 
@@ -322,21 +322,21 @@ PartId Vehicle::get_part_on_location(PartId part, cobot::vec2 location, VPartTra
 {
     switch (part.kind)
     {
-        case PART_CHASSIS: {
-            Chassis& cha = chassis[part.index];
-            VPartTransform t = chain_part_transform(parent, cha.part.transform);
-            cobot::vec2 scale = get_chassis_scale(cha.kind) * t.scale;
+        case PartStructure: {
+            StructurePart& sp = structurePart[part.index];
+            VPartTransform t = chain_part_transform(parent, sp.part.transform);
+            cobot::vec2 scale = get_structure_part_scale(sp.kind) * t.scale;
 
-            switch (cha.kind) {
-                case ChassisBasic: {
+            switch (sp.kind) {
+                case StructurePartChassis: {
                     PartId part;
-                    part = get_part_on_location(cha.basic.frontLeft.part, location, t);
+                    part = get_part_on_location(sp.chassis.frontLeft.part, location, t);
                     if (part.is_valid()) return part;
-                    part = get_part_on_location(cha.basic.frontRight.part, location, t);
+                    part = get_part_on_location(sp.chassis.frontRight.part, location, t);
                     if (part.is_valid()) return part;
-                    part = get_part_on_location(cha.basic.backLeft.part, location, t);
+                    part = get_part_on_location(sp.chassis.backLeft.part, location, t);
                     if (part.is_valid()) return part;
-                    part = get_part_on_location(cha.basic.backRight.part, location, t);
+                    part = get_part_on_location(sp.chassis.backRight.part, location, t);
                     if (part.is_valid()) return part;
                     break;
                 }
@@ -350,10 +350,10 @@ PartId Vehicle::get_part_on_location(PartId part, cobot::vec2 location, VPartTra
                 return NullPartId;
             }
         }
-        case PART_TIRE: {
-            Tire& tr = tire[part.index];
-            VPartTransform t = chain_part_transform(parent, tr.part.transform);
-            cobot::vec2 scale = get_tire_scale(tr.kind);
+        case PartGround: {
+            GroundPart& ground = groundPart[part.index];
+            VPartTransform t = chain_part_transform(parent, ground.part.transform);
+            cobot::vec2 scale = get_ground_part_scale(ground.kind);
             if (cobot::Rectangle(t.position, scale * t.scale).contains_centered(location)) {
                 return part;
             }
@@ -361,10 +361,10 @@ PartId Vehicle::get_part_on_location(PartId part, cobot::vec2 location, VPartTra
                 return NullPartId;
             }
         }
-        case PART_CONTROLLER: {
-            Controller& con = controller[part.index];
-            VPartTransform t = chain_part_transform(parent, con.part.transform);
-            cobot::vec2 scale = get_controller_scale(controller[part.index].kind);
+        case PartComputer: {
+            Computer& com = computerPart[part.index];
+            VPartTransform t = chain_part_transform(parent, com.part.transform);
+            cobot::vec2 scale = get_computer_part_scale(computerPart[part.index].kind);
             if (cobot::Rectangle(t.position, scale * t.scale).contains_centered(location)) {
                 return part;
             }
@@ -386,38 +386,38 @@ Vehicle get_default_vehicle()
     vehicle.worldPosition = cobot::vec2(600, 300);
     vehicle.volume = cobot::Rectangle(vehicle.worldPosition, cobot::vec2());
 
-    Chassis chassis = {};
-    chassis.kind = ChassisBasic;
-    chassis.basic = getBasicChassis();
+    StructurePart chassis = {};
+    chassis.kind = StructurePartChassis;
+    chassis.chassis = getChassis();
     chassis.part.transform.scale = 1.0;
 
-    PartId chassis_id = vehicle.add_chassis(chassis);
+    PartId chassis_id = vehicle.add_structure_part(chassis);
 
-    Tire tires[4] = {};
-    for (auto& t : tires) {
-        t.kind = TireBasic;
+    GroundPart wheels[4] = {};
+    for (auto& t : wheels) {
+        t.kind = GroundPartWheel;
         t.part.transform.scale = 1.0;
-        t.basic.size = 5;
+        t.wheel.size = 5;
         t.part.parent = chassis_id;
     }
 
-    PartId fl = vehicle.add_tire(tires[0]);
-    PartId fr = vehicle.add_tire(tires[1]);
-    PartId bl = vehicle.add_tire(tires[2]);
-    PartId br = vehicle.add_tire(tires[3]);
+    PartId fl = vehicle.add_ground_part(wheels[0]);
+    PartId fr = vehicle.add_ground_part(wheels[1]);
+    PartId bl = vehicle.add_ground_part(wheels[2]);
+    PartId br = vehicle.add_ground_part(wheels[3]);
 
-    Chassis* ch = vehicle.get_chassis(chassis_id);
-    ch->basic.frontLeft.attach(fl);
-    ch->basic.frontRight.attach(fr);
-    ch->basic.backLeft.attach(bl);
-    ch->basic.backRight.attach(br);
+    StructurePart* ch = vehicle.get_structure_part(chassis_id);
+    ch->chassis.frontLeft.attach(fl);
+    ch->chassis.frontRight.attach(fr);
+    ch->chassis.backLeft.attach(bl);
+    ch->chassis.backRight.attach(br);
 
-    Controller con = {};
-    con.kind = ControllerBasic;
+    Computer con = {};
+    con.kind = ComputerBasic;
     con.script = {};
     con.part.transform.scale = 1.0;
     con.basic.codeSizeLimit = 128;
-    vehicle.add_controller(con);
+    vehicle.add_computer_part(con);
 
     vehicle.add_root(chassis_id);
 
@@ -434,22 +434,22 @@ void draw_attachment_point(AttachmentPoint point, VPartTransform parent, const R
     draw_circle_segment(context, t.position, radius, t.rotation + CONSTANT_ONE_AND_HALF_PI, CONSTANT_HALF_PI, cobot::ColorF(0.1, 0.1, 0.1));
 }
 
-void draw_chassis(const Chassis& chassis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
+void draw_structure_part(const StructurePart& structure, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
 {
-    AssetId imageId = parameters.partImages->partImages[PART_CHASSIS][chassis.kind];
+    AssetId imageId = parameters.partImages->partImages[PartStructure][structure.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
-    VPartTransform transform = chain_part_transform(parent, chassis.part.transform);
-    cobot::Rectangle area = cobot::Rectangle(transform.position, get_chassis_scale(chassis.kind) * transform.scale);
+    VPartTransform transform = chain_part_transform(parent, structure.part.transform);
+    cobot::Rectangle area = cobot::Rectangle(transform.position, get_structure_part_scale(structure.kind) * transform.scale);
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 
-    switch (chassis.kind) {
-        case ChassisBasic: {
+    switch (structure.kind) {
+        case StructurePartChassis: {
             const AttachmentPoint points[4] = {
-                chassis.basic.frontLeft,
-                chassis.basic.frontRight,
-                chassis.basic.backLeft,
-                chassis.basic.backRight,
+                structure.chassis.frontLeft,
+                structure.chassis.frontRight,
+                structure.chassis.backLeft,
+                structure.chassis.backRight,
             };
 
             for (int i = 0; i < 4; i++)
@@ -468,23 +468,23 @@ void draw_chassis(const Chassis& chassis, VPartTransform parent, const RenderCon
     }
 }
 
-void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
+void draw_ground_part(const GroundPart& ground, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
 {
-    AssetId imageId = parameters.partImages->partImages[PART_TIRE][tire.kind];
+    AssetId imageId = parameters.partImages->partImages[PartGround][ground.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
-    VPartTransform transform = chain_part_transform(parent, tire.part.transform);
-    cobot::Rectangle area = cobot::Rectangle(transform.position, get_tire_scale(tire.kind) * transform.scale);
+    VPartTransform transform = chain_part_transform(parent, ground.part.transform);
+    cobot::Rectangle area = cobot::Rectangle(transform.position, get_ground_part_scale(ground.kind) * transform.scale);
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 }
 
-void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
+void draw_computer_part(const Computer& computer, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
 {
-    AssetId imageId = parameters.partImages->partImages[PART_CONTROLLER][controller.kind];
+    AssetId imageId = parameters.partImages->partImages[PartComputer][computer.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
-    VPartTransform transform = chain_part_transform(parent, controller.part.transform);
-    cobot::Rectangle area = cobot::Rectangle(transform.position, get_controller_scale(controller.kind) * transform.scale);
+    VPartTransform transform = chain_part_transform(parent, computer.part.transform);
+    cobot::Rectangle area = cobot::Rectangle(transform.position, get_computer_part_scale(computer.kind) * transform.scale);
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 }
 
@@ -492,19 +492,19 @@ void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& 
 {
     switch (part.kind)
     {
-        case PART_CHASSIS: {
-            const Chassis& chassis = vehicle.chassis[part.index];
-            draw_chassis(chassis, parent, context, catalog, vehicle, parameters);
+        case PartStructure: {
+            const StructurePart& structure = vehicle.structurePart[part.index];
+            draw_structure_part(structure, parent, context, catalog, vehicle, parameters);
             break;
         }
-        case PART_TIRE: {
-            const Tire& tire = vehicle.tire[part.index];
-            draw_tire(tire, parent, context, catalog, vehicle, parameters);
+        case PartGround: {
+            const GroundPart& ground = vehicle.groundPart[part.index];
+            draw_ground_part(ground, parent, context, catalog, vehicle, parameters);
             break;
         }
-        case PART_CONTROLLER: {
-            const Controller& controller = vehicle.controller[part.index];
-            draw_controller(controller, parent, context, catalog, vehicle, parameters);
+        case PartComputer: {
+            const Computer& computer = vehicle.computerPart[part.index];
+            draw_computer_part(computer, parent, context, catalog, vehicle, parameters);
             break;
         }
         default: panic("Invalid part type");
@@ -529,55 +529,12 @@ SDL_Texture* get_part_texture(PartKindId partKind, AssetCatalog& catalog)
 
     switch (kind)
     {
-        case PART_CHASSIS:      name = get_chassis_name(ChassisKind(subKind)); break;
-        case PART_TIRE:         name = get_tire_name(TireKind(subKind)); break;
-        case PART_CONTROLLER:   name = get_controller_name(ControllerKind(subKind)); break;
+        case PartStructure:      name = get_structure_part_name(StructurePartKind(subKind)); break;
+        case PartGround:         name = get_ground_part_name(GroundPartKind(subKind)); break;
+        case PartComputer:       name = get_computer_part_name(ComputerKind(subKind)); break;
         default: panic("Invalid part kind");
     }
 
     AssetId id = get_asset(String(name), catalog);
     return catalog.get_image(id);
-}
-
-bool load_tire_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog)
-{
-    for (int i = 0; i < (int)TireKindCount; i++)
-    {
-        const char* name = get_tire_name(TireKind(i));
-        AssetId id = get_asset(String(name), catalog);
-        if (!id.is_valid()) return false;
-        SDL_Texture* texture = catalog.get_image(id);
-
-        icons.add(IconButton(texture, background, get_part_kind_id(PART_TIRE, i)));
-    }
-
-    return true;
-}
-
-bool load_chassis_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog) {
-    for (int i = 0; i < (int)ChassisKindCount; i++)
-    {
-        const char* name = get_chassis_name(ChassisKind(i));
-        AssetId id = get_asset(String(name), catalog);
-        if (!id.is_valid()) return false;
-        SDL_Texture* texture = catalog.get_image(id);
-
-        icons.add(IconButton(texture, background, get_part_kind_id(PART_CHASSIS, i)));
-    }
-
-    return true;
-}
-
-bool load_controller_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog) {
-    for (int i = 0; i < (int)ControllerKindCount; i++)
-    {
-        const char* name = get_controller_name(ControllerKind(i));
-        AssetId id = get_asset(String(name), catalog);
-        if (!id.is_valid()) return false;
-        SDL_Texture* texture = catalog.get_image(id);
-
-        icons.add(IconButton(texture, background, get_part_kind_id(PART_CONTROLLER, i)));
-    }
-
-    return true;
 }

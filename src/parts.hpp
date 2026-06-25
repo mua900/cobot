@@ -9,24 +9,24 @@
 #include "script.hpp"
 
 enum PartKind : u16 {
-    PART_TIRE = 0,
-    PART_CHASSIS = 1,
-    PART_CONTROLLER = 2,
-    PART_KIND_COUNT = 3,
-    PART_KIND_SENTINEL = 4,
+    PartGround = 0,
+    PartStructure = 1,
+    PartComputer = 2,
+    PartKindCount = 3,
+    PartKindSentinel = 4,
 };
 
 #define PART_KIND_MASK(partKind) BIT(partKind)
 
 struct PartId {
-    PartKind kind = PART_KIND_SENTINEL;
+    PartKind kind = PartKindSentinel;
     u16 index = 0;
 
     PartId() {}
     PartId(PartKind kind, u16 index) : kind(kind), index(index) {}
 
-    bool is_valid() const { return kind != PART_KIND_SENTINEL; }
-    bool is_null() const { return kind == PART_KIND_SENTINEL; }
+    bool is_valid() const { return kind != PartKindSentinel; }
+    bool is_null() const { return kind == PartKindSentinel; }
 };
 
 static const PartId NullPartId = PartId();
@@ -87,108 +87,108 @@ struct AttachmentDistance {
 	const char* name = nullptr;
 };
 
-enum TireKind {
-    TireBasic,
-    TireKindCount,
-    TireSentinel,
+enum GroundPartKind {
+    GroundPartWheel = 0,
+    GroundPartKindCount,
+    GroundPartSentinel,
 };
 
-struct BasicTire {
+struct Wheel {
     float size = 0;
 };
 
-struct Tire {
-    TireKind kind = TireSentinel;
+struct GroundPart {
+    GroundPartKind kind = GroundPartSentinel;
     VPartData part = {};
     union {
-        BasicTire basic;
+        Wheel wheel;
     };
 
-    Tire() {
-        basic = {};
+    GroundPart() {
+        wheel = {};
     }
     // implicit
-    Tire(BasicTire t) : kind(TireBasic), basic(t) {}
-    Tire(VPartData part, BasicTire t) : kind(TireBasic), part(part), basic(t) {}
+    GroundPart(Wheel t) : kind(GroundPartWheel), wheel(t) {}
+    GroundPart(VPartData part, Wheel t) : kind(GroundPartWheel), part(part), wheel(wheel) {}
 };
 
-enum ChassisKind {
-    ChassisBasic,
-    ChassisKindCount,
-    ChassisSentinel,
+enum StructurePartKind {
+    StructurePartChassis = 0,
+    StructurePartKindCount,
+    StructurePartSentinel,
 };
 
-struct BasicChassis {
+struct Chassis {
     AttachmentPoint frontLeft = {};
     AttachmentPoint frontRight = {};
     AttachmentPoint backLeft = {};
     AttachmentPoint backRight = {};
 };
 
-struct Chassis {
-    ChassisKind kind = ChassisSentinel;
+struct StructurePart {
+    StructurePartKind kind = StructurePartSentinel;
     VPartData part = {};
     union {
-        BasicChassis basic;
+        Chassis chassis;
     };
 
-    Chassis() {
-        basic = {};
+    StructurePart() {
+        chassis = {};
     }
     // implicit
-    Chassis(BasicChassis c) : kind(ChassisBasic), basic(c) {}
-    Chassis(VPartData part, BasicChassis c) : kind(ChassisBasic), part(part), basic(c) {}
+    StructurePart(Chassis c) : kind(StructurePartChassis), chassis(c) {}
+    StructurePart(VPartData part, Chassis c) : kind(StructurePartChassis), part(part), chassis(c) {}
 };
 
-BasicChassis getBasicChassis();
+Chassis getChassis();
 
-enum ControllerKind {
-    ControllerBasic,
-    ControllerKindCount,
-    ControllerSentinel,
+enum ComputerKind {
+    ComputerBasic = 0,
+    ComputerKindCount,
+    ComputerSentinel,
 };
 
-struct BasicController {
+struct BasicComputer {
     u32 codeSizeLimit = 0;
 };
 
-struct Controller {
-    ControllerKind kind = ControllerSentinel;
+struct Computer {
+    ComputerKind kind = ComputerSentinel;
     int script = 0;
     VPartData part = {};
     union {
-        BasicController basic;
+        BasicComputer basic;
     };
 
-    Controller() {
+    Computer() {
         basic = {};
     }
     // implicit
-    Controller(BasicController c) : kind(ControllerBasic), basic(c) {}
-    Controller(VPartData part, BasicController c) : kind(ControllerBasic), part(part), basic(c) {}
+    Computer(BasicComputer c) : kind(ComputerBasic), basic(c) {}
+    Computer(VPartData part, BasicComputer c) : kind(ComputerBasic), part(part), basic(c) {}
 };
 
-constexpr static int MaxPartCount = cobot::max(cobot::max(ChassisKindCount, TireKindCount), ControllerKindCount);
+constexpr static int MaxPartCount = cobot::max(cobot::max(StructurePartKindCount, GroundPartKindCount), ComputerKindCount);
 
 struct VPartImages {
-    AssetId partImages [PART_KIND_COUNT][MaxPartCount] = {};
+    AssetId partImages [PartKindCount][MaxPartCount] = {};
 };
 
 bool load_part_images(VPartImages& images, AssetCatalog& catalog);
 
-const char* get_chassis_name(ChassisKind kind);
-const char* get_tire_name(TireKind kind);
-const char* get_controller_name(ControllerKind kind);
+const char* get_structure_part_name(StructurePartKind kind);
+const char* get_ground_part_name(GroundPartKind kind);
+const char* get_computer_part_name(ComputerKind kind);
 
 cobot::vec2 get_part_scale(PartKindId id);
-cobot::vec2 get_chassis_scale(ChassisKind kind);
-cobot::vec2 get_tire_scale(TireKind kind);
-cobot::vec2 get_controller_scale(ControllerKind kind);
+cobot::vec2 get_structure_part_scale(StructurePartKind kind);
+cobot::vec2 get_ground_part_scale(GroundPartKind kind);
+cobot::vec2 get_computer_part_scale(ComputerKind kind);
 
 SDL_Texture* get_part_texture(PartKindId partKind, AssetCatalog& catalog);
 
-bool load_tire_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
-bool load_chassis_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
-bool load_controller_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
+bool load_ground_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
+bool load_structure_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
+bool load_computer_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
 
 #endif // PARTS_HPP

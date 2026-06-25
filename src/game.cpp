@@ -31,9 +31,9 @@ void vehicleSimulationUpdate(GameState* game, TimeInfo time)
 {
     Vehicle& vehicle = game->get_active_vehicle();
 
-    for (auto& controller : vehicle.controller)
+    for (auto& computer : vehicle.computerPart)
     {
-        Script& s = game->scripts.get_ref(controller.script);
+        Script& s = game->scripts.get_ref(computer.script);
         run_script(s);
 
         if (!s.commands.empty())
@@ -104,25 +104,25 @@ Vehicle& GameState::get_active_vehicle() const
 
 bool load_part_images(VPartImages& images, AssetCatalog& catalog)
 {
-    for (int i = 0; i < ChassisKindCount; i++) {
-        String name = String(get_chassis_name(ChassisKind(i)));
+    for (int i = 0; i < StructurePartKindCount; i++) {
+        String name = String(get_structure_part_name(StructurePartKind(i)));
         AssetId id = get_asset(name, catalog);
         if (!id.is_valid()) return false;
-        images.partImages[PART_CHASSIS][i] = id;
+        images.partImages[PartStructure][i] = id;
     }
     
-    for (int i = 0; i < TireKindCount; i++) {
-        String name = String(get_tire_name(TireKind(i)));
+    for (int i = 0; i < GroundPartKindCount; i++) {
+        String name = String(get_ground_part_name(GroundPartKind(i)));
         AssetId id = get_asset(name, catalog);
         if (!id.is_valid()) return false;
-        images.partImages[PART_TIRE][i] = id;
+        images.partImages[PartGround][i] = id;
     }
 
-    for (int i = 0; i < ControllerKindCount; i++) {
-        String name = String(get_controller_name(ControllerKind(i)));
+    for (int i = 0; i < ComputerKindCount; i++) {
+        String name = String(get_computer_part_name(ComputerKind(i)));
         AssetId id = get_asset(name, catalog);
         if (!id.is_valid()) return false;
-        images.partImages[PART_CONTROLLER][i] = id;
+        images.partImages[PartComputer][i] = id;
     }
 
     return true;

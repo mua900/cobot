@@ -29,36 +29,36 @@ bool VehicleEditor::place_part(cobot::vec2 where)
 
     switch (kind)
     {
-        case PART_CHASSIS:
+        case PartStructure:
         {
-            Chassis chassis = Chassis();
-            chassis.kind = ChassisKind(subkind);
-            chassis.part.parent = dist.parent;
+            StructurePart structure = StructurePart();
+            structure.kind = StructurePartKind(subkind);
+            structure.part.parent = dist.parent;
             switch (subkind)
             {
-                case ChassisBasic:
+                case StructurePartChassis:
                 {
-                    chassis.basic = getBasicChassis();
+                    structure.chassis = getChassis();
                     break;
                 }
             }
-            id = vehicle.add_chassis(chassis);
+            id = vehicle.add_structure_part(structure);
             break;
         }
-        case PART_CONTROLLER:
+        case PartComputer:
         {
-            Controller controller = Controller();
-            controller.kind = ControllerKind(subkind);
-            controller.part.parent = dist.parent;
-            id = vehicle.add_controller(controller);
+            Computer computer = Computer();
+            computer.kind = ComputerKind(subkind);
+            computer.part.parent = dist.parent;
+            id = vehicle.add_computer_part(computer);
             break;
         }
-        case PART_TIRE:
+        case PartGround:
         {
-            Tire tire = Tire();
-            tire.kind = TireKind(subkind);
-            tire.part.parent = dist.parent;
-            id = vehicle.add_tire(tire);
+            GroundPart ground = GroundPart();
+            ground.kind = GroundPartKind(subkind);
+            ground.part.parent = dist.parent;
+            id = vehicle.add_ground_part(ground);
             break;
         }
         default:

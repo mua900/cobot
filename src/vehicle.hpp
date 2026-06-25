@@ -8,19 +8,23 @@
 #include "parts.hpp"
 
 struct VehiclePart {
-    PartKind kind = PART_KIND_SENTINEL;
+    PartKind kind = PartKindSentinel;
     union {
-        Tire* tire;
-        Chassis* chassis;
-        Controller* controller;
-    };
+        StructurePart structure;
+        GroundPart ground;
+        Computer computer;
+    } data = {};
 
-    VehiclePart() {
-        tire = nullptr;
+    VehiclePart() : data{} {}
+    VehiclePart(GroundPart g) : kind(PartGround) {
+        data.ground = g;
     }
-    VehiclePart(Tire* t) : kind(PART_TIRE), tire(t) {}
-    VehiclePart(Chassis* c) : kind(PART_CHASSIS), chassis(c) {}
-    VehiclePart(Controller* c) : kind(PART_CONTROLLER), controller(c) {}
+    VehiclePart(StructurePart s) : kind(PartStructure) {
+        data.structure = s;        
+    }
+    VehiclePart(Computer c) : kind(PartComputer) {
+        data.computer = c;
+    }
 };
 
 typedef u32 VehicleId;
@@ -36,17 +40,17 @@ struct Vehicle {
 
     DArray<PartId> rootParts = {};
     
-    BucketList<Tire> tire = {};
-    BucketList<Chassis> chassis = {};
-    BucketList<Controller> controller = {};
+    BucketList<GroundPart> groundPart = {};
+    BucketList<StructurePart> structurePart = {};
+    BucketList<Computer> computerPart = {};
 
-    PartId add_tire(Tire& t);
-    PartId add_chassis(Chassis& c);
-    PartId add_controller(Controller& c);
+    PartId add_ground_part(GroundPart& t);
+    PartId add_structure_part(StructurePart& c);
+    PartId add_computer_part(Computer& c);
 
-    Tire* get_tire(PartId t);
-    Chassis* get_chassis(PartId c);
-    Controller* get_controller(PartId c);
+    GroundPart* get_ground_part(PartId t);
+    StructurePart* get_structure_part(PartId c);
+    Computer* get_computer_part(PartId c);
 
     int add_root(PartId part);
 
@@ -88,9 +92,9 @@ struct VehicleDrawParameters {
     {}
 };
 
-void draw_chassis(const Chassis& chasis, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
-void draw_tire(const Tire& tire, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
-void draw_controller(const Controller& controller, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
+void draw_structure_part(const StructurePart& sp, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
+void draw_ground_part(const GroundPart& ground, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
+void draw_computer_part(const Computer& computer, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
 
 void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
 
