@@ -297,7 +297,7 @@ AttachmentDistance Vehicle::get_attachment_point_near(PartId part, VPartTransfor
 
                         if (dist.distance < radius)
                         {
-                            if (!d.point || dist.distance < d.distance)
+                            if ((dist.point) && (!d.point || dist.distance < d.distance))
                             {
                                 d = dist;
                             }
