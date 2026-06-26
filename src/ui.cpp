@@ -625,6 +625,47 @@ cobot::Rectangle Panel::get_tab_header_area(int index) const {
                      tabHeaderSize, tabHeaderSize);
 }
 
+ValuePanelTab& ValuePanel::get_active_tab() const
+{
+    return tabs.get_ref(activeTab);
+}
+
+void ValuePanel::switch_tabs(UiState& ui, int tabIndex)
+{
+    if (!tabs.in_bounds(tabIndex))
+    {
+        panic("Invalid value panel tab index to switch");
+    }
+
+    ValuePanelTab& active = get_active_tab();
+
+    for (auto& field : active.fields)
+    {
+        switch (field.type)
+        {
+            case ValueInteger:  // fallthrough
+            case ValueNumber:   // fallthrough
+            case ValueString:
+            {
+                ui.text_field.get_ref(field.ui_element).info.visible = false;
+                break;
+            }
+            case ValueButton:
+            {
+                // nothing
+                break;
+            }
+            case ValueSelection:
+            {
+                ui.button_group.get_ref(field.ui_element).info.visible = false;
+                break;
+            }
+        }
+    }
+
+    activeTab = tabIndex;
+}
+
 cobot::Rectangle ValuePanel::get_field_title_area(int tabIndex, int fieldIndex) const
 {
     ValuePanelTab& tab = tabs.get_ref(tabIndex);

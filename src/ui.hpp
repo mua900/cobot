@@ -567,6 +567,11 @@ struct Panel {
     cobot::Rectangle get_tab_header_area(int index) const;
 };
 
+enum PlanetPanelTabs {
+    PlanetPanelTabOrbit = 0,
+    PlanetPanelTabMissions = 1,
+};
+
 enum ValueType {
     ValueInteger,
     ValueNumber,
@@ -589,11 +594,6 @@ struct ValueField {
 
     ValueField() : value{} {}
     ValueField(Text text, int ui, int ident, ValueType type) : name(text), ui_element(ui), identifier(ident), type(type), value{} {}
-};
-
-enum PlanetPanelTabs {
-    PlanetPanelTabOrbit = 0,
-    PlanetPanelTabMissions = 1,
 };
 
 struct ValuePanelTab {
@@ -622,6 +622,9 @@ struct ValuePanel {
         tabHeaderSize(tab_header_size),
         direction(dir)
     {}
+
+    ValuePanelTab& get_active_tab() const;
+    void switch_tabs(UiState& ui, int tabIndex);
 
     cobot::Rectangle get_tab_header_area(int index) const;
     float get_field_width() const { return area.w * 0.95; }

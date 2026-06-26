@@ -729,6 +729,11 @@ bool Application::mouse_input_common()
 	for (int it = 0; it < ui.text_field.size(); it++)
 	{
 		auto& field = ui.text_field.get_ref(it);
+        if (!field.info.visible)
+        {
+            continue;
+        }
+        
 		cobot::Rectangle area = field.m_area;
 		if (area.contains_centered(mouse_pos)) {
 			text_input_start();
@@ -869,14 +874,6 @@ bool Application::mouse_input_solar_system()
                         switch_menu(MenuMain);
                         return true;
                     }
-                    case LaunchButton:
-                    {
-                        if (button.info.visible)
-                        {
-                            switch_modes(ModeGame);
-                        }
-                        return true;
-                    }
                 }
             }
         }
@@ -925,8 +922,8 @@ bool Application::mouse_input_solar_system()
                 cobot::Rectangle area = panel->get_tab_header_area(i);
                 if (area.contains_centered(mouse_pos))
                 {
-                    panel->activeTab = i;
-                    break;
+                    panel->switch_tabs(ui, i);
+                    return true;
                 }
             }
 
@@ -958,13 +955,6 @@ bool Application::mouse_input_solar_system()
                         }
                         break;
                     }
-                    case ValueSelection: {
-                        if (area.contains_centered(mouse_pos))
-                        {
-                            // @todo button group
-                        }
-                        break;
-                    }
                     case ValueButton: {
                         if (title_area.contains_centered(mouse_pos))
                         {
@@ -977,6 +967,13 @@ bool Application::mouse_input_solar_system()
                                     break;
                                 }
                             }
+                        }
+                        break;
+                    }
+                    case ValueSelection: {
+                        if (area.contains_centered(mouse_pos))
+                        {
+                            // @todo button group
                         }
                         break;
                     }
