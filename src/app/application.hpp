@@ -8,9 +8,10 @@
 #include "asset.hpp"
 #include "input.hpp"
 #include "draw.hpp"
-#include "game.hpp"
-#include "editor.hpp"
 #include "time.hpp"
+
+#include "game/game.hpp"
+#include "game/editor.hpp"
 
 enum ApplicationMode {
     ModeMenu,

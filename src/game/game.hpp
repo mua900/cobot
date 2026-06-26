@@ -4,9 +4,9 @@
 #include "common.hpp"
 #include "template.hpp"
 #include "math_util.hpp"
-#include "text.hpp"
-#include "time.hpp"
-#include "input.hpp"
+#include "app/text.hpp"
+#include "app/time.hpp"
+#include "app/input.hpp"
 
 #include "vehicle.hpp"
 #include "script.hpp"

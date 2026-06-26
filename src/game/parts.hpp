@@ -1,11 +1,11 @@
 #ifndef PARTS_HPP
 #define PARTS_HPP
 
+#include "app/asset.hpp"
+#include "app/text.hpp"
 #include "common.hpp"
 #include "math_util.hpp"
 #include "template.hpp"
-#include "asset.hpp"
-#include "text.hpp"
 #include "script.hpp"
 
 enum PartKind : u16 {

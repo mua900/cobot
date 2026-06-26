@@ -15,42 +15,45 @@ endforeach()
 set(CMAKE_CXX_STANDARD 23)
 
 add_executable(cobot
-	src/application.hpp
-	src/application.cpp
-	src/game.hpp
-	src/game.cpp
-	src/audio.hpp
-	src/audio.cpp
-	src/input.hpp
-	src/input.cpp
-	src/time.hpp
-	src/ui.hpp
-	src/ui.cpp
-	src/text.hpp
-	src/asset.hpp
-	src/asset.cpp
-	src/draw.hpp
-	src/draw.cpp
-	src/log.hpp
-	src/log.cpp
+	src/main.cpp
+
 	src/common.hpp
 	src/common.cpp
+	src/template.hpp
+	src/log.hpp
+	src/log.cpp
 	src/math_util.hpp
 	src/math_util.cpp
-	src/script.hpp
-	src/script.cpp
-	src/parts.hpp
-	src/parts.cpp
-	src/vehicle.hpp
-	src/vehicle.cpp
-	src/map.hpp
-	src/map.cpp
-	src/space.hpp
-	src/space.cpp
-	src/editor.hpp
-	src/editor.cpp
-	src/template.hpp
-	src/main.cpp
+
+	src/app/application.hpp
+	src/app/application.cpp
+	src/app/audio.hpp
+	src/app/audio.cpp
+	src/app/input.hpp
+	src/app/input.cpp
+	src/app/time.hpp
+	src/app/ui.hpp
+	src/app/ui.cpp
+	src/app/text.hpp
+	src/app/asset.hpp
+	src/app/asset.cpp
+	src/app/draw.hpp
+	src/app/draw.cpp
+
+	src/game/editor.hpp
+	src/game/editor.cpp
+	src/game/script.hpp
+	src/game/script.cpp
+	src/game/parts.hpp
+	src/game/parts.cpp
+	src/game/vehicle.hpp
+	src/game/vehicle.cpp
+	src/game/map.hpp
+	src/game/map.cpp
+	src/game/space.hpp
+	src/game/space.cpp
+	src/game/game.hpp
+	src/game/game.cpp
 
 	src/external/open_simplex.hpp
 	src/external/open_simplex.cpp

@@ -37,7 +37,7 @@ enum UiElementId {
     AddVehicle,
     VehicleList,
     SaveVehicle,
-	VehicleName,
+    VehicleName,
     PlanetList,
 };
 
@@ -180,6 +180,7 @@ struct Text_Field
 {
     UiElementId id = {};
     UiElementInfo info = {};
+    bool editable = false;  // @todo
 
     cobot::Rectangle m_area = {};
     cobot::Color background = {};

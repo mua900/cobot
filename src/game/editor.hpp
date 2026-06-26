@@ -1,8 +1,8 @@
 #ifndef EDITOR_HPP
 #define EDITOR_HPP
 
-#include "input.hpp"
-#include "draw.hpp"
+#include "app/input.hpp"
+#include "app/draw.hpp"
 #include "vehicle.hpp"
 
 struct VehicleEditor {

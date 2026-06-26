@@ -1,5 +1,5 @@
+#include "app/draw.hpp"
 #include "game.hpp"
-#include "draw.hpp"
 #include "log.hpp"
 
 constexpr int fixedUpdateRate = 40;

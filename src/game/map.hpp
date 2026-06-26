@@ -1,7 +1,7 @@
 #ifndef MAP_HPP
 #define MAP_HPP
 
-#include "draw.hpp"
+#include "app/draw.hpp"
 
 struct MapPixel {
     u8 a = 0;

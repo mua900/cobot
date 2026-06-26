@@ -1,10 +1,10 @@
 #ifndef VEHICLE_HPP
 #define VEHICLE_HPP
 
-#include "asset.hpp"
-#include "text.hpp"
-#include "script.hpp"
+#include "app/asset.hpp"
+#include "app/text.hpp"
 
+#include "script.hpp"
 #include "parts.hpp"
 
 struct VehiclePart {
