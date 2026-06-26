@@ -33,7 +33,7 @@ void vehicleSimulationUpdate(GameState* game, TimeInfo time)
 
     for (auto& computer : vehicle.computerPart)
     {
-        Script& s = game->scripts.get_ref(computer.script);
+        Script& s = vehicle.scripts.get(computer.script);
         run_script(s);
 
         if (!s.commands.empty())

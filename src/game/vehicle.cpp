@@ -188,6 +188,10 @@ PartId Vehicle::add_computer_part(Computer& c) {
     VPartTransform transform = getWorldTransform(PartId(PartComputer, index));
     volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_computer_part_scale(c.kind)));
 
+    int s = scripts.add(Script(init_lua()));
+    scripts.get(s).commands.add(VehicleCommand());
+    scripts.get(s).set_program_data(0);
+
     return thisPart;
 }
 

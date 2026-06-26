@@ -157,9 +157,6 @@ bool Application::init_game_state()
     game.vehicles.add(get_default_vehicle());
     game.active_vehicle = 0;
     game.starSystem = get_default_star_system(m_render.renderer);
-    int s = game.scripts.add(Script(init_lua()));
-    game.scripts.get_ref(s).commands.add(VehicleCommand());
-    game.scripts.get_ref(s).set_program_data(0);
 
     return true;
 }
@@ -1110,7 +1107,7 @@ bool Application::mouse_input_game()
                 // run
                 editor.clicked_icon = 1;
 
-                Script& script = game.scripts.get_ref(editor.user.number);
+                Script& script = game.get_active_vehicle().scripts.get(editor.user.number);
 
                 String scriptSource = script.script.to_string();
 
@@ -1135,7 +1132,7 @@ bool Application::mouse_input_game()
                 // compile
                 editor.clicked_icon = 2;
 
-                Script& script = game.scripts.get_ref(editor.user.number);
+                Script& script = game.get_active_vehicle().scripts.get(editor.user.number);
                 script.set_source(ScriptLanguage::LUA, editor.field.get_string());
 
                 return true;
@@ -1855,6 +1852,16 @@ bool Application::init_vehicle_editor_ui() {
     partsPanel.tabs.add(PanelTab(chasisIcon, chasisTabIcons, panel_color));
     partsPanel.tabs.add(PanelTab(controllerIcon, controllerTabIcons, panel_color));
 
+    cobot::Rectangle propertiesPanelArea = {};
+    cobot::ColorF propertiesPanelColor = {};
+    ValuePanelTab selectedPartTab;
+    selectedPartTab.tabIcon = Icon(nullptr, cobot::Color(0x55, 0x66, 0x44));
+    selectedPartTab.color = propertiesPanelColor;
+    selectedPartTab.field_height = 32;
+    selectedPartTab.field_margin = 8;
+    selectedPartTab.fields.ensure_size(8);
+    ValuePanel propertiesPanel = ValuePanel(PartPropertyPanel, propertiesPanelArea, 25, 32, cobot::DirWest);
+
 	cobot::Color background = cobot::Color(0x44, 0x88, 0x55);
 	cobot::Color textColor = cobot::Color(0xAA, 0xAA, 0x66);
 	TextButton backButton = TextButton(create_text(m_render.renderer, String("Back"), font, textColor), cobot::vec2(ws.x * 0.95, ws.y * 0.05), ws * 0.1, background);
@@ -1866,9 +1873,10 @@ bool Application::init_vehicle_editor_ui() {
 	float nameFieldWidth = 400;
 
     ui.panel.add(partsPanel);
-	ui.button.add(saveVehicle);
-	ui.button.add(backButton);
-	ui.text_field.add(Text_Field(cobot::Rectangle(ws.x * 0.5, nameFieldHeight / 2, nameFieldWidth, nameFieldHeight), m_font, cobot::Color(0x55, 0x33, 0x44), cobot::Color(0x99, 0xAA, 0xBB), VehicleName));
+    ui.value_panel.add(propertiesPanel);
+    ui.button.add(saveVehicle);
+    ui.button.add(backButton);
+    ui.text_field.add(Text_Field(cobot::Rectangle(ws.x * 0.5, nameFieldHeight / 2, nameFieldWidth, nameFieldHeight), m_font, cobot::Color(0x55, 0x33, 0x44), cobot::Color(0x99, 0xAA, 0xBB), VehicleName));
 
     return true;
 }

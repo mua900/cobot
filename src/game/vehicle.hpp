@@ -44,6 +44,8 @@ struct Vehicle {
     BucketList<StructurePart> structurePart = {};
     BucketList<Computer> computerPart = {};
 
+    BucketList<Script> scripts = {};
+
     PartId add_ground_part(GroundPart& t);
     PartId add_structure_part(StructurePart& c);
     PartId add_computer_part(Computer& c);

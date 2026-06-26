@@ -29,6 +29,7 @@ enum UiElementId {
     BackButton,
     MainEditor,
     PartsPanel,
+    PartPropertyPanel,
     LoadButton,
     TimeScale,
     LaunchButton,

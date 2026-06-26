@@ -88,6 +88,7 @@ struct RenderContext {
     SDL_Renderer* renderer = nullptr;
     DArray<SDL_GPURenderState*> render_states = {};
 
+    // @todo switch to sdl gpu
     SDL_Texture* target_texture = nullptr;
     SDL_GPUTexture* render_target = nullptr;
 
@@ -107,6 +108,7 @@ struct RenderContext {
     DArray<SDL_Vertex> vertex_scratch = {};
     DArray<int> index_scratch = {};
 
+    // you do a copy pass to update positions etc. first and then draw those every frame
     bool start_render_pass();
     void end_render_pass();
     bool start_copy_pass();
@@ -115,6 +117,7 @@ struct RenderContext {
     void set_viewport(Viewport viewport);
 
     bool add_mesh(MeshData& meshData, MeshReference& mesh);
+    bool update_mesh(MeshData& meshData, MeshReference& mesh);
 
     void draw_mesh(MeshReference mesh);
 };

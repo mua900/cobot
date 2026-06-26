@@ -43,7 +43,6 @@ struct GameState {
     DArray<Mission> mission = {};
     Map map = {};  // @todo
     StarSystem starSystem = {};
-    DArray<Script> scripts = {};
 
     UpdateState* updateState = nullptr;
     KeyboardCallback keyboard = nullptr;

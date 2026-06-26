@@ -267,14 +267,40 @@ struct BucketList {
 
 			u16 inverse_flags = ~flags;
 			int index = lsb_index(inverse_flags);
-			bucket.elements[index] = elem;
+			bucket.elements[index] = std::move(elem);
 			bucket.occupied_flags |= BIT(index);
 
 			return bucket_index * BUCKET_SIZE + index;
 		}
 
 		int new_bucket_index = buckets.add(Bucket());
-		buckets.get_ref(new_bucket_index).elements[0] = elem;
+		buckets.get_ref(new_bucket_index).elements[0] = std::move(elem);
+		buckets.get_ref(new_bucket_index).occupied_flags |= BIT(0);
+		return new_bucket_index * BUCKET_SIZE + 0;
+	}
+
+	int add(T&& elem)
+	{
+		int bucket_index = 0;
+		for (auto& bucket : buckets)
+		{
+			auto flags = bucket.occupied_flags;
+			if (flags == BUCKET_FLAGS_FULL)
+			{
+				bucket_index += 1;
+				continue;
+			}
+
+			u16 inverse_flags = ~flags;
+			int index = lsb_index(inverse_flags);
+			bucket.elements[index] = std::move(elem);
+			bucket.occupied_flags |= BIT(index);
+
+			return bucket_index * BUCKET_SIZE + index;
+		}
+
+		int new_bucket_index = buckets.add(Bucket());
+		buckets.get_ref(new_bucket_index).elements[0] = std::move(elem);
 		buckets.get_ref(new_bucket_index).occupied_flags |= BIT(0);
 		return new_bucket_index * BUCKET_SIZE + 0;
 	}
