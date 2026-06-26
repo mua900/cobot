@@ -13,7 +13,7 @@ struct VehicleEditor {
     bool haveSnap = false;
     bool rootPart = false;
 
-    bool place_part(cobot::vec2 where);
+    bool place_part(cobot::vec2 where, const char** errorMessage);
 };
 
 void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, VehicleEditor& editor, VPartImages& partImages);

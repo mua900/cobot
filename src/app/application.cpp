@@ -809,9 +809,10 @@ bool Application::mouse_input_vehicle_editor()
 
             if (editor.haveSeletedPart)
             {
-                if (!editor.place_part(mouse_pos))
+                const char* errorMessage = nullptr;
+                if (!editor.place_part(mouse_pos, &errorMessage))
                 {
-                    display_message(ws * 0.5, ws * 0.1, "Couldn't place part", 1, cobot::Color(0xAA, 0xAA, 0xAA), cobot::Color(0xCC, 0x33, 0x33));
+                    display_message(ws * 0.5, cobot::vec2(ws.x * 0.4, ws.y * 0.1), errorMessage, 5, cobot::Color(0xAA, 0xAA, 0xAA), cobot::Color(0xCC, 0x33, 0x33));
                 }
                 editor.haveSeletedPart = false;
                 editor.selectedPartKind = {};
@@ -1852,8 +1853,13 @@ bool Application::init_vehicle_editor_ui() {
     partsPanel.tabs.add(PanelTab(chasisIcon, chasisTabIcons, panel_color));
     partsPanel.tabs.add(PanelTab(controllerIcon, controllerTabIcons, panel_color));
 
-    cobot::Rectangle propertiesPanelArea = {};
-    cobot::ColorF propertiesPanelColor = {};
+    cobot::Rectangle propertiesPanelArea = {
+        ws.x * 0.9f, ws.y * 0.5f,
+        ws.x * 0.2f, ws.y * 0.5f
+    };
+    cobot::ColorF propertiesPanelColor = {
+        0.1f, 0.5f, 0.2f
+    };
     ValuePanelTab selectedPartTab;
     selectedPartTab.tabIcon = Icon(nullptr, cobot::Color(0x55, 0x66, 0x44));
     selectedPartTab.color = propertiesPanelColor;
@@ -1861,6 +1867,7 @@ bool Application::init_vehicle_editor_ui() {
     selectedPartTab.field_margin = 8;
     selectedPartTab.fields.ensure_size(8);
     ValuePanel propertiesPanel = ValuePanel(PartPropertyPanel, propertiesPanelArea, 25, 32, cobot::DirWest);
+    propertiesPanel.tabs.add(selectedPartTab);
 
 	cobot::Color background = cobot::Color(0x44, 0x88, 0x55);
 	cobot::Color textColor = cobot::Color(0xAA, 0xAA, 0x66);
@@ -2274,9 +2281,12 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
         height += tab.field_margin;
     }
 
-    for (int i = 0; i < panel.tabs.size(); i++) {
-        cobot::Rectangle area = panel.get_tab_header_area(i);
-        render_textured_rectangle(m_render, area, panel.tabs.get(i).tabIcon.texture, panel.tabs.get(i).tabIcon.background, true);
+    if (panel.tabs.size() > 1)
+    {
+        for (int i = 0; i < panel.tabs.size(); i++) {
+            cobot::Rectangle area = panel.get_tab_header_area(i);
+            render_textured_rectangle(m_render, area, panel.tabs.get(i).tabIcon.texture, panel.tabs.get(i).tabIcon.background, true);
+        }
     }
 }
 

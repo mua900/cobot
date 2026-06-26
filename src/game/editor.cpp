@@ -1,11 +1,12 @@
 #include "editor.hpp"
 
-bool VehicleEditor::place_part(cobot::vec2 where)
+bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
 {
     AttachmentDistance dist = vehicle.getAttachmentPointClosest(where, 20);
 
     if (!haveSeletedPart)
     {
+        *errorMessage = "No part selected";
         return false;
     }
 
@@ -14,11 +15,13 @@ bool VehicleEditor::place_part(cobot::vec2 where)
     if (dist.point && rootPart)
     {
         // trying to attach a root part to an attachment point
+        *errorMessage = "Root parts can not be attached to other parts";
         return false;
     }
     if (!(dist.point || rootPart))
     {
         // trying to attach a part that isn't root and also isn't attached to anything
+        *errorMessage = "Non-root parts must attach to something or they are not a part of the vehicle";
         return false;
     }
 
@@ -62,7 +65,7 @@ bool VehicleEditor::place_part(cobot::vec2 where)
             break;
         }
         default:
-            break;
+            panic("Unknown part kind (place_part)");
     }
 
     if (dist.point)
@@ -107,5 +110,5 @@ void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, Ve
 
     draw_vehicle(render, catalog, editor.vehicle, VehicleDrawParameters(&partImages, NullPartId, true));
 
-    draw_rectangle(render, cobot::Rectangle(ws.x * 0.95, ws.y * 0.5, ws.x * 0.1, ws.y * 0.1), editor.rootPart ? cobot::ColorF(0.1, 0.6, 0.1) : cobot::ColorF(0.6, 0.2, 0.2));
+    draw_circle(render, cobot::vec2(ws.x * 0.5, ws.y * 0.95), ws.y * 0.04, editor.rootPart ? cobot::ColorF(0.2, 0.6, 0.2) : cobot::ColorF(0.7, 0.3, 0.1));
 }
