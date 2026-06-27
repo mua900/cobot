@@ -30,13 +30,26 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
 
     PartId id = {};
 
+    bool firstRootPart = rootPart && (vehicle.rootParts.size() == 0);
+    VPartData partData = VPartData();
+
+    if (dist.point)
+    {
+        partData.parent = dist.parent;
+    }
+
+    if (rootPart)
+    {
+        partData.transform.position = firstRootPart ? cobot::vec2() : where - vehicle.worldPosition;
+    }
+
     switch (kind)
     {
         case PartStructure:
         {
             StructurePart structure = StructurePart();
             structure.kind = StructurePartKind(subkind);
-            structure.part.parent = dist.parent;
+            structure.part = partData;
             switch (subkind)
             {
                 case StructurePartChassis:
@@ -52,7 +65,7 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
         {
             Computer computer = Computer();
             computer.kind = ComputerKind(subkind);
-            computer.part.parent = dist.parent;
+            computer.part = partData;
             id = vehicle.add_computer_part(computer);
             break;
         }
@@ -60,12 +73,12 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
         {
             GroundPart ground = GroundPart();
             ground.kind = GroundPartKind(subkind);
-            ground.part.parent = dist.parent;
+            ground.part = partData;
             id = vehicle.add_ground_part(ground);
             break;
         }
         default:
-            panic("Unknown part kind (place_part)");
+            panic("Unknown part kind");
     }
 
     if (dist.point)

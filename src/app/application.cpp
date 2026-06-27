@@ -363,7 +363,6 @@ void Application::mouse_move_vehicle_editor()
         editor.snap = chain_part_transform(editor.vehicle.getWorldTransform(distance.parent), VPartTransform(distance.point->position, 1));
         editor.haveSnap = true;
 
-		log_info("%s", distance.name);
 		String name = String(distance.name);
 		if (string_compare(name, String("FrontLeft")))
 		{
@@ -1655,7 +1654,7 @@ bool Application::init_mission_editor_ui()
     cobot::Color title_color(0x33, 0x22, 0x99);
     cobot::Color option_color(0x77, 0x33, 0x44);
 
-    cobot::vec2 list_scale(ws.x * 0.1, ws.y * 0.1);
+    cobot::vec2 list_scale(ws.x * 0.125, ws.y * 0.1);
     vehicle_list.set_title(create_text(m_render.renderer, String("Vehicle"), font, text_color));
     vehicle_list.set_area(cobot::vec2(ws.x * 0.1, ws.y * 0.1), list_scale);
     vehicle_list.option_color = option_color;
@@ -1663,7 +1662,7 @@ bool Application::init_mission_editor_ui()
     vehicle_list.title_color = title_color;
     vehicle_list.id = VehicleList;
     planet_list.set_title(create_text(m_render.renderer, String("Planet"), font, text_color));
-    planet_list.set_area(cobot::vec2(ws.x * 0.3, ws.y * 0.1), list_scale);
+    planet_list.set_area(cobot::vec2(ws.x * 0.5, ws.y * 0.1), list_scale);
     planet_list.option_color = option_color;
     planet_list.title_color = title_color;
     planet_list.id = PlanetList;
@@ -1680,7 +1679,7 @@ bool Application::init_mission_editor_ui()
         planet_list.add_option(create_text(m_render.renderer, planet.name, font, text_color), i);
     }
 
-    TextButton launchMission = TextButton(create_text(m_render.renderer, String("Launch Mission"), font, cobot::Color(0x55, 0x44, 0x77)), cobot::vec2(ws.x * 0.85, ws.y * 0.85), cobot::vec2(ws.x * 0.1, ws.y * 0.1), cobot::Color(0x88, 0x11, 0x22));
+    TextButton launchMission = TextButton(create_text(m_render.renderer, String("Launch Mission"), font, cobot::Color(0x66, 0x55, 0x66)), cobot::vec2(ws.x * 0.85, ws.y * 0.85), cobot::vec2(ws.x * 0.2, ws.y * 0.1), cobot::Color(0x88, 0x11, 0x22));
     launchMission.id = LaunchButton;
 
     ui.drop_down.add(vehicle_list);
