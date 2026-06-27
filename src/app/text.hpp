@@ -4,11 +4,6 @@
 #include "math_util.hpp"
 #include <SDL3_ttf/SDL_ttf.h>
 
-#define FONT_SIZE_SMALL   18.0
-#define FONT_SIZE_MEDIUM  32.0
-#define FONT_SIZE_LARGE   72.0
-#define FONT_SIZE_EDITOR  24.0
-
 struct Font {
     TTF_Font* font = NULL;
     float size = 0;

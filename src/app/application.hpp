@@ -84,6 +84,7 @@ struct GameInfo {
     bool wantPause = false;
     double selectedTimescale = 0;
     int selectedPlanet = -1;
+    bool showOrbits = true;
 };
 
 enum PreRenderedText {

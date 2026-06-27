@@ -458,6 +458,7 @@ void Application::set_text_editor_cursor(cobot::Rectangle text_area, cobot::Dire
         SDL_SetCursor(m_input.mouse.cursor.text);
     }
     else {
+        // SDL checks wheter the cursor set is different so no unnecessary redraws here
         SDL_SetCursor(m_input.mouse.cursor.normal);
     }
 }
@@ -870,6 +871,12 @@ bool Application::mouse_input_solar_system()
                     {
                         switch_modes(ModeMenu);
                         switch_menu(MenuMain);
+                        return true;
+                    }
+                    case ShowOrbits:
+                    {
+                        gameInfo.showOrbits = !gameInfo.showOrbits;
+                        button.background = gameInfo.showOrbits ? cobot::Color(0x22, 0x77, 0x22) : cobot::Color(0x77, 0x22, 0x22);
                         return true;
                     }
                 }
@@ -1692,7 +1699,8 @@ bool Application::init_solar_system_ui()
     Font font = m_catalog.get_font(m_font);
     cobot::Color button_color = cobot::Color(0x66, 0x33, 0x22);
     cobot::Color background = cobot::Color(0x44, 0x66, 0x22);
-    add_button(UiSolarSystem, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background, true));
+    TextButton backButton = TextButton(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background, true);
+    backButton.id = BackButton;
 
     // 1e4, 1e5, 1e6
     DiscreteSlider timescaleControl (TimeScale, cobot::vec2(ws.x / 2, 50), cobot::vec2(40, 50), 3,
@@ -1708,8 +1716,6 @@ bool Application::init_solar_system_ui()
         timescaleControl.texture = texture;
         timescaleControl.element_scale = 50 * cobot::vec2(aspectRatio, 1.0f);
     }
-
-    ui.discrete_slider.add(timescaleControl);
 
     int planetIndex = 0;
     for (auto& planet : game.starSystem.planets)
@@ -1758,9 +1764,16 @@ bool Application::init_solar_system_ui()
 
     missions_tab.fields.add(ValueField(create_text(m_render.renderer, String("Add Mission"), font, cobot::Color(0xAA, 0xAA, 0xDD)), 0, AddMission, ValueButton));
 
+    TextButton showOrbits = TextButton(create_text(m_render.renderer, String("Show Orbits"), font, cobot::Color(0xAA, 0xAA, 0xAA)), cobot::vec2(ws.x * 0.1, ws.y * 0.9), cobot::vec2(ws.x * 0.1, ws.y * 0.1), cobot::Color(0x22, 0x77, 0x22));
+    showOrbits.id = ShowOrbits;
+
     planet_panel.tabs.add(orbital_parameter_tab);
     planet_panel.tabs.add(missions_tab);
+
+    ui.discrete_slider.add(timescaleControl);
     ui.value_panel.add(planet_panel);
+    ui.button.add(showOrbits);
+    ui.button.add(backButton);
 
     return true;
 }
@@ -1991,7 +2004,10 @@ void Application::draw_vehicle_editor()
 void Application::draw_solar_system()
 {
     draw_star_system(m_render, m_catalog, game);
-    draw_orbits(m_render, m_catalog, game);
+    if (gameInfo.showOrbits)
+    {
+        draw_orbits(m_render, m_catalog, game);
+    }
     if (gameInfo.selectedPlanet != -1)
     {
         draw_planet_outline(m_render, game, gameInfo.selectedPlanet);

@@ -32,6 +32,7 @@ enum UiElementId {
     PartPropertyPanel,
     LoadButton,
     TimeScale,
+    ShowOrbits,
     LaunchButton,
     PlanetPanel,
     AddMission,
