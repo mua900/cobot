@@ -108,6 +108,7 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
     SDL_SetStringProperty(rendererProps, SDL_PROP_RENDERER_CREATE_NAME_STRING, SDL_GPU_RENDERER);
     SDL_SetBooleanProperty(rendererProps, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, true);
     SDL_SetBooleanProperty(rendererProps, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN, true);
+	// @todo metal
     
     SDL_Renderer* renderer = SDL_CreateRendererWithProperties(rendererProps);
     if (!renderer)
@@ -117,7 +118,20 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
     }
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+	
+	{
+		bool set_Vsync = SDL_SetRenderVSync(renderer, 1);
 
+		if (set_Vsync)
+		{
+			log_info("Using vsync");
+		}
+		else
+		{
+			log_info("Couldn't use vsync: %s", SDL_GetError());
+		}
+	}
+	
     int render_size_x, render_size_y;
     if (!SDL_GetRenderOutputSize(renderer, &render_size_x, &render_size_y)) {
         return false;
