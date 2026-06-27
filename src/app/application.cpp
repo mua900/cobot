@@ -101,9 +101,9 @@ bool Application::initialize()
             return false;
         }
 
-        m_update_states[UpdateStateIdle] = { idleUpdate, idleFixedUpdate, 0, 0, 1 };
-        m_update_states[UpdateStateVehicleSimulation] = { vehicleSimulationUpdate, vehicleSimulationFixedUpdate, 0, 0, 1 };
-        m_update_states[UpdateStateSolarSystem] = { starSystemUpdate, starSystemFixedUpdate, 0, 0, 1e6 };
+        m_update_states[UpdateStateIdle] = { idleUpdate, idleFixedUpdate, 0, 0, 1, 1 };
+        m_update_states[UpdateStateVehicleSimulation] = { vehicleSimulationUpdate, vehicleSimulationFixedUpdate, 0, 0, 1, 60 };
+        m_update_states[UpdateStateSolarSystem] = { starSystemUpdate, starSystemFixedUpdate, 0, 0, 1e6, 60 };
 
         game.updateState = &m_update_states[UpdateStateIdle];
         game.keyboard = keyboardIdle;

@@ -118,8 +118,10 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
     }
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-	
-	{
+
+	// @todo there is a problem with vsync
+	/*
+	{		
 		bool set_Vsync = SDL_SetRenderVSync(renderer, 1);
 
 		if (set_Vsync)
@@ -131,6 +133,7 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
 			log_info("Couldn't use vsync: %s", SDL_GetError());
 		}
 	}
+	*/
 	
     int render_size_x, render_size_y;
     if (!SDL_GetRenderOutputSize(renderer, &render_size_x, &render_size_y)) {

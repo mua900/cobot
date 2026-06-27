@@ -14,12 +14,6 @@
 #include "mission.hpp"
 #include "space.hpp"
 
-// @todo use
-struct Camera {
-    cobot::vec2 position = {};
-    float zoom = 0;
-};
-
 struct GameState;
 
 typedef void (*KeyboardCallback)(GameState* game, KeyboardState* keyboard);
@@ -33,6 +27,9 @@ struct UpdateState {
     s64 ticks = 0;
     double elapsed = 0;
     double timeScale = 0;
+	int updateRate = 0;
+	
+    double calculateTimeStep() { return 1.0 / updateRate; }
 };
 
 struct GameState {

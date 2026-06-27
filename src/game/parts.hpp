@@ -10,10 +10,11 @@
 
 enum PartKind : u16 {
     PartGround = 0,
-    PartStructure = 1,
-    PartComputer = 2,
-    PartKindCount = 3,
-    PartKindSentinel = 4,
+    PartStructure,
+	PartPower,
+    PartComputer,
+    PartKindCount,
+    PartKindSentinel
 };
 
 #define PART_KIND_MASK(partKind) BIT(partKind)
@@ -85,6 +86,29 @@ struct AttachmentDistance {
     PartId parent;
     float distance;
 	const char* name = nullptr;
+};
+
+enum PowerPartKind {
+	PowerPartSolarPanel,
+	PowerPartCount,
+	PowerPartSentinel,
+};
+
+struct SolarPanel {
+	float powerGeneration;
+};
+
+struct PowerPart {
+	PowerPartKind kind = PowerPartSentinel;
+	VPartData part = {};
+	union {
+		SolarPanel solar;
+	};
+
+	PowerPart() : solar{} {}
+	// implicit
+	PowerPart(SolarPanel solarPanel) : kind(PowerPartSolarPanel), solar(solarPanel) {}
+	PowerPart(VPartData data, SolarPanel solarPanel) : kind(PowerPartSolarPanel), part(data), solar(solarPanel) {}
 };
 
 enum GroundPartKind {

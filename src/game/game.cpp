@@ -2,20 +2,15 @@
 #include "game.hpp"
 #include "log.hpp"
 
-constexpr int fixedUpdateRate = 40;
-constexpr double fixedTimeStep = 1.0 / fixedUpdateRate;
-constexpr s64 fixedTimeStepNS = NANOSECONDS_PER_SECOND / fixedUpdateRate;
-constexpr s64 fixedTimeStepUS = MICROSECONDS_PER_SECOND / fixedUpdateRate;
-constexpr s64 fixedTimeStepMS = MILLISECONDS_PER_SECOND / fixedUpdateRate;
-
 void GameState::update(TimeInfo time)
 {
     constexpr int maxIterationsPerFrame = 50;
     int iterations = 0;
+	double timeStep = updateState->calculateTimeStep();
     while ((updateState->elapsed < time.timeSeconds + time.deltaTimeSeconds) && iterations < maxIterationsPerFrame)
     {
         updateState->fixedUpdate(this);
-        updateState->elapsed += fixedTimeStep;
+        updateState->elapsed += timeStep;
         updateState->ticks += 1;
 
         iterations += 1;
@@ -56,7 +51,7 @@ void starSystemUpdate(GameState* game, TimeInfo time)
 
 void starSystemFixedUpdate(GameState* game)
 {
-    game->starSystem.simulation_step(fixedTimeStep * game->updateState->timeScale);
+    game->starSystem.simulation_step(game->updateState->calculateTimeStep() * game->updateState->timeScale);
 }
 
 void keyboardIdle(GameState* game, KeyboardState* keyboard) {}

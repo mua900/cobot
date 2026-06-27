@@ -15,7 +15,8 @@ struct VehicleProgram {
 };
 
 enum CommandType {
-    CommandMove, CommandTurn,
+    CommandMove,
+	CommandTurn,
 };
 
 struct VehicleCommand {

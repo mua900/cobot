@@ -17,6 +17,11 @@ static const auto DEBUG_COLOR = cobot::ColorF(0.6, 0.5, 0.4, 1.0);
 #endif
 #endif
 
+struct Camera {
+    cobot::vec2 position = {};
+    float zoom = 0;
+};
+
 enum RenderStates {
     RenderStatePlanet,
     RenderStateCount,
@@ -87,6 +92,9 @@ struct RenderContext {
     cobot::vec2 render_size = {};
     SDL_Renderer* renderer = nullptr;
     DArray<SDL_GPURenderState*> render_states = {};
+
+	// @todo use
+	Camera camera = {};
 
     // @todo switch to sdl gpu
     SDL_Texture* target_texture = nullptr;

@@ -43,6 +43,7 @@ struct Vehicle {
     BucketList<GroundPart> groundPart = {};
     BucketList<StructurePart> structurePart = {};
     BucketList<Computer> computerPart = {};
+	BucketList<PowerPart> powerPart = {};
 
     BucketList<Script> scripts = {};
 

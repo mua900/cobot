@@ -23,6 +23,19 @@ bool Vehicle::execute_command(VehicleCommand& command)
 
         return turned && arrived;
     }
+	else if (command.type == CommandTurn)
+	{
+		cobot::vec2 difference = command.program.turnTarget - worldPosition;
+		float angle = atan2f(difference.y, difference.x);
+		bool turned = fabsf(orientation - angle) < 0.05;
+		if (!turned)
+		{
+			orientation += (angle - orientation) > 0 ? 0.1 : -0.1;
+			orientation = cobot::normalize_angle_radians_f(orientation);
+		}
+
+		return turned;
+	}
 
     return false;
 }
@@ -189,8 +202,6 @@ PartId Vehicle::add_computer_part(Computer& c) {
     volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_computer_part_scale(c.kind)));
 
     int s = scripts.add(Script(init_lua()));
-    scripts.get(s).commands.add(VehicleCommand());
-    scripts.get(s).set_program_data(0);
 
     return thisPart;
 }
