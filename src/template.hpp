@@ -380,9 +380,16 @@ struct BucketList {
 			}
 
 			bucket_index = list->buckets.size();
+			slot_index = 0;
 		}
 
 		Iterator& operator++() {
+			slot_index += 1;
+			if (slot_index == BUCKET_SIZE)
+			{
+				bucket_index += 1;
+				slot_index = 0;
+			}
 			next();
 			return *this;
 		}
@@ -419,7 +426,7 @@ struct BucketList {
 			{
 				const Bucket& bucket = list->buckets.get_ref(i);
 				auto flags = bucket.occupied_flags;
-				flags &= BUCKET_FLAGS_FULL << (slot_index + 1);  // ignore flags before the point we are looking
+				flags &= BUCKET_FLAGS_FULL << slot_index;  // ignore flags before the point we are looking
 				if (flags != 0)
 				{
 					int index = lsb_index(flags);
@@ -435,9 +442,16 @@ struct BucketList {
 			}
 
 			bucket_index = list->buckets.size();
+			slot_index = 0;
 		}
 
 		ConstIterator& operator++() {
+			slot_index += 1;
+			if (slot_index == BUCKET_SIZE)
+			{
+				bucket_index += 1;
+				slot_index = 0;
+			}
 			next();
 			return *this;
 		}
