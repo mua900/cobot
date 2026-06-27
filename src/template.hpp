@@ -236,7 +236,7 @@ struct BucketList {
 	static const u32 BUCKET_FLAGS_FULL = 0xFFFFFFFF;  // match the bucket size in the number of bits
 	struct Bucket {
 		T elements[BUCKET_SIZE];
-		uint32_t occupied_flags;  // at least as many bits as bucket size
+		uint32_t occupied_flags = 0;  // at least as many bits as bucket size
 	};
 
 	// due to the fact that the dynamic array can relocate, the pointers are not stable but slot ids are
@@ -364,7 +364,7 @@ struct BucketList {
 			{
 				Bucket& bucket = list->buckets.get_ref(i);
 				auto flags = bucket.occupied_flags;
-				flags &= BUCKET_FLAGS_FULL << (slot_index + 1);  // ignore flags before the point we are looking
+				flags &= BUCKET_FLAGS_FULL << slot_index;  // ignore flags before the point we are looking
 				if (flags != 0)
 				{
 					int index = lsb_index(flags);
@@ -398,7 +398,7 @@ struct BucketList {
 
 	Iterator begin()
 	{
-		Iterator it = { this, 0, -1 };
+		Iterator it = { this, 0, 0 };
 		it.next();
 		return it;
 	}
@@ -453,7 +453,7 @@ struct BucketList {
 
 	ConstIterator begin() const
 	{
-		ConstIterator it = { this, 0, -1 };
+		ConstIterator it = { this, 0, 0 };
 		it.next();
 		return it;
 	}

@@ -468,7 +468,7 @@ bool Application::keyboard_input_up(SDL_KeyboardEvent keyboard)
     {
         case SDL_SCANCODE_DOWN: // fallthrough
         case SDL_SCANCODE_UP: {
-            game.get_active_vehicle().velocity.y = 0;
+            game.get_active_vehicle()->velocity.y = 0;
             return true;
         }
     }
@@ -1114,7 +1114,13 @@ bool Application::mouse_input_game()
                 // run
                 editor.clicked_icon = 1;
 
-                Script& script = game.get_active_vehicle().scripts.get(editor.user.number);
+                Vehicle* vehicle = game.get_active_vehicle();
+                if (vehicle->scripts.count() < 1)
+                {
+                    return true;
+                }
+
+                Script& script = vehicle->scripts.get(editor.user.number);
 
                 String scriptSource = script.script.to_string();
 
@@ -1139,8 +1145,12 @@ bool Application::mouse_input_game()
                 // compile
                 editor.clicked_icon = 2;
 
-                Script& script = game.get_active_vehicle().scripts.get(editor.user.number);
-                script.set_source(ScriptLanguage::LUA, editor.field.get_string());
+                Vehicle* vehicle = game.get_active_vehicle();
+                if (vehicle->scripts.count() > 0)
+                {
+                    Script& script = vehicle->scripts.get(editor.user.number);
+                    script.set_source(ScriptLanguage::LUA, editor.field.get_string());
+                }
 
                 return true;
             }
@@ -1181,9 +1191,10 @@ bool Application::mouse_input_game()
             }
         }
 
-        if (!game.get_active_vehicle().volume.contains_centered(mouse_pos))
+        auto vehicle = game.get_active_vehicle();
+        if (!vehicle->volume.contains_centered(mouse_pos))
         {
-            PartId part = game.get_active_vehicle().getPartAt(mouse_pos);
+            PartId part = vehicle->getPartAt(mouse_pos);
             if (part.is_null())
             {
                 for (auto& menu : ui.control) {
@@ -1194,9 +1205,10 @@ bool Application::mouse_input_game()
     }
     else if (m_input.mouse.buttonFlags & MOUSE_RIGHT_MASK)
     {
-        if (game.get_active_vehicle().volume.contains_centered(mouse_pos))
+        auto vehicle = game.get_active_vehicle();
+        if (vehicle->volume.contains_centered(mouse_pos))
         {
-            PartId part = game.get_active_vehicle().getPartAt(mouse_pos);
+            PartId part = vehicle->getPartAt(mouse_pos);
             if (part.is_valid())
             {
                 auto& menu = ui.control.get_ref(part.kind);
@@ -1992,7 +2004,7 @@ cobot::vec2 Application::get_window_size() const {
 
 void Application::draw_game()
 {
-    draw_vehicle_simulation(m_render, m_catalog, game.get_active_vehicle(), partImages);
+    draw_vehicle_simulation(m_render, m_catalog, *game.get_active_vehicle(), partImages);
 }
 
 void Application::draw_vehicle_editor()

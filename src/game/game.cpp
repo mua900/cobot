@@ -29,23 +29,23 @@ void idleFixedUpdate(GameState* game) {}
 
 void vehicleSimulationUpdate(GameState* game, TimeInfo time)
 {
-    Vehicle& vehicle = game->get_active_vehicle();
+    Vehicle* vehicle = game->get_active_vehicle();
 
-    for (auto& computer : vehicle.computerPart)
+    for (auto& computer : vehicle->computerPart)
     {
-        Script& s = vehicle.scripts.get(computer.script);
+        Script& s = vehicle->scripts.get(computer.script);
         run_script(s);
 
         if (!s.commands.empty())
         {
-            if (vehicle.execute_command(*s.commands.get_start()))
+            if (vehicle->execute_command(*s.commands.get_start()))
             {
                 s.commands.remove_start();
             }
         }
     }
 
-    vehicle.worldPosition += time.deltaTimeSeconds * vehicle.velocity;
+    vehicle->worldPosition += time.deltaTimeSeconds * vehicle->velocity;
 }
 
 void vehicleSimulationFixedUpdate(GameState* game)
@@ -67,22 +67,22 @@ void keyboardVehicle(GameState* game, KeyboardState* keyboard) {
         return;
     }
 
-    Vehicle& vehicle = game->get_active_vehicle();
+    Vehicle* vehicle = game->get_active_vehicle();
     if (keyboard->key_pressed(KEY_UP)) {
-        vehicle.velocity =  vehicle.speed * vehicle.forward();
+        vehicle->velocity = vehicle->speed * vehicle->forward();
     }
     else if (keyboard->key_pressed(KEY_DOWN)) {
-        vehicle.velocity = -vehicle.speed * vehicle.forward();
+        vehicle->velocity = -vehicle->speed * vehicle->forward();
     }
     else {
-        vehicle.velocity = cobot::vec2(0);
+        vehicle->velocity = cobot::vec2(0);
     }
 
     if (keyboard->key_pressed(KEY_LEFT)) {
-        vehicle.orientation -= 0.1;
+        vehicle->orientation -= 0.1;
     }
     else if (keyboard->key_pressed(KEY_RIGHT)) {
-        vehicle.orientation += 0.1;
+        vehicle->orientation += 0.1;
     }
 }
 
@@ -97,9 +97,10 @@ cobot::Rectangle GameState::get_planet_screen_area(cobot::vec2 ws, int planet) c
     return cobot::Rectangle(pos, cobot::vec2(p.body.radius));
 }
 
-Vehicle& GameState::get_active_vehicle() const
+Vehicle* GameState::get_active_vehicle() const
 {
-    return vehicles.get_ref(active_vehicle);
+    if (vehicles.size() == 0) return nullptr;
+    return vehicles.get_ptr(active_vehicle);
 }
 
 bool load_part_images(VPartImages& images, AssetCatalog& catalog)
