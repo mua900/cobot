@@ -405,7 +405,7 @@ void Application::mouse_move_ui(UiState& ui)
 
         if (editor.resize.resize)
         {
-            editor.field.m_area = editor.resize.calculate_new_area(mouse_pos, 30, 2000);
+            editor.field.m_area = editor.resize.calculate_new_area(mouse_pos, 50, 2000);
         }
         else
         {
@@ -418,7 +418,7 @@ void Application::mouse_move_ui(UiState& ui)
     {
         if (panel.resize.resize)
         {
-            panel.area = panel.resize.calculate_new_area(mouse_pos, 30, 2000);
+            panel.area = panel.resize.calculate_new_area(mouse_pos, 50, 2000);
         }
         else
         {

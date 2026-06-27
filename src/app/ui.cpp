@@ -608,7 +608,7 @@ cobot::Rectangle Panel::get_icon_area(int index) const {
     ASSERT(index < tabs.get(activeTab).icons.size());
 
     float length_per_icon = iconSize + iconMargin;
-    int rowCount = area.h / length_per_icon;
+    int rowCount = cobot::max(area.h / length_per_icon, 1);
     int row = index % rowCount;
     int column = index / rowCount;
     return cobot::Rectangle(area.get_top_left() + cobot::vec2(column, row) * length_per_icon, cobot::vec2(iconSize));
@@ -617,7 +617,7 @@ cobot::Rectangle Panel::get_icon_area(int index) const {
 cobot::Rectangle Panel::get_tab_header_area(int index) const {
     ASSERT(index < tabs.size());
 
-    int rowCount = area.h / (tabHeaderSize * 2);
+    int rowCount = cobot::max(area.h / (tabHeaderSize * 2), 1);
     int row = index % rowCount;
     int column = index / rowCount;
     return cobot::Rectangle(area.x + area.w / 2 + tabHeaderSize / 2 + column * tabHeaderSize,
@@ -724,7 +724,7 @@ cobot::Rectangle ValuePanel::get_tab_header_area(int index) const
 
     if (direction & cobot::DirWest || direction & cobot::DirEast)
     {
-        int rowCount = area.h / (tabHeaderSize * 2);
+        int rowCount = cobot::max(area.h / (tabHeaderSize * 2), 1);
         int row = index % rowCount;
         int column = index / rowCount;
         float x = area.x + area.w / 2 * (direction & cobot::DirEast ? 1 : -1) + (tabHeaderSize / 2 + column * tabHeaderSize) * (direction & cobot::DirEast ? 1 : -1);
@@ -734,7 +734,7 @@ cobot::Rectangle ValuePanel::get_tab_header_area(int index) const
     }
     else if (direction & cobot::DirNorth || direction & cobot::DirSouth)
     {
-        int columnCount = area.w / (tabHeaderSize * 2);
+        int columnCount = cobot::max(area.w / (tabHeaderSize * 2), 1);
         int column = index % columnCount;
         int row = index / columnCount;
         float x = area.x + tabHeaderSize / 2 + column * tabHeaderSize * 2;
