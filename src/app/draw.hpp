@@ -6,6 +6,7 @@
 #include "math_util.hpp"
 #include "template.hpp"
 #include "text.hpp"
+#include "camera.hpp"
 
 #define GRAPHICS_DEBUG 1
 
@@ -16,15 +17,6 @@ static const auto DEBUG_COLOR = cobot::ColorF(0.6, 0.5, 0.4, 1.0);
 #define GRAPHICS_DEBUG_DX
 #endif
 #endif
-
-struct Camera {
-    cobot::vec2 position = {};
-    float zoom = 0;
-    float rotation = 0;
-
-    cobot::vec2 world_to_screen(cobot::vec2 p) const;
-    cobot::vec2 screen_to_world(cobot::vec2 p) const;
-};
 
 enum RenderStates {
     RenderStatePlanet,
@@ -105,7 +97,7 @@ struct RenderContext {
 
     CoordinateSpace space = {};  // what coordinate space input vertices are in
     cobot::vec2 zoomTarget = {};
-	Camera camera = {};
+	const Camera* camera = {};
 
     // @todo switch to sdl gpu
     SDL_Texture* target_texture = nullptr;

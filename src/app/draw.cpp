@@ -294,21 +294,11 @@ bool init_gpu_renderer(RenderContext* render, SDL_Window* window, SDL_GPUShader*
     return true;
 }
 
-cobot::vec2 Camera::world_to_screen(cobot::vec2 p) const
-{
-    return (p * zoom).rotated(rotation) - position;
-}
-
-cobot::vec2 Camera::screen_to_world(cobot::vec2 p) const
-{
-    return (p + position).rotated(-rotation) / zoom;
-}
-
 cobot::vec2 RenderContext::transformWorld(cobot::vec2 p) const
 {
     if (space == CoordinateSpace::World)
     {
-        p = camera.world_to_screen(p);
+        p = camera->world_to_screen(p);
         return cobot::vec2(p.x, -p.y) + get_center();
     }
     else
@@ -322,7 +312,7 @@ cobot::vec2 RenderContext::transformScreen(cobot::vec2 p) const
     if (space == CoordinateSpace::Screen)
     {
         p = p - get_center();
-        return camera.screen_to_world(cobot::vec2(p.x, -p.y));
+        return camera->screen_to_world(cobot::vec2(p.x, -p.y));
     }
     else
     {

@@ -70,8 +70,6 @@ bool Application::initialize()
             return false;
         }
 
-        m_render.camera = { cobot::vec2(0,0), 1 };
-
         SDL_ShowWindow(window);
     }
 
@@ -112,6 +110,13 @@ bool Application::initialize()
     }
 
     gameInfo.selectedTimescale = game.updateState->timeScale;
+
+    {
+        for (auto& cam : cameras)
+        {
+            cam.zoom = 1;
+        }
+    }
 
     {
         int num_keys = 0;
@@ -246,6 +251,17 @@ UiState& Application::get_active_ui()
     }
 }
 
+Camera* Application::get_active_camera()
+{
+    switch (m_mode)
+    {
+        case ModeGame:          return &cameras[CameraGame];
+        case ModeSolarSystem:   return &cameras[CameraSolarSystem];
+        case ModeVehicleEditor: return &cameras[CameraVehicleEditor];
+        default:                return nullptr;
+    }
+}
+
 void Application::handle_events()
 {
     SDL_Event e = {};
@@ -301,18 +317,17 @@ void Application::handle_events()
             {
                 const float mouseSensitivity = 0.1;
                 SDL_MouseWheelEvent wheel = e.wheel;
-                // @todo camera per mode
-                if (m_mode == ModeGame || m_mode == ModeSolarSystem || m_mode == ModeVehicleEditor)
+
+                Camera* camera = get_active_camera();
+                if (camera)
                 {
-                    cobot::vec2 mouseBefore = m_render.camera.screen_to_world(m_input.mouse.pos);
+                    camera->position += m_render.get_center();
 
-                    m_render.camera.zoom += wheel.y * mouseSensitivity;
-                    m_render.camera.zoom = cobot::clamp(0.1, 10, m_render.camera.zoom);
-                    log_info("%f", m_render.camera.zoom);
+                    camera->zoom += wheel.y * mouseSensitivity;
+                    camera->zoom = cobot::clamp(0.1, 10, camera->zoom);
+                    log_info("%f", camera->zoom);
 
-                    cobot::vec2 mouseAfter = m_render.camera.screen_to_world(m_input.mouse.pos);
-
-                    m_render.camera.position += (mouseBefore - mouseAfter);
+                    camera->position -= m_render.get_center();
                 }
                 break;
             }
@@ -2137,8 +2152,8 @@ void Application::draw_ui_state(const UiState& state)
 }
 
 void Application::switch_modes(ApplicationMode mode) {
-	text_input_stop();
-	
+    text_input_stop();
+
     switch (mode)
     {
         case ModeSolarSystem:
@@ -2162,6 +2177,8 @@ void Application::switch_modes(ApplicationMode mode) {
     }
 
     m_mode = mode;
+
+    m_render.camera = get_active_camera();
 }
 
 void Application::switch_menu(MenuName menu) {

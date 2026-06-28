@@ -86,9 +86,9 @@ void keyboardStarSystem(GameState* game, KeyboardState* keyboard) {}
 
 cobot::Rectangle GameState::get_planet_screen_area(cobot::vec2 ws, int planet) const
 {
-    cobot::vec2 origin = ws / 2;
+    // @todo fix
     const Planet& p = starSystem.planets.get_ref(planet);
-    cobot::vec2 pos = origin + p.body.position.xy();
+    cobot::vec2 pos = p.body.position.xy();
     return cobot::Rectangle(pos, cobot::vec2(p.body.radius));
 }
 
@@ -146,7 +146,6 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
         float zdistance = cobot::smoothstep(-maxDepth / 2, maxDepth / 2, planet.body.position.z);
         // remap to 0.5 - 1.0 range
         zdistance = (zdistance + 1.0f) / 2;
-        // draw_circle(context, center + pos, planet.body.radius, ColorF(planet.color, zdistance));
         draw_circle_with_texture(context, planet.body.position.xy(), planet.body.radius, planet.map, cobot::ColorF(planet.color, zdistance));
     }
 

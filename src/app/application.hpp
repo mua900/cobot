@@ -9,6 +9,7 @@
 #include "input.hpp"
 #include "draw.hpp"
 #include "time.hpp"
+#include "camera.hpp"
 
 #include "game/game.hpp"
 #include "game/editor.hpp"
@@ -122,6 +123,8 @@ public:
 
     Mesh meshes[MeshType::Count] = {};
 
+    Camera cameras[CameraCount] = {};
+
     GameState game = {};
     Mission edit_mission = {};
     VehicleEditor editor = {};
@@ -144,6 +147,8 @@ private:
     bool init_game_state();
 
     bool init_render();
+
+    Camera* get_active_camera();
 
     bool init_ui();
     bool init_game_ui();
