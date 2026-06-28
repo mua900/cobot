@@ -56,6 +56,9 @@ struct MouseState {
     SDL_MouseButtonFlags buttonFlags = {};
     MouseCursor cursor = {};
     bool down = false;
+
+    cobot::vec2 dragPosition = {};
+    bool drag = false;
 };
 
 struct Input {

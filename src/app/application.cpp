@@ -115,6 +115,7 @@ bool Application::initialize()
         for (auto& cam : cameras)
         {
             cam.zoom = 1;
+            cam.offset = m_render.get_center();
         }
     }
 
@@ -336,6 +337,10 @@ void Application::handle_events()
                 int render_size_x, render_size_y;
                 SDL_GetRenderOutputSize(m_render.renderer, &render_size_x, &render_size_y);
                 m_render.render_size = cobot::vec2(render_size_x, render_size_y);
+                for (auto& c : cameras)
+                {
+                    c.offset = cobot::vec2(render_size_x / 2, render_size_y / 2);
+                }
 
                 update_ui_state(cobot::vec2(render_size_x, render_size_y));
 
@@ -366,26 +371,6 @@ void Application::handle_events()
 
     update_keyboard_state();
     game.keyboard(&game, &m_input.keyboard);
-}
-
-void Application::on_mouse_move()
-{
-    cobot::vec2 mouse_pos = m_input.mouse.pos;
-    UiState& ui = get_active_ui();
-    mouse_move_ui(ui);
-
-    switch (m_mode)
-    {
-        case ModeVehicleEditor:
-        {
-            mouse_move_vehicle_editor();
-            break;
-        }
-        default:
-        {
-            break;
-        }
-    }
 }
 
 void Application::mouse_move_vehicle_editor()
@@ -726,31 +711,100 @@ bool Application::keyboard_input_down_solar_system(KeyboardEvent keyboard)
     return false;
 }
 
+void Application::on_mouse_move()
+{
+    cobot::vec2 mouse_pos = m_input.mouse.pos;
+
+    if (m_input.mouse.drag)
+    {
+        Camera* camera = get_active_camera();
+        if (camera)
+        {
+            cobot::vec2 move = (m_input.mouse.dragPosition - mouse_pos);
+            camera->position += cobot::vec2(move.x, -move.y);
+            m_input.mouse.dragPosition = mouse_pos;
+        }
+        return;
+    }
+
+    UiState& ui = get_active_ui();
+    mouse_move_ui(ui);
+
+    switch (m_mode)
+    {
+        case ModeVehicleEditor:
+        {
+            mouse_move_vehicle_editor();
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+}
+
 bool Application::on_mouse_down()
 {
 	if (mouse_input_common())
 	{
 		return true;
 	}
-	
-    if (m_mode == ModeGame)
+
+    bool consume = false;
+    switch (m_mode)
     {
-        return mouse_input_game();
+        case ModeGame: consume = mouse_input_game(); break;
+        case ModeMenu: consume = mouse_input_menu(); break;
+        case ModeVehicleEditor: consume = mouse_input_vehicle_editor(); break;
+        case ModeSolarSystem: consume = mouse_input_solar_system(); break;
+        default: panic("Invalid application mode");
     }
-    else if (m_mode == ModeMenu)
+
+    if ((m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) && get_active_camera() && !get_active_ui().get_drag_info())
     {
-        return mouse_input_menu();
+        m_input.mouse.dragPosition = m_input.mouse.pos;
+        m_input.mouse.drag = true;
+        return true;
     }
-    else if (m_mode == ModeVehicleEditor)
+    else
     {
-        return mouse_input_vehicle_editor();
+        return false;
     }
-    else if (m_mode == ModeSolarSystem)
+}
+
+void Application::on_mouse_up(int button)
+{
+    UiState& ui = get_active_ui();
+
+    if (button & MOUSE_LEFT_MASK)
     {
-        return mouse_input_solar_system();
-    }
-    else {
-        panic("Invalid application mode");
+        // @todo maybe button interactions should be on button up
+
+        for (auto& editor : ui.editor) {
+            if (editor.drag.drag) {
+                editor.drag.drag = false;
+            }
+
+            if (editor.resize.resize) {
+                editor.resize = {};
+            }
+
+            editor.clicked_icon = 0;
+        }
+
+        for (auto& panel : ui.panel)
+        {
+            if (panel.drag.drag) {
+                panel.drag.drag = false;
+            }
+
+            if (panel.resize.resize) {
+                panel.resize = {};
+            }
+        }
+
+        m_input.mouse.drag = false;
     }
 }
 
@@ -1531,39 +1585,6 @@ void Application::update_ui_pos()
             cobot::vec2 pos = (mouse_pos - panel.drag.start) + half_scale;
             panel.area.x = pos.x;
             panel.area.y = pos.y;
-        }
-    }
-}
-
-void Application::on_mouse_up(int button)
-{
-    UiState& ui = get_active_ui();
-
-    if (button & MOUSE_LEFT_MASK)
-    {
-        // @todo maybe button interactions should be on button up
-
-        for (auto& editor : ui.editor) {
-            if (editor.drag.drag) {
-                editor.drag.drag = false;
-            }
-
-            if (editor.resize.resize) {
-                editor.resize = {};
-            }
-
-            editor.clicked_icon = 0;
-        }
-
-        for (auto& panel : ui.panel)
-        {
-            if (panel.drag.drag) {
-                panel.drag.drag = false;
-            }
-
-            if (panel.resize.resize) {
-                panel.resize = {};
-            }
         }
     }
 }

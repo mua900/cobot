@@ -298,8 +298,7 @@ cobot::vec2 RenderContext::transformWorld(cobot::vec2 p) const
 {
     if (space == CoordinateSpace::World)
     {
-        p = camera->world_to_screen(p);
-        return cobot::vec2(p.x, -p.y) + get_center();
+        return camera->world_to_screen(p);
     }
     else
     {
@@ -311,8 +310,7 @@ cobot::vec2 RenderContext::transformScreen(cobot::vec2 p) const
 {
     if (space == CoordinateSpace::Screen)
     {
-        p = p - get_center();
-        return camera->screen_to_world(cobot::vec2(p.x, -p.y));
+        return camera->screen_to_world(p);
     }
     else
     {

@@ -358,6 +358,35 @@ cobot::Rectangle ResizeInfo::calculate_new_area(cobot::vec2 mouse_position, int 
     return area;
 }
 
+DragInfo* UiState::get_drag_info()
+{
+    for (auto& e : editor)
+    {
+        if (e.drag.drag)
+        {
+            return &e.drag;
+        }
+    }
+
+    for (auto& p : panel)
+    {
+        if (p.drag.drag)
+        {
+            return &p.drag;
+        }
+    }
+
+    for (auto& c : control)
+    {
+        if (c.drag.drag)
+        {
+            return &c.drag;
+        }
+    }
+
+    return nullptr;
+}
+
 void UiState::update_state(cobot::vec2 window_size, const RenderContext& render, const AssetCatalog& catalog) {
     float y_factor = window_size.y / assumed_window_size.y;
     float x_factor = window_size.x / assumed_window_size.x;

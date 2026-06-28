@@ -635,6 +635,7 @@ struct ValuePanel {
     cobot::Rectangle get_field_title_area(int tab, int field) const;
 };
 
+// @todo remove
 struct ControlMenu {
     DragInfo drag = {};
     cobot::vec2* anchorPosition = nullptr;
@@ -746,6 +747,8 @@ struct UiState {
     void update_state(cobot::vec2 window_size, const RenderContext& render, const AssetCatalog& catalog);
 
     Text_Field* get_selected_text_field();
+
+    DragInfo* get_drag_info();
 
     TextEditor* get_editor(UiElementId id);
     Text_Field* get_text_field(UiElementId id);
