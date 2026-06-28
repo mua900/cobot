@@ -20,6 +20,10 @@ static const auto DEBUG_COLOR = cobot::ColorF(0.6, 0.5, 0.4, 1.0);
 struct Camera {
     cobot::vec2 position = {};
     float zoom = 0;
+    float rotation = 0;
+
+    cobot::vec2 world_to_screen(cobot::vec2 p) const;
+    cobot::vec2 screen_to_world(cobot::vec2 p) const;
 };
 
 enum RenderStates {
@@ -88,12 +92,19 @@ struct FrameContext {
     GPUTexture swapchain = {};
 };
 
+enum CoordinateSpace
+{
+    World,
+    Screen,
+};
+
 struct RenderContext {
     cobot::vec2 render_size = {};
     SDL_Renderer* renderer = nullptr;
     DArray<SDL_GPURenderState*> render_states = {};
 
-	// @todo use
+    CoordinateSpace space = {};  // what coordinate space input vertices are in
+    cobot::vec2 zoomTarget = {};
 	Camera camera = {};
 
     // @todo switch to sdl gpu
@@ -115,6 +126,16 @@ struct RenderContext {
 
     DArray<SDL_Vertex> vertex_scratch = {};
     DArray<int> index_scratch = {};
+
+    cobot::vec2 get_center() const { return render_size / 2; }
+
+    // camera transforms
+    cobot::vec2 transformWorld(cobot::vec2 p) const;
+    cobot::vec2 transformScreen(cobot::vec2 p) const;
+    cobot::Rectangle transform_rectangle(cobot::Rectangle r) const;
+    SDL_FPoint transform_sdl_point(SDL_FPoint p) const;
+    SDL_FRect transform_sdl_rectangle(SDL_FRect r) const;
+    SDL_Vertex transform_sdl_vertex(SDL_Vertex v) const;
 
     // you do a copy pass to update positions etc. first and then draw those every frame
     bool start_render_pass();

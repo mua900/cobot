@@ -134,8 +134,7 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
     cobot::vec2 render_size = context.render_size;
     auto& system = game.starSystem;
 
-    cobot::vec2 center = render_size / 2;
-    draw_circle(context, center, system.star.radius, cobot::ColorF(0.6, 0.5, 0.1));
+    draw_circle(context, cobot::vec2(0,0), system.star.radius, cobot::ColorF(0.6, 0.5, 0.1));
 
     // @todo fix
     // SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 0, nullptr, sizeof(nullptr));
@@ -144,12 +143,11 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
     float maxDepth = 10;
     for (auto& planet : system.planets)
     {
-        cobot::vec2 pos = cobot::vec2(planet.body.position.x, planet.body.position.y);
         float zdistance = cobot::smoothstep(-maxDepth / 2, maxDepth / 2, planet.body.position.z);
         // remap to 0.5 - 1.0 range
         zdistance = (zdistance + 1.0f) / 2;
         // draw_circle(context, center + pos, planet.body.radius, ColorF(planet.color, zdistance));
-        draw_circle_with_texture(context, center + pos, planet.body.radius, planet.map, cobot::ColorF(planet.color, zdistance));
+        draw_circle_with_texture(context, planet.body.position.xy(), planet.body.radius, planet.map, cobot::ColorF(planet.color, zdistance));
     }
 
     SDL_SetGPURenderState(context.renderer, nullptr);
@@ -159,11 +157,11 @@ void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const Game
 {
     for (int i = 0; i < game.starSystem.planets.size(); i++)
     {
-        draw_planet_orbit(context, game.starSystem.planets.get_ref(i), context.render_size / 2, game.starSystem.star.mass, 2);
+        draw_planet_orbit(context, game.starSystem.planets.get_ref(i), game.starSystem.star.mass, 2);
     }
 }
 
-void draw_planet_orbit(RenderContext& context, const Planet& planet, cobot::vec2 offset, double centralBodyMass, float thick)
+void draw_planet_orbit(RenderContext& context, const Planet& planet, double centralBodyMass, float thick)
 {
     Body body = planet.body;
     cobot::ColorF color = planet.color;
@@ -177,9 +175,8 @@ void draw_planet_orbit(RenderContext& context, const Planet& planet, cobot::vec2
     {
         body.parameters.trueAnomaly = angle;
         body.determine_state_vector(centralBodyMass);
-        cobot::vec3 p = body.position;
 
-        points[index] = offset + cobot::vec2(p.x, p.y);
+        points[index] = body.position.xy();
         angle += stepSize;
     }
 

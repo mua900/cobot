@@ -70,6 +70,8 @@ bool Application::initialize()
             return false;
         }
 
+        m_render.camera = { cobot::vec2(0,0), 1 };
+
         SDL_ShowWindow(window);
     }
 
@@ -293,6 +295,25 @@ void Application::handle_events()
             {
                 m_input.mouse.buttonFlags = SDL_GetMouseState(&m_input.mouse.pos.x, &m_input.mouse.pos.y);
                 on_mouse_move();
+                break;
+            }
+            case SDL_EVENT_MOUSE_WHEEL:
+            {
+                const float mouseSensitivity = 0.1;
+                SDL_MouseWheelEvent wheel = e.wheel;
+                // @todo camera per mode
+                if (m_mode == ModeGame || m_mode == ModeSolarSystem || m_mode == ModeVehicleEditor)
+                {
+                    cobot::vec2 mouseBefore = m_render.camera.screen_to_world(m_input.mouse.pos);
+
+                    m_render.camera.zoom += wheel.y * mouseSensitivity;
+                    m_render.camera.zoom = cobot::clamp(0.1, 10, m_render.camera.zoom);
+                    log_info("%f", m_render.camera.zoom);
+
+                    cobot::vec2 mouseAfter = m_render.camera.screen_to_world(m_input.mouse.pos);
+
+                    m_render.camera.position += (mouseBefore - mouseAfter);
+                }
                 break;
             }
             case SDL_EVENT_WINDOW_RESIZED:
@@ -1929,6 +1950,7 @@ void Application::draw()
     // SDL_FlushRenderer(m_render.renderer);
 
     SDL_SetRenderDrawBlendMode(m_render.renderer, SDL_BLENDMODE_BLEND);
+    m_render.space = CoordinateSpace::World;
 
     switch (m_mode)
     {
@@ -1950,6 +1972,8 @@ void Application::draw()
     }
 
     SDL_SetRenderDrawBlendMode(m_render.renderer, SDL_BLENDMODE_NONE);
+
+    m_render.space = CoordinateSpace::Screen;
 
     draw_ui();
     draw_messages();
