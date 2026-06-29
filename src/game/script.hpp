@@ -16,12 +16,18 @@ struct VehicleProgram {
 
 enum CommandType {
     CommandMove,
-	CommandTurn,
+    CommandTurn,
 };
 
 struct VehicleCommand {
     CommandType type = {};
     VehicleProgram program = {};
+
+    VehicleCommand() {}
+    VehicleCommand(CommandType commandType, VehicleProgram prog)
+        :
+        type(commandType), program(prog)
+    {}
 };
 
 enum class ScriptLanguage {
@@ -38,7 +44,8 @@ struct Script {
         Interp* interp;
     } data = {};
 
-    List<VehicleCommand> commands = {};
+    DArray<VehicleCommand> commands = {};
+    int activeCommand = 0;
 
     Script() : language(ScriptLanguage::LUA), data{} {}
     Script(ScriptLanguage lang) : language(lang) {}
@@ -51,14 +58,13 @@ struct Script {
     }
 
     bool set_source(ScriptLanguage language, String source);
-
-    void set_program_data(int index);
+    bool is_valid() { return data.lua != nullptr || data.interp != nullptr; }
 };
 
 void run_script(Script& s);
 
-// make a lua state
-lua_State* init_lua();
+// make a script that uses lua
+Script init_lua_script();
 
 // functions
 int move(lua_State* L);   // float x, y

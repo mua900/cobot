@@ -201,7 +201,9 @@ PartId Vehicle::add_computer_part(Computer& c) {
     VPartTransform transform = getWorldTransform(PartId(PartComputer, index));
     volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_computer_part_scale(c.kind)));
 
-    int s = scripts.add(Script(init_lua()));
+    Script luaScript = init_lua_script();
+    if (!luaScript.is_valid()) return NullPartId;
+    int s = scripts.add(luaScript);
 
     return thisPart;
 }
@@ -427,12 +429,12 @@ Vehicle get_default_vehicle()
     ch->chassis.backLeft.attach(bl);
     ch->chassis.backRight.attach(br);
 
-    Computer con = {};
-    con.kind = ComputerBasic;
-    con.script = {};
-    con.part.transform.scale = 1.0;
-    con.basic.codeSizeLimit = 128;
-    vehicle.add_computer_part(con);
+    Computer com = {};
+    com.kind = ComputerBasic;
+    com.script = {};
+    com.part.transform.scale = 1.0;
+    com.basic.codeSizeLimit = 128;
+    vehicle.add_computer_part(com);
 
     vehicle.add_root(chassis_id);
 

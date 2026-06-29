@@ -31,11 +31,16 @@ void vehicleSimulationUpdate(GameState* game, TimeInfo time)
         Script& s = vehicle->scripts.get(computer.script);
         run_script(s);
 
-        if (!s.commands.empty())
+        if (!s.commands.is_empty())
         {
-            if (vehicle->execute_command(*s.commands.get_start()))
+            if (s.activeCommand == s.commands.size())
             {
-                s.commands.remove_start();
+                continue;
+            }
+
+            if (vehicle->execute_command(s.commands.get_ref(s.activeCommand)))
+            {
+                s.activeCommand += 1;
             }
         }
     }

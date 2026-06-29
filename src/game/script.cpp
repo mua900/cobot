@@ -21,17 +21,6 @@ bool Script::set_source(ScriptLanguage language, String source) {
     }
 }
 
-void Script::set_program_data(int index)
-{
-    if (language == ScriptLanguage::LUA)
-    {
-        lua_State* L = data.lua;
-
-        lua_pushlightuserdata(L, &commands.get_element(index)->program);
-        lua_setfield(L, LUA_REGISTRYINDEX, "program");
-    }
-}
-
 void run_script(Script& s)
 {
     if (s.script.cursor == 0)
@@ -50,10 +39,13 @@ void run_script(Script& s)
     }
 }
 
-lua_State* init_lua()
+Script init_lua_script()
 {
     lua_State* L = luaL_newstate();
-    if (!L) return nullptr;
+    if (!L) return Script();
+
+    Script script(L);
+
     luaL_openselectedlibs(L, LUA_MATHLIBK | LUA_TABLIBK | LUA_STRLIBK, 0);
 
     lua_newtable(L);
@@ -69,6 +61,9 @@ lua_State* init_lua()
     lua_setfield(L, -2, "lookat");
     lua_setglobal(L, "vehicle");
 
+    lua_pushlightuserdata(L, &script.commands);
+    lua_setfield(L, LUA_REGISTRYINDEX, "_commands");
+
     return L;
 }
 
@@ -79,12 +74,14 @@ int move(lua_State* L)
     float x = lua_tonumber(L, 1);
     float y = lua_tonumber(L, 2);
 
-    lua_getfield(L, LUA_REGISTRYINDEX, "program");
-    VehicleProgram* program = (VehicleProgram*) lua_touserdata(L, -1);
+    lua_getfield(L, LUA_REGISTRYINDEX, "_commands");
+    DArray<VehicleCommand>* commandList = (DArray<VehicleCommand>*) lua_touserdata(L, -1);
     lua_pop(L, 1);
 
-    program->target.x = x;
-    program->target.y = y;
+    VehicleProgram program;
+    program.target = cobot::vec2(x,y);
+
+    commandList->add( { CommandMove, program } );
 
     return 0;
 }
@@ -94,12 +91,14 @@ int lookat(lua_State* L)
     float x = lua_tonumber(L, 1);
     float y = lua_tonumber(L, 2);
 
-    lua_getfield(L, LUA_REGISTRYINDEX, "program");
-    VehicleProgram* program = (VehicleProgram*) lua_touserdata(L, -1);
+    lua_getfield(L, LUA_REGISTRYINDEX, "_commands");
+    DArray<VehicleCommand>* commandList = (DArray<VehicleCommand>*) lua_touserdata(L, -1);
     lua_pop(L, 1);
 
-    program->turnTarget.x = x;
-    program->turnTarget.y = y;
+    VehicleProgram program;
+    program.turnTarget = cobot::vec2(x,y);
+
+    commandList->add( { CommandTurn, program } );
 
     return 0;
 }
