@@ -122,6 +122,4 @@ void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, Ve
     }
 
     draw_vehicle(render, catalog, editor.vehicle, VehicleDrawParameters(&partImages, NullPartId, true));
-
-    draw_circle(render, cobot::vec2(ws.x * 0.5, ws.y * 0.95), ws.y * 0.04, editor.rootPart ? cobot::ColorF(0.2, 0.6, 0.2) : cobot::ColorF(0.7, 0.3, 0.1));
 }

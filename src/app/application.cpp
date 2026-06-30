@@ -1081,8 +1081,13 @@ bool Application::mouse_input_solar_system()
         for (int i = 0; i < game.starSystem.planets.size(); i++)
         {
             Planet& planet = game.starSystem.planets[i];
-            cobot::Rectangle area = game.get_planet_screen_area(ws, i);
-            if (area.contains_centered(mouse_pos))
+			cobot::vec2 worldPosition = planet.body.position.xy();
+
+			Camera& camera = cameras[CameraSolarSystem];
+
+			cobot::vec2 position = camera.world_to_screen(worldPosition);
+			
+            if ((mouse_pos - position).magnitude() < planet.body.radius)
             {
                 gameInfo.selectedPlanet = i;
                 found = true;
@@ -1142,11 +1147,13 @@ bool Application::mouse_input_solar_system()
         cobot::vec2 ws = get_window_size();
         for (int index = 0; index < game.starSystem.planets.size(); index += 1)
         {
-            cobot::Rectangle boundingBox = game.get_planet_screen_area(ws, index);
-            if (boundingBox.contains_centered(mouse_pos))
+			Planet& planet = game.starSystem.planets[index];
+			Camera& camera = cameras[CameraSolarSystem];
+			cobot::vec2 position = camera.world_to_screen(planet.body.position.xy());
+            if ((mouse_pos - position).magnitude() < planet.body.radius)
             {
                 ControlMenu& control = ui.control.get_ref(index);
-                control.position = boundingBox.get_position();
+                control.position = position;
                 control.visible = true;
                 break;
             }
@@ -2068,6 +2075,12 @@ void Application::draw_game()
 
 void Application::draw_vehicle_editor()
 {
+    cobot::vec2 ws = get_window_size();
+
+    m_render.space = CoordinateSpace::Screen;
+    draw_circle(m_render, cobot::vec2(ws.x * 0.5, ws.y * 0.95), ws.y * 0.04, editor.rootPart ? cobot::ColorF(0.2, 0.6, 0.2) : cobot::ColorF(0.7, 0.3, 0.1));
+
+    m_render.space = CoordinateSpace::World;
     draw_veditor(m_render, m_catalog, m_input, editor, partImages);
 }
 

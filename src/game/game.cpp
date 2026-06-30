@@ -88,15 +88,6 @@ void keyboardVehicle(GameState* game, KeyboardState* keyboard) {
 
 void keyboardStarSystem(GameState* game, KeyboardState* keyboard) {}
 
-
-cobot::Rectangle GameState::get_planet_screen_area(cobot::vec2 ws, int planet) const
-{
-    // @todo fix
-    const Planet& p = starSystem.planets.get_ref(planet);
-    cobot::vec2 pos = p.body.position.xy();
-    return cobot::Rectangle(pos, cobot::vec2(p.body.radius));
-}
-
 Vehicle* GameState::get_active_vehicle() const
 {
     if (vehicles.size() == 0) return nullptr;
@@ -189,10 +180,9 @@ void draw_planet_orbit(RenderContext& context, const Planet& planet, double cent
 
 void draw_planet_outline(RenderContext& context, const GameState& game, int planetIndex)
 {
-    cobot::vec2 origin = context.render_size / 2;
     Planet& planet = game.starSystem.planets.get_ref(planetIndex);
-    draw_arc(context, origin + planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(10), cobot::degree_to_radian_f(70), planet.color);
-    draw_arc(context, origin + planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(100), cobot::degree_to_radian_f(70), planet.color);
-    draw_arc(context, origin + planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(190), cobot::degree_to_radian_f(70), planet.color);
-    draw_arc(context, origin + planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(280), cobot::degree_to_radian_f(70), planet.color);
+    draw_arc(context, planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(10), cobot::degree_to_radian_f(70), planet.color);
+    draw_arc(context, planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(100), cobot::degree_to_radian_f(70), planet.color);
+    draw_arc(context, planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(190), cobot::degree_to_radian_f(70), planet.color);
+    draw_arc(context, planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(280), cobot::degree_to_radian_f(70), planet.color);
 }

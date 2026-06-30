@@ -46,7 +46,6 @@ struct GameState {
 
     Vehicle* get_active_vehicle() const;
     void update(TimeInfo time);
-    cobot::Rectangle get_planet_screen_area(cobot::vec2 ws, int planet) const;
 };
 
 void idleUpdate(GameState* game, TimeInfo time);
