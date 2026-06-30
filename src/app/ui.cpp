@@ -358,6 +358,27 @@ cobot::Rectangle ResizeInfo::calculate_new_area(cobot::vec2 mouse_position, int 
     return area;
 }
 
+bool UiState::doing_resize() const
+{
+    for (auto& e : editor)
+    {
+        if (e.resize.resize)
+        {
+            return true;
+        }
+    }
+
+    for (auto& p : panel)
+    {
+        if (p.resize.resize)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 DragInfo* UiState::get_drag_info()
 {
     for (auto& e : editor)

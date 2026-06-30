@@ -748,6 +748,7 @@ struct UiState {
 
     Text_Field* get_selected_text_field();
 
+    bool doing_resize() const;
     DragInfo* get_drag_info();
 
     TextEditor* get_editor(UiElementId id);

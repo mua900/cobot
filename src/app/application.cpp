@@ -326,7 +326,6 @@ void Application::handle_events()
 
                     camera->zoom += wheel.y * mouseSensitivity;
                     camera->zoom = cobot::clamp(0.1, 10, camera->zoom);
-                    log_info("%f", camera->zoom);
 
                     camera->position -= m_render.get_center();
                 }
@@ -761,7 +760,7 @@ bool Application::on_mouse_down()
         default: panic("Invalid application mode");
     }
 
-    if ((m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) && get_active_camera() && !get_active_ui().get_drag_info())
+    if ((m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) && get_active_camera() && !get_active_ui().get_drag_info() && !get_active_ui().doing_resize())
     {
         m_input.mouse.dragPosition = m_input.mouse.pos;
         m_input.mouse.drag = true;
