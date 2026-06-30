@@ -2,6 +2,8 @@
 #include "log.hpp"
 
 bool Script::set_source(ScriptLanguage language, String source) {
+	commands.discard_data();
+	
     if (language == ScriptLanguage::LANGUAGE) {
         Interp* interp = interp_create();
         if (!interp) return false;
@@ -39,12 +41,10 @@ void run_script(Script& s)
     }
 }
 
-Script init_lua_script()
+lua_State* init_lua_script(Script& s)
 {
     lua_State* L = luaL_newstate();
-    if (!L) return Script();
-
-    Script script(L);
+    if (!L) nullptr;
 
     luaL_openselectedlibs(L, LUA_MATHLIBK | LUA_TABLIBK | LUA_STRLIBK, 0);
 
@@ -61,9 +61,11 @@ Script init_lua_script()
     lua_setfield(L, -2, "lookat");
     lua_setglobal(L, "vehicle");
 
-    lua_pushlightuserdata(L, &script.commands);
+	s = Script(L);
+	
+    lua_pushlightuserdata(L, &s.commands);
     lua_setfield(L, LUA_REGISTRYINDEX, "_commands");
-
+	
     return L;
 }
 

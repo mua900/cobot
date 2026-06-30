@@ -201,9 +201,13 @@ PartId Vehicle::add_computer_part(Computer& c) {
     VPartTransform transform = getWorldTransform(PartId(PartComputer, index));
     volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_computer_part_scale(c.kind)));
 
-    Script luaScript = init_lua_script();
-    if (!luaScript.is_valid()) return NullPartId;
-    int s = scripts.add(luaScript);
+	int s = scripts.add(Script());
+	lua_State* lua = init_lua_script(scripts.get(s));
+    if (!lua)
+	{
+		scripts.remove(s);
+		return NullPartId;
+	}
 
     return thisPart;
 }
@@ -400,7 +404,7 @@ Vehicle get_default_vehicle()
     vehicle.name = String("Default");
     vehicle.speed = 10;
 
-    vehicle.worldPosition = cobot::vec2(600, 300);
+    vehicle.worldPosition = cobot::vec2(0,0);
     vehicle.volume = cobot::Rectangle(vehicle.worldPosition, cobot::vec2());
 
     StructurePart chassis = {};

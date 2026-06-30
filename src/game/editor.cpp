@@ -101,6 +101,9 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
 
 void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, VehicleEditor& editor, VPartImages& partImages)
 {
+	const Camera* camera = render.camera;
+	ASSERT(camera);
+
     cobot::vec2 ws = render.render_size;
 
     if (editor.haveSeletedPart)
@@ -114,7 +117,7 @@ void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, Ve
         }
         else
         {
-            area = cobot::RectangleRot(input.mouse.pos, cobot::vec2(100, 100), 0);
+            area = cobot::RectangleRot(camera->screen_to_world(input.mouse.pos), cobot::vec2(100, 100), 0);
         }
 
         cobot::Quad points = area.get_points();
