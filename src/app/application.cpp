@@ -1918,27 +1918,34 @@ bool Application::init_vehicle_editor_ui() {
     cobot::Color iconColor = cobot::Color(0x77, 0x33, 0x44);
     cobot::Color tabIconColor = cobot::Color(0x33, 0x66, 0x44);
 
-    AssetId tireIconId = get_asset(String("tireTabIcon"), m_catalog);
+    AssetId tireIconId = get_asset(String("groundTabIcon"), m_catalog);
     if (!tireIconId.is_valid()) return false;
     Icon tireIcon = Icon(m_catalog.get_image(tireIconId), tabIconColor);
     DArray <IconButton> tireTabIcons;
     if (!load_ground_part_icons(tireTabIcons, iconColor, m_catalog)) return false;
 
-    AssetId chasisIconId = get_asset(String("chasisTabIcon"), m_catalog);
+    AssetId chasisIconId = get_asset(String("structuralTabIcon"), m_catalog);
     if (!chasisIconId.is_valid()) return false;
     Icon chasisIcon = Icon(m_catalog.get_image(chasisIconId), tabIconColor);
     DArray<IconButton> chasisTabIcons;
     if (!load_structure_part_icons(chasisTabIcons, iconColor, m_catalog)) return false;
 
-    AssetId controllerIconId = get_asset(String("controllerTabIcon"), m_catalog);
+    AssetId controllerIconId = get_asset(String("computerTabIcon"), m_catalog);
     if (!controllerIconId.is_valid()) return false;
     Icon controllerIcon = Icon(m_catalog.get_image(controllerIconId), tabIconColor);
     DArray<IconButton> controllerTabIcons;
     if (!load_computer_part_icons(controllerTabIcons, iconColor, m_catalog)) return false;
 
+    AssetId powerIconId = get_asset(String("powerTabIcon"), m_catalog);
+    if (!powerIconId.is_valid()) return false;
+    Icon powerIcon = Icon(m_catalog.get_image(powerIconId), tabIconColor);
+    DArray<IconButton> powerTabIcons;
+    if (!load_power_part_icons(powerTabIcons, iconColor, m_catalog)) return false;
+
     partsPanel.tabs.add(PanelTab(tireIcon, tireTabIcons, panel_color));
     partsPanel.tabs.add(PanelTab(chasisIcon, chasisTabIcons, panel_color));
     partsPanel.tabs.add(PanelTab(controllerIcon, controllerTabIcons, panel_color));
+    partsPanel.tabs.add(PanelTab(powerIcon, powerTabIcons, panel_color));
 
     cobot::Rectangle propertiesPanelArea = {
         ws.x * 0.9f, ws.y * 0.5f,

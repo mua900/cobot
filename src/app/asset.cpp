@@ -385,6 +385,7 @@ AssetId get_asset(String name, AssetCatalog& catalog)
                     catalog.path.append(PathSeparator);
 
                     if (!SDL_EnumerateDirectory(catalog.path.c_string(), asset_callback, &catalog)) {
+                        log_error("Couldn't load assets in folder: %s", asset_path);
                         return NullAssetId;
                     }
 
@@ -399,6 +400,7 @@ AssetId get_asset(String name, AssetCatalog& catalog)
                     bool load = load_asset(catalog.path, asset, catalog.load_context);
                     if (!load)
                     {
+                        log_error("Couldn't load asset: %s", asset_path);
                         return NullAssetId;
                     }
 
@@ -432,6 +434,7 @@ AssetId get_asset_at_index(int index, AssetCatalog& catalog)
             catalog.path.append(PathSeparator);
 
             if (!SDL_EnumerateDirectory(catalog.path.c_string(), asset_callback, &catalog)) {
+                log_error("Couldn't load assets in folder: %s", asset_path);
                 return NullAssetId;
             }
 
@@ -446,6 +449,7 @@ AssetId get_asset_at_index(int index, AssetCatalog& catalog)
             bool load = load_asset(catalog.path, catalog.assets[index], catalog.load_context);
             if (!load)
             {
+                log_error("Couldn't load asset: %s", asset_path);
                 return NullAssetId;
             }
 
@@ -533,6 +537,7 @@ SDL_EnumerationResult asset_callback(void* userdata, const char* dirname, const 
 
     // we could make this recursize but maybe not necessary
     if (!load_asset(catalog->path, asset, catalog->load_context)) {
+        log_error("Couldn't load asset: %s/%s", dirname, fname);
         return SDL_ENUM_FAILURE;
     }
 

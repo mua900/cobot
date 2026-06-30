@@ -168,6 +168,8 @@ AssetId get_asset(String name, AssetCatalog& catalog);
 // useful when iterating through the assets and you already know the index
 AssetId get_asset_at_index(int index, AssetCatalog& catalog);
 
+// @todo maybe add an intermediate step that loads the file to memory but doesn't process it yet like load svg text or font but don't yet rasterize it.
+
 AssetKind get_asset_kind(String file_extension);
 
 void get_base_path(String_Builder& builder);

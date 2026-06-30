@@ -95,7 +95,7 @@ enum PowerPartKind {
 };
 
 struct SolarPanel {
-	float powerGeneration;
+	float photonFlux = 0;
 };
 
 struct PowerPart {
@@ -203,16 +203,19 @@ bool load_part_images(VPartImages& images, AssetCatalog& catalog);
 const char* get_structure_part_name(StructurePartKind kind);
 const char* get_ground_part_name(GroundPartKind kind);
 const char* get_computer_part_name(ComputerKind kind);
+const char* get_power_part_name(PowerPartKind kind);
 
 cobot::vec2 get_part_scale(PartKindId id);
 cobot::vec2 get_structure_part_scale(StructurePartKind kind);
 cobot::vec2 get_ground_part_scale(GroundPartKind kind);
 cobot::vec2 get_computer_part_scale(ComputerKind kind);
+cobot::vec2 get_power_part_scale(PowerPartKind kind);
 
 SDL_Texture* get_part_texture(PartKindId partKind, AssetCatalog& catalog);
 
 bool load_ground_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
 bool load_structure_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
 bool load_computer_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
+bool load_power_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
 
 #endif // PARTS_HPP

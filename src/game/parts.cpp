@@ -63,6 +63,19 @@ const char* get_computer_part_name(ComputerKind kind) {
     }
 }
 
+const char* get_power_part_name(PowerPartKind kind) {
+    switch (kind)
+    {
+        case PowerPartSolarPanel: {
+            return "SolarPanel";
+        }
+        case PowerPartSentinel:
+        default: {
+            panic("Invalid power part type");
+        }
+    }
+}
+
 
 cobot::vec2 get_part_scale(PartKindId id)
 {
@@ -73,6 +86,7 @@ cobot::vec2 get_part_scale(PartKindId id)
         case PartGround:     return get_ground_part_scale(GroundPartKind(subKind));
         case PartStructure:  return get_structure_part_scale(StructurePartKind(subKind));
         case PartComputer:   return get_computer_part_scale(ComputerKind(subKind));
+        case PartPower:      return get_power_part_scale(PowerPartKind(subKind));
         default: panic("Unhandled part kind");
     }
 }
@@ -87,6 +101,10 @@ cobot::vec2 get_ground_part_scale(GroundPartKind kind) {
 
 cobot::vec2 get_computer_part_scale(ComputerKind kind) {
     return cobot::vec2(10, 10);
+}
+
+cobot::vec2 get_power_part_scale(PowerPartKind kind) {
+    return cobot::vec2(20, 20);
 }
 
 
@@ -145,6 +163,21 @@ bool load_computer_part_icons(DArray<IconButton>& icons, cobot::Color background
         SDL_Texture* texture = catalog.get_image(id);
 
         icons.add(IconButton(texture, background, get_part_kind_id(PartComputer, i)));
+    }
+
+    return true;
+}
+
+bool load_power_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog)
+{
+    for (int i = 0; i < (int)PowerPartCount; i++)
+    {
+        const char* name = get_power_part_name(PowerPartKind(i));
+        AssetId id = get_asset(String(name), catalog);
+        if (!id.is_valid()) return false;
+        SDL_Texture* texture = catalog.get_image(id);
+
+        icons.add(IconButton(texture, background, get_part_kind_id(PartPower, i)));
     }
 
     return true;
