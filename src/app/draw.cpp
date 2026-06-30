@@ -340,8 +340,8 @@ SDL_Vertex RenderContext::transform_sdl_vertex(SDL_Vertex v) const
 
 SDL_FRect RenderContext::transform_sdl_rectangle(SDL_FRect r) const
 {
-    cobot::Rectangle t = transform_rectangle(cobot::Rectangle(r.x, r.y, r.w, r.h));
-    return SDL_FRect { t.x, t.y, t.w, t.h };
+    cobot::Rectangle t = transform_rectangle(cobot::Rectangle(r.x + r.w / 2, r.y + r.h / 2, r.w, r.h));
+    return SDL_FRect { t.x - t.w / 2, t.y - t.h / 2, t.w, t.h };
 }
 
 void draw_texture(const RenderContext& context, cobot::Rectangle area, SDL_Texture* texture)

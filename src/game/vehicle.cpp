@@ -536,7 +536,6 @@ void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, con
 {
     for (int i = 0; i < vehicle.rootParts.size(); i++)
     {
-        VPartData part_data = vehicle.getPartData(vehicle.rootParts[i]);
         VPartTransform vtransform = vehicle.get_vehicle_transform();
         draw_vehicle_part(vehicle.rootParts[i], vtransform, context, catalog, vehicle, parameters);
     }

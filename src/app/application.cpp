@@ -111,12 +111,10 @@ bool Application::initialize()
 
     gameInfo.selectedTimescale = game.updateState->timeScale;
 
+    for (auto& cam : cameras)
     {
-        for (auto& cam : cameras)
-        {
-            cam.zoom = 1;
-            cam.offset = m_render.get_center();
-        }
+        cam.zoom = 1;
+        cam.offset = m_render.get_center();
     }
 
     {
