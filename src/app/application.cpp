@@ -1909,7 +1909,7 @@ bool Application::init_vehicle_editor_ui() {
     UiState& ui = m_ui[UiVehicleEditor];
     Font font = m_catalog.get_font(m_font);
 
-    cobot::Rectangle panel_area = { 0.1f, 0.1f, ws.x * 0.3f, ws.y * 0.9f };
+    cobot::Rectangle panel_area = { ws.x * 0.1f, ws.y * 0.1f, ws.x * 0.3f, ws.y * 0.9f };
     cobot::Color panel_color = cobot::Color(0x33, 0x44, 0x44);
     Panel partsPanel (PartsPanel, panel_area.to_center(), 32, 48, 16);
     partsPanel.title_height = 10;
@@ -1998,6 +1998,7 @@ void Application::draw()
 
     // SDL_FlushRenderer(m_render.renderer);
 
+    // game graphics
     SDL_SetRenderDrawBlendMode(m_render.renderer, SDL_BLENDMODE_BLEND);
     m_render.space = CoordinateSpace::World;
 
@@ -2020,6 +2021,7 @@ void Application::draw()
         }
     }
 
+    // ui
     SDL_SetRenderDrawBlendMode(m_render.renderer, SDL_BLENDMODE_NONE);
 
     m_render.space = CoordinateSpace::Screen;
