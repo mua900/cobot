@@ -7,6 +7,8 @@
 #include "script.hpp"
 #include "parts.hpp"
 
+#define VEHICLE_DEBUG 1
+
 struct VehiclePart {
     PartKind kind = PartKindSentinel;
     union {
@@ -34,6 +36,7 @@ struct Vehicle {
     MutableString name = {};
     cobot::vec2 worldPosition = {};
     cobot::vec2 velocity = {};
+    float angularVelocity = {};
     float speed = 0;
     float orientation = 0;  // radians, 0 looking right
     cobot::Rectangle volume = {};

@@ -7,8 +7,8 @@
    viewBox="0 0 67.733332 67.733333"
    version="1.1"
    id="svg1"
-   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
-   sodipodi:docname="BasicChassis.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   sodipodi:docname="Chassis.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -23,13 +23,13 @@
      inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
-     inkscape:zoom="4"
-     inkscape:cx="169.25"
-     inkscape:cy="128.625"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="4.9497475"
+     inkscape:cy="121.62237"
      inkscape:window-width="1920"
-     inkscape:window-height="1009"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1" />
   <defs
@@ -43,15 +43,15 @@
        id="rect1"
        width="42.333332"
        height="50.799999"
-       x="12.7"
-       y="-59.266666"
-       transform="rotate(90)" />
+       x="12.700001"
+       y="8.4666662" />
     <rect
        style="fill:#4d4d4d;stroke-width:0.253216"
        id="rect2"
        width="12.7"
        height="25.4"
-       x="42.333332"
-       y="21.166666" />
+       x="-25.4"
+       y="21.166668"
+       transform="rotate(-90)" />
   </g>
 </svg>

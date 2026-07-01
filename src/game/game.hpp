@@ -33,7 +33,6 @@ struct UpdateState {
 };
 
 struct GameState {
-    Camera camera = {};  // @todo
     VehicleId active_vehicle = 0;
     PlanetId active_planet = {};
     DArray<Vehicle> vehicles = {};

@@ -180,6 +180,7 @@ void draw_rectangle(const RenderContext& context, cobot::Rectangle area, cobot::
 void draw_segment(const RenderContext& context, cobot::vec2 start, cobot::vec2 end, float thick, cobot::ColorF color);
 void draw_arrow(const RenderContext& context, cobot::vec2 start, cobot::vec2 end, float thick, float head_ratio, cobot::ColorF color);
 void draw_circle(const RenderContext& context, cobot::vec2 position, float radius, cobot::ColorF color);
+void draw_circle_empty(const RenderContext& context, cobot::vec2 position, float radius, float thick, cobot::ColorF color);
 void draw_circle_with_texture(const RenderContext& context, cobot::vec2 position, float radius, SDL_Texture* texture, cobot::ColorF color);
 void draw_circle_segment(const RenderContext& context, cobot::vec2 position, float radius, float start_angle, float angle, cobot::ColorF color);
 void draw_circle_segment_with_texture(const RenderContext& context, cobot::vec2 position, float radius, float start_angle, float angle, SDL_Texture* texture, cobot::ColorF color);

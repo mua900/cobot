@@ -665,6 +665,27 @@ void draw_arc(const RenderContext& context, cobot::vec2 center, float inner_radi
     #undef NVERTICES
 }
 
+void draw_circle_empty(const RenderContext& context, cobot::vec2 position, float radius, float thick, cobot::ColorF color)
+{
+	#define NSEGMENTS 32
+	const float angle = CONSTANT_TAU / NSEGMENTS;
+	const float c = std::cosf(angle);
+	const float s = std::sinf(angle);
+
+	float xcomp = 1.0f;
+	float ycomp = 0.0f;
+	for (int i = 0; i < NSEGMENTS; i++)
+	{
+		float new_xcomp = c * xcomp - s * ycomp;
+		float new_ycomp = c * ycomp + s * xcomp;
+
+		draw_segment(context, position + cobot::vec2(xcomp * radius, ycomp * radius), position + cobot::vec2(new_xcomp * radius, new_ycomp * radius), thick, color);
+
+		xcomp = new_xcomp;
+		ycomp = new_ycomp;
+	}
+}
+
 void draw_circle(const RenderContext& context, cobot::vec2 position, float radius, cobot::ColorF color)
 {
     draw_circle_with_texture(context, position, radius, nullptr, color);

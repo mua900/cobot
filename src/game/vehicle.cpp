@@ -538,6 +538,10 @@ void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, con
     {
         VPartTransform vtransform = vehicle.get_vehicle_transform();
         draw_vehicle_part(vehicle.rootParts[i], vtransform, context, catalog, vehicle, parameters);
+
+#if VEHICLE_DEBUG
+		draw_circle_empty(context, vtransform.position, vtransform.scale * 300, 10, cobot::ColorF(0.6, 0.1, 0.1));
+#endif // VEHICLE_DEBUG
     }
 }
 
