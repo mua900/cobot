@@ -125,7 +125,7 @@ void draw_vehicle_simulation(const RenderContext& context, const AssetCatalog& c
     draw_vehicle(context, catalog, vehicle, VehicleDrawParameters(&partimages, NullPartId, false));
 }
 
-void draw_star_system(const RenderContext& context, const AssetCatalog& catalog, const GameState& game)
+void draw_star_system(const RenderContext& context, const AssetCatalog& catalog, GameState& game)
 {
     cobot::vec2 render_size = context.render_size;
     auto& system = game.starSystem;
@@ -136,6 +136,9 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
     {
         return;
     }
+
+    bool (*comparePlanetDepth)(Planet& a, Planet& b) = [](Planet& a, Planet& b) { return a.body.position.z > b.body.position.z; };
+    sort_array(system.planets, comparePlanetDepth);
 
     for (auto& planet : system.planets)
     {

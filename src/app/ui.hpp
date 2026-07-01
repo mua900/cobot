@@ -182,7 +182,7 @@ struct Text_Field
 {
     UiElementId id = {};
     UiElementInfo info = {};
-    bool editable = false;  // @todo
+    bool editable = false;
 
     cobot::Rectangle m_area = {};
     cobot::Color background = {};
@@ -206,31 +206,34 @@ struct Text_Field
     Text_Field() {}
 
     // height -> empty height
-    Text_Field(AssetId font, float height, cobot::Color background_color, cobot::Color textColor, bool visible = true)
+    Text_Field(AssetId font, float height, cobot::Color background_color, cobot::Color textColor, bool visible = true, bool is_editable = true)
     {
         m_font_size = height;
         fontId = font;
         background = background_color;
         text_color = textColor;
 		info.visible = visible;
+        editable = is_editable;
     }
 
-    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, bool visible = true)
+    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, bool visible = true, bool is_editable = true)
     {
         fontId = font;
         background = background_color;
         text_color = textColor;
         m_area = area;
 		info.visible = visible;
+        editable = is_editable;
     }
 
-    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, UiElementId ident, bool visible = true) : id(ident)
+    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, UiElementId ident, bool visible = true, bool is_editable = true) : id(ident)
     {
         fontId = font;
         background = background_color;
         text_color = textColor;
         m_area = area;
 		info.visible = visible;
+        editable = is_editable;
     }
 
     Text_Field(Text_Field&& other) = default;

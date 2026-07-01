@@ -7,7 +7,7 @@
 #include "script.hpp"
 #include "parts.hpp"
 
-#define VEHICLE_DEBUG 1
+#define VEHICLE_DEBUG 0
 
 struct VehiclePart {
     PartKind kind = PartKindSentinel;

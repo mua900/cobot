@@ -534,7 +534,6 @@ bool Application::keyboard_input_down_vehicle_editor(KeyboardEvent keyboard)
         case SDL_SCANCODE_R:
         {
             editor.rootPart = !editor.rootPart;
-            log_info("Root part: %s", editor.rootPart ? "true" : "false");
             return true;
         }
     }
@@ -813,6 +812,12 @@ bool Application::mouse_input_common()
 	for (int it = 0; it < ui.text_field.size(); it++)
 	{
 		auto& field = ui.text_field.get_ref(it);
+
+        if (!field.editable)
+        {
+            continue;
+        }
+
         if (!field.info.visible)
         {
             continue;
@@ -1829,12 +1834,12 @@ bool Application::init_solar_system_ui()
     cobot::Color valueBackground (0x77, 0x66, 0x44);
     cobot::Color valueText (0x33, 0x44, 0x88);
 
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("SemiMajorAxis"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitSemiMajorAxis, ValueNumber));
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("Eccentricity"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitEccentricity, ValueNumber));
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("TrueAnomaly"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitTrueAnomaly, ValueNumber));
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("LongitudeOfTheAscendingNode"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitLongitudeOfTheAscendingNode, ValueNumber));
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitArgumentOfPeriapsis, ValueNumber));
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText)), OrbitInclination, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("SemiMajorAxis"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitSemiMajorAxis, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("Eccentricity"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitEccentricity, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("TrueAnomaly"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitTrueAnomaly, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("LongitudeOfTheAscendingNode"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitLongitudeOfTheAscendingNode, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitArgumentOfPeriapsis, ValueNumber));
+    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitInclination, ValueNumber));
 
     missions_tab.fields.add(ValueField(create_text(m_render.renderer, String("Add Mission"), font, cobot::Color(0xAA, 0xAA, 0xDD)), 0, AddMission, ValueButton));
 
@@ -1909,10 +1914,11 @@ bool Application::init_vehicle_editor_ui() {
     UiState& ui = m_ui[UiVehicleEditor];
     Font font = m_catalog.get_font(m_font);
 
-    cobot::Rectangle panel_area = { ws.x * 0.1f, ws.y * 0.1f, ws.x * 0.3f, ws.y * 0.9f };
+    float panelTitleHeight = 10;
+    cobot::Rectangle panel_area = { 0, panelTitleHeight, ws.x * 0.3f, ws.y * 0.9f };
     cobot::Color panel_color = cobot::Color(0x33, 0x44, 0x44);
     Panel partsPanel (PartsPanel, panel_area.to_center(), 32, 48, 16);
-    partsPanel.title_height = 10;
+    partsPanel.title_height = panelTitleHeight;
     partsPanel.title_bar_color = cobot::Color(0x44, 0x66, 0x77);
 
     cobot::Color iconColor = cobot::Color(0x77, 0x33, 0x44);

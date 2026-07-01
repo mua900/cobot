@@ -148,6 +148,15 @@ public:
 		return m_size == 0;
 	}
 
+	void switch_items(int a, int b)
+	{
+		if (!(in_bounds(a) && in_bounds(b))) panic("Out of bounds array access trying to switch items");
+		if (a == b) return;
+		T tmp = std::move(m_data[a]);
+		m_data[a] = std::move(m_data[b]);
+		m_data[b] = std::move(tmp);
+	}
+
 	T pop()	{
 		if (is_empty())
 		{
@@ -228,6 +237,26 @@ Find_Result find_in_array(DArray<T>& array, T& elem) {
 	}
 
 	return Find_Result{ 0, false };
+}
+
+// compare is true if a is greater
+template<typename T>
+void sort_array(DArray<T>& array, bool (*CompareFunc)(T& a, T& b))
+{
+	for (int i = 0; i < array.size(); i++)
+	{
+		int minIndex = i;
+
+		for (int j = i + 1; j < array.size(); j++)
+		{
+			if (CompareFunc(array.get_ref(minIndex), array.get_ref(j)))
+			{
+				minIndex = j;
+			}
+		}
+
+		array.switch_items(i, minIndex);
+	}
 }
 
 template<typename T>
