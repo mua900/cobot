@@ -132,9 +132,18 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
 
     draw_circle(context, cobot::vec2(0,0), system.star.radius, cobot::ColorF(0.6, 0.5, 0.1));
 
-    // @todo fix
-    // SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 0, nullptr, sizeof(nullptr));
-    // SDL_SetGPURenderState(context.renderer, context.render_states[RenderStatePlanet]);
+    cobot::vec3 uniformPosition = {
+        0.0, 1.0, 1.0
+    };
+    if (!SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 0, &uniformPosition, sizeof(uniformPosition)))
+    {
+        log_error("Couldn't set uniform");
+        return;
+    }
+	if (!SDL_SetGPURenderState(context.renderer, context.render_states[RenderStatePlanet]))
+    {
+        return;
+    }
 
     float maxDepth = 10;
     for (auto& planet : system.planets)
