@@ -2,3 +2,4 @@
 - add a grid mode for vehicle editor where you can build structural parts in a grid
 - switch to sdfs for font rendering
 - fix vsync
+- an easier way to update assets

@@ -132,26 +132,29 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
 
     draw_circle(context, cobot::vec2(0,0), system.star.radius, cobot::ColorF(0.6, 0.5, 0.1));
 
-    cobot::vec4 uniformPosition = {
-        0.0, 1.0, 1.0
-    };
-    if (!SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 0, &uniformPosition, sizeof(uniformPosition)))
-    {
-        log_error("Couldn't set uniform");
-        return;
-    }
 	if (!SDL_SetGPURenderState(context.renderer, context.render_states[RenderStatePlanet]))
     {
         return;
     }
 
-    float maxDepth = 10;
     for (auto& planet : system.planets)
     {
-        float zdistance = cobot::smoothstep(-maxDepth / 2, maxDepth / 2, planet.body.position.z);
-        // remap to 0.5 - 1.0 range
-        zdistance = (zdistance + 1.0f) / 2;
-        draw_circle_with_texture(context, planet.body.position.xy(), planet.body.radius, planet.map, cobot::ColorF(planet.color, zdistance));
+        ASSERT(context.camera);
+        const Camera* camera = context.camera;
+
+        cobot::vec4 uniformPosition = {
+            planet.body.position.x, planet.body.position.y, planet.body.position.z, planet.body.radius
+        };
+        SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 0, &uniformPosition, sizeof(uniformPosition));
+
+        float cameraData[8] = {
+            camera->position.x, camera->position.y,
+            camera->zoom, camera->rotation,
+            camera->offset.x, camera->offset.y
+        };
+        SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 1, cameraData, sizeof(cameraData));
+
+        draw_circle_with_texture(context, planet.body.position.xy(), planet.body.radius, planet.map, cobot::ColorF(planet.color));
     }
 
     SDL_SetGPURenderState(context.renderer, nullptr);

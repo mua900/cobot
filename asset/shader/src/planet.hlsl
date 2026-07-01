@@ -1,9 +1,17 @@
 #include "open_simplex.hlsl"
+#include "utility.hlsl"
 
 cbuffer BodyInfo : register(b0, space3)
 {
     float3 position;
-    float t;
+    float radius;
+};
+
+cbuffer CameraInfo : register(b1, space3)
+{
+    float4 camera;
+    float2 offset;
+    float2 padding;
 };
 
 struct PixelShaderInput
@@ -15,5 +23,12 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-    return float4(position, 1.0);
+    float2 fragment = screenToWorld(input.pos.xy, camera, offset);
+
+    float maxDepth = 10.0;
+    float z = smoothstep(-maxDepth / 2, maxDepth / 2, position.z);
+    // remap to 0.5 - 1.0 range
+    z = (z + 1.0f) / 2;
+
+    return float4(camera.x,0,0,z);
 }
