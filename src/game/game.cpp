@@ -132,7 +132,7 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
 
     draw_circle(context, cobot::vec2(0,0), system.star.radius, cobot::ColorF(0.6, 0.5, 0.1));
 
-    cobot::vec3 uniformPosition = {
+    cobot::vec4 uniformPosition = {
         0.0, 1.0, 1.0
     };
     if (!SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 0, &uniformPosition, sizeof(uniformPosition)))

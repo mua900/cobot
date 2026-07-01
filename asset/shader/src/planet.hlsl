@@ -3,6 +3,7 @@
 cbuffer BodyInfo : register(b0, space3)
 {
     float3 position;
+    float t;
 };
 
 struct PixelShaderInput
