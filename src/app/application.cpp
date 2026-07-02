@@ -320,12 +320,8 @@ void Application::handle_events()
                 Camera* camera = get_active_camera();
                 if (camera)
                 {
-                    camera->position += m_render.get_center();
-
                     camera->zoom += wheel.y * mouseSensitivity;
                     camera->zoom = cobot::clamp(0.1, 10, camera->zoom);
-
-                    camera->position -= m_render.get_center();
                 }
                 break;
             }
@@ -372,10 +368,13 @@ void Application::handle_events()
 
 void Application::mouse_move_vehicle_editor()
 {
+    Camera& cam = cameras[CameraVehicleEditor];
+
     cobot::vec2 mouse_pos = m_input.mouse.pos;
+    cobot::vec2 mouseWorld = cam.screen_to_world(mouse_pos);
 	UiState& ui = m_ui[UiVehicleEditor];
 
-    AttachmentDistance distance = editor.vehicle.getAttachmentPointClosest(mouse_pos, 10);
+    AttachmentDistance distance = editor.vehicle.getAttachmentPointClosest(mouseWorld, 10);
     if (distance.point)
     {
         editor.snap = chain_part_transform(editor.vehicle.getWorldTransform(distance.parent), VPartTransform(distance.point->position, 1));
@@ -717,7 +716,7 @@ void Application::on_mouse_move()
         if (camera)
         {
             cobot::vec2 move = (m_input.mouse.dragPosition - mouse_pos);
-            camera->position += cobot::vec2(move.x, -move.y);
+            camera->position += cobot::vec2(move.x, -move.y) / camera->zoom;
             m_input.mouse.dragPosition = mouse_pos;
         }
         return;
@@ -755,6 +754,11 @@ bool Application::on_mouse_down()
         case ModeVehicleEditor: consume = mouse_input_vehicle_editor(); break;
         case ModeSolarSystem: consume = mouse_input_solar_system(); break;
         default: panic("Invalid application mode");
+    }
+
+    if (consume)
+    {
+        return true;
     }
 
     if ((m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) && get_active_camera() && !get_active_ui().get_drag_info() && !get_active_ui().doing_resize())
@@ -1286,7 +1290,7 @@ bool Application::mouse_input_game()
                     {
                         switch_modes(ModeMenu);
                         switch_menu(MenuMain);
-                        break;
+                        return true;
                     }
                 }
             }
@@ -1295,7 +1299,8 @@ bool Application::mouse_input_game()
         auto vehicle = game.get_active_vehicle();
         if (!vehicle->volume.contains_centered(mouse_pos))
         {
-            PartId part = vehicle->getPartAt(mouse_pos);
+            const Camera* camera = get_active_camera();
+            PartId part = vehicle->getPartAt(camera->screen_to_world(mouse_pos));
             if (part.is_null())
             {
                 for (auto& menu : ui.control) {
@@ -1309,7 +1314,8 @@ bool Application::mouse_input_game()
         auto vehicle = game.get_active_vehicle();
         if (vehicle->volume.contains_centered(mouse_pos))
         {
-            PartId part = vehicle->getPartAt(mouse_pos);
+            const Camera* camera = get_active_camera();
+            PartId part = vehicle->getPartAt(camera->screen_to_world(mouse_pos));
             if (part.is_valid())
             {
                 auto& menu = ui.control.get_ref(part.kind);
@@ -2093,11 +2099,11 @@ void Application::draw_vehicle_editor()
 {
     cobot::vec2 ws = get_window_size();
 
+    draw_veditor(m_render, m_catalog, m_input, editor, partImages);
+
     m_render.space = CoordinateSpace::Screen;
     draw_circle(m_render, cobot::vec2(ws.x * 0.5, ws.y * 0.95), ws.y * 0.04, editor.rootPart ? cobot::ColorF(0.2, 0.6, 0.2) : cobot::ColorF(0.7, 0.3, 0.1));
-
     m_render.space = CoordinateSpace::World;
-    draw_veditor(m_render, m_catalog, m_input, editor, partImages);
 }
 
 void Application::draw_solar_system()

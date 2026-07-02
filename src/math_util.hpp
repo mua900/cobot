@@ -160,7 +160,7 @@ struct vec3 {
     {
         x -= other.x;
         y -= other.y;
-        y -= other.z;
+        z -= other.z;
     }
 
     void operator/=(float s)

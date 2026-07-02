@@ -309,7 +309,7 @@ cobot::vec2 RenderContext::transformWorld(cobot::vec2 p) const
 
 cobot::vec2 RenderContext::transformScreen(cobot::vec2 p) const
 {
-    if (space == CoordinateSpace::Screen)
+    if (space == CoordinateSpace::World)
     {
         return camera->screen_to_world(p);
     }
@@ -322,7 +322,8 @@ cobot::vec2 RenderContext::transformScreen(cobot::vec2 p) const
 cobot::Rectangle RenderContext::transform_rectangle(cobot::Rectangle r) const
 {
     cobot::vec2 t = transformWorld(r.get_position());
-    return cobot::Rectangle(t,r.get_scale());
+    cobot::vec2 s = (space == CoordinateSpace::World) ? r.get_scale() * camera->zoom : r.get_scale();
+    return cobot::Rectangle(t,s);
 }
 
 SDL_FPoint RenderContext::transform_sdl_point(SDL_FPoint p) const
@@ -949,10 +950,26 @@ void draw_quad(const RenderContext& context, cobot::Quad quad, cobot::ColorF col
 void draw_quad_with_texture(const RenderContext& context, cobot::Quad quad, SDL_Texture* texture, cobot::ColorF color)
 {
     SDL_Vertex vertex [4];
-    vertex[cobot::QuadTopLeft]     = { context.transform_sdl_point(SDL_FPoint { quad.vertices[0].x, quad.vertices[0].y }), SDL_FColor { color.r, color.g, color.b, color.a }, SDL_FPoint { 0, 1 } };
-    vertex[cobot::QuadTopRight]    = { context.transform_sdl_point(SDL_FPoint { quad.vertices[1].x, quad.vertices[1].y }), SDL_FColor { color.r, color.g, color.b, color.a }, SDL_FPoint { 1, 1 } };
-    vertex[cobot::QuadBottomLeft]  = { context.transform_sdl_point(SDL_FPoint { quad.vertices[2].x, quad.vertices[2].y }), SDL_FColor { color.r, color.g, color.b, color.a }, SDL_FPoint { 0, 0 } };
-    vertex[cobot::QuadBottomRight] = { context.transform_sdl_point(SDL_FPoint { quad.vertices[3].x, quad.vertices[3].y }), SDL_FColor{ color.r, color.g, color.b, color.a }, SDL_FPoint { 1, 0 } };
+    vertex[cobot::QuadTopLeft]     = {
+		context.transform_sdl_point(SDL_FPoint { quad.vertices[cobot::QuadTopLeft].x, quad.vertices[cobot::QuadTopLeft].y }),
+		SDL_FColor { color.r, color.g, color.b, color.a },
+		SDL_FPoint { 0, 1 }
+	};
+    vertex[cobot::QuadTopRight]    = {
+		context.transform_sdl_point(SDL_FPoint { quad.vertices[cobot::QuadTopRight].x, quad.vertices[cobot::QuadTopRight].y }),
+		SDL_FColor { color.r, color.g, color.b, color.a },
+		SDL_FPoint { 1, 1 }
+	};
+    vertex[cobot::QuadBottomLeft]  = {
+		context.transform_sdl_point(SDL_FPoint { quad.vertices[cobot::QuadBottomLeft].x, quad.vertices[cobot::QuadBottomLeft].y }),
+		SDL_FColor { color.r, color.g, color.b, color.a },
+		SDL_FPoint { 0, 0 }
+	};
+    vertex[cobot::QuadBottomRight] = {
+		context.transform_sdl_point(SDL_FPoint { quad.vertices[cobot::QuadBottomRight].x, quad.vertices[cobot::QuadBottomRight].y }),
+		SDL_FColor{ color.r, color.g, color.b, color.a },
+		SDL_FPoint { 1, 0 }
+	};
     int index [6] = {
         cobot::QuadTopLeft, cobot::QuadBottomRight, cobot::QuadTopRight,
         cobot::QuadTopLeft, cobot::QuadBottomLeft, cobot::QuadBottomRight,

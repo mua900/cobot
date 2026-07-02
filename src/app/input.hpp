@@ -29,8 +29,6 @@
 #define KEY_LEFT SDL_SCANCODE_LEFT
 
 using Scancode = SDL_Scancode;
-constexpr Scancode ScancodeUnknown = SDL_SCANCODE_UNKNOWN;
-constexpr Scancode ScancodeCount = SDL_SCANCODE_COUNT;
 
 using KeyboardEvent = SDL_KeyboardEvent;
 

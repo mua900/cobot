@@ -8,7 +8,7 @@
 #include "text.hpp"
 #include "camera.hpp"
 
-#define GRAPHICS_DEBUG 1
+#define GRAPHICS_DEBUG 0
 
 static const auto DEBUG_COLOR = cobot::ColorF(0.6, 0.5, 0.4, 1.0);
 
@@ -101,6 +101,7 @@ struct RenderContext {
 	const Camera* camera = {};
 
     // @todo switch to sdl gpu
+    // all below belongs to incomplete code
     SDL_Texture* target_texture = nullptr;
     SDL_GPUTexture* render_target = nullptr;
 
