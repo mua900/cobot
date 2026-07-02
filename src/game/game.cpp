@@ -157,7 +157,15 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
         };
         SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 1, cameraData, sizeof(cameraData));
 
-        draw_circle_with_texture(context, planet.body.position.xy(), planet.body.radius, planet.map, cobot::ColorF(planet.color));
+        cobot::vec2 planetPos = planet.body.position.xy();
+        float rad = planet.body.radius;
+
+        cobot::Quad quad;
+        quad.vertices[cobot::QuadTopLeft]     = planetPos + cobot::vec2(-rad,  rad);
+        quad.vertices[cobot::QuadTopRight]    = planetPos + cobot::vec2( rad,  rad);
+        quad.vertices[cobot::QuadBottomLeft]  = planetPos + cobot::vec2(-rad, -rad);
+        quad.vertices[cobot::QuadBottomRight] = planetPos + cobot::vec2( rad, -rad);
+        draw_quad(context, quad, planet.color);
     }
 
     SDL_SetGPURenderState(context.renderer, nullptr);
