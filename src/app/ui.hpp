@@ -178,6 +178,12 @@ enum Text_Input_Target : u8 {
 
 constexpr cobot::Color TextCursorColor (0x33, 0x56, 0x74, 0xaa);
 
+struct TextSelection
+{
+    int start;
+    int end;
+};
+
 struct Text_Field
 {
     UiElementId id = {};
@@ -196,9 +202,11 @@ struct Text_Field
     int m_cursor_line = 0;
     int m_line_count = 0;
 
-    // character indexes for start and end of the selection region
-    int m_selection_start = 0;
-    int m_selection_end = 0;
+    int m_cursor = 0;
+    int m_selection_point = 0;
+
+    float mouse_x;
+    float mouse_y;
 
     float m_font_size = 0.0;
     SDL_Texture* m_texture = nullptr;  // cached texture the text is rendered on, updated every text input event
@@ -245,6 +253,18 @@ struct Text_Field
         return m_text.to_string();
     }
 
+    TextSelection get_selection()
+    {
+        if (m_cursor > m_selection_point)
+        {
+            return {m_selection_point, m_cursor};
+        }
+        else
+        {
+            return {m_cursor, m_selection_point};
+        }
+    }
+
     bool set_and_render_text(SDL_Renderer* renderer, Font font, String s, bool wrapped)
     {
         set_string(s);
@@ -259,18 +279,19 @@ struct Text_Field
 
     void append_string(String s)
     {
-        if (m_selection_start != m_selection_end)
+        if (m_cursor != m_selection_point)
         {
-            m_buffer.remove(m_selection_start, m_selection_end - m_selection_start);
-            m_buffer.append(s, m_selection_start);
+            TextSelection selection = get_selection();
+            m_buffer.remove(selection.start, selection.end - selection.start);
+            m_buffer.append(s, m_cursor);
         }
         else
         {
-            m_buffer.append(s, m_selection_start);
-            m_selection_start += s.size;
+            m_buffer.append(s, m_cursor);
+            m_cursor += s.size;
         }
 
-        m_selection_end = m_selection_start;
+        m_selection_point = m_cursor;
     }
 
     bool update_text(SDL_Renderer* renderer, Font font, bool wrapped)
@@ -286,8 +307,8 @@ struct Text_Field
         m_cursor_pixel_y = 0;
         m_cursor_line = 0;
         m_line_count = 0;
-        m_selection_start = 0;
-        m_selection_end = 0;
+        m_cursor = 0;
+        m_selection_point = 0;
         m_font_size = 0;
     }
 
@@ -300,46 +321,46 @@ struct Text_Field
 
     void delete_text()
     {
-        if (m_selection_end < m_selection_start)
-            return;
-        int amount = m_selection_end - m_selection_start;
-        m_buffer.remove(m_selection_start, amount);
+        TextSelection s = get_selection();
+        int amount = s.end - s.start;
+        m_buffer.remove(s.start, amount);
 
-        m_selection_end = m_selection_start;
+        m_selection_point = m_cursor;
     }
 
     void delete_at_cursor()
     {
-        if (m_selection_start != m_selection_end)
-            return;
-        if (m_selection_start == 0)
+        if (m_cursor != m_selection_point)
             return;
 
-        m_selection_end = m_selection_start;
-        m_selection_start -= 1;
+        ASSERT(m_cursor >= 0);
 
-        delete_text();
+        if (m_cursor == 0)
+            return;
+
+        m_cursor -= 1;
+        m_buffer.remove(m_cursor, 1);
+        m_selection_point = m_cursor;
     }
 
     void delete_after_cursor()
     {
-        if (m_selection_start != m_selection_end)
+        if (m_cursor != m_selection_point)
             return;
-        if (m_selection_start == m_buffer.length)
+        if (m_cursor == m_buffer.length)
             return;
 
-        m_selection_end = m_selection_start + 1;
-
-        delete_text();
+        m_buffer.remove(m_cursor, 1);
+        m_selection_point = m_cursor;
     }
 
     void delete_at_character(int character)
     {
-        if (character >= m_buffer.length)
+        if (character >= m_buffer.length - 1)
             return;
 
-        m_selection_start = character;
-        m_selection_end = character + 1;
+        m_cursor = character;
+        m_selection_point = character + 1;
         delete_text();
     }
 

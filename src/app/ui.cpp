@@ -135,13 +135,13 @@ void Text_Field::calculate_cursor_from_selection(String string, Font font, bool 
 
     if (wrapped)
     {
-        while (cursor_byte < m_selection_start)
+        while (cursor_byte < m_cursor)
         {
             size_t to_next_newline = 0;
             size_t cursor_character_this_line = 0;
 
             // measure distance to linebreak
-            while (cursor_byte + to_next_newline < m_selection_start && string.data[cursor_byte + to_next_newline] != '\n') {
+            while (cursor_byte + to_next_newline < m_cursor && string.data[cursor_byte + to_next_newline] != '\n') {
                 to_next_newline += 1;
             }
 
@@ -156,7 +156,7 @@ void Text_Field::calculate_cursor_from_selection(String string, Font font, bool 
             }
 
             // measure distance to end of text render area
-            TTF_MeasureString(font.font, string.data + cursor_byte, m_selection_start - cursor_byte, area.w, &cursor_pixel_x, &cursor_character_this_line);
+            TTF_MeasureString(font.font, string.data + cursor_byte, m_cursor - cursor_byte, area.w, &cursor_pixel_x, &cursor_character_this_line);
 
             // take the minimum
             cursor_character_this_line = MIN(cursor_character_this_line, to_next_newline);
@@ -183,7 +183,7 @@ void Text_Field::calculate_cursor_from_selection(String string, Font font, bool 
         m_cursor_pixel_y = cursor_pixel_y;
     }
     else {
-        TTF_MeasureString(font.font, string.data, m_selection_start, MAX_INTEGER, &cursor_pixel_x, nullptr);
+        TTF_MeasureString(font.font, string.data, m_cursor, MAX_INTEGER, &cursor_pixel_x, nullptr);
 
         m_cursor_line = 0;
         m_cursor_pixel_x = cursor_pixel_x;
@@ -309,19 +309,19 @@ void Text_Field::insert_tab(int tab_width)
     }
 
     delete_text();
-    m_buffer.append(String(buffer, tab_width), m_selection_start);
+    m_buffer.append(String(buffer, tab_width), m_cursor);
 
-    m_selection_start += 1;
-    m_selection_end = m_selection_start;
+    m_cursor += tab_width;
+    m_selection_point = m_cursor;
 }
 
 void Text_Field::insert_line()
 {
     delete_text();
-    m_buffer.append(String("\n"), m_selection_start);
+    m_buffer.append(String("\n"), m_cursor);
 
-    m_selection_start += 1;
-    m_selection_end = m_selection_start;
+    m_cursor += 1;
+    m_selection_point = m_cursor;
 }
 
 cobot::Rectangle ResizeInfo::calculate_new_area(cobot::vec2 mouse_position, int min, int max) const

@@ -629,9 +629,8 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             {
                 auto field = get_active_ui().get_selected_text_field();
                 if (field) {
-                    field->delete_text();
-                    field->m_selection_start = 0;
-                    field->m_selection_end = 0;
+                    field->m_cursor = 0;
+                    field->m_selection_point = 0;
 
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
@@ -647,9 +646,8 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             {
                 auto field = get_active_ui().get_selected_text_field();
                 if (field) {
-                    field->delete_text();
-                    field->m_selection_start = field->m_buffer.length;
-                    field->m_selection_end = field->m_selection_start;
+                    field->m_cursor = field->m_buffer.length;
+                    field->m_selection_point = field->m_buffer.length;
 
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
@@ -663,8 +661,8 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             if (doing_text_input) {
                 auto field = get_active_ui().get_selected_text_field();
                 if (field) {
-                    field->m_selection_start = MAX(0, field->m_selection_start - 1);
-                    field->m_selection_end = field->m_selection_start;
+                    field->m_cursor = MAX(0, field->m_cursor - 1);
+                    field->m_selection_point = field->m_cursor;
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
                 }
@@ -677,8 +675,8 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             if (doing_text_input) {
                 auto field = get_active_ui().get_selected_text_field();
                 if (field) {
-                    field->m_selection_start = MIN(field->m_selection_start + 1, field->m_buffer.length);
-                    field->m_selection_end = field->m_selection_start;
+                    field->m_cursor = MIN(field->m_cursor + 1, field->m_buffer.length);
+                    field->m_selection_point = field->m_cursor;
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
                 }
@@ -834,15 +832,25 @@ bool Application::mouse_input_common()
         
 		cobot::Rectangle area = field.m_area;
 		if (area.contains_centered(mouse_pos)) {
-			text_input_start();
+            cobot::vec2 relative = mouse_pos - area.get_top_left();
+            if (doing_text_input && (ui.text_input_target.flags & TEXT_INPUT_TARGET_IS_VALID) && ui.text_input_target.index == it)
+            {
+                // if we are already doing text input
+                field.mouse_x = relative.x;
+                field.mouse_y = relative.y;
+                log_info("%f %f", relative.x, relative.y);
+            }
+            else
+            {
+                text_input_start();
 
-			ui.text_input_target.index = it;
-			ui.text_input_target.flags = TEXT_INPUT_TARGET_IS_VALID;
+                ui.text_input_target.index = it;
+                ui.text_input_target.flags = TEXT_INPUT_TARGET_IS_VALID;
+            }
 
-			cobot::vec2 relative = m_input.mouse.pos - area.get_top_left();
-			Font font = m_catalog.get_font(field.fontId);
-			field.m_selection_start = field.calculate_cursor_from_mouse(relative, field.get_string(), font, true);
-			field.m_selection_end = field.m_selection_start;
+            Font font = m_catalog.get_font(field.fontId);
+            field.m_cursor = field.calculate_cursor_from_mouse(relative, field.get_string(), font, true);
+            field.m_selection_point = field.m_cursor;
 
 			return true;
 		}
@@ -1218,8 +1226,8 @@ bool Application::mouse_input_game()
 
                 cobot::vec2 relative = m_input.mouse.pos - area.get_top_left();
                 Font font = m_catalog.get_font(field.fontId);
-                field.m_selection_start = field.calculate_cursor_from_mouse(relative, field.get_string(), font, true);
-                field.m_selection_end = field.m_selection_start;
+                field.m_cursor = field.calculate_cursor_from_mouse(relative, field.get_string(), font, true);
+                field.m_selection_point = field.m_cursor;
 
                 return true;
             }
@@ -2502,7 +2510,7 @@ void Application::render_text_field(const Text_Field& text_field) const
 
         if (doing_text_input)
         {
-            float cursor_width = area.w / 1000;
+            float cursor_width = cobot::max(area.w / 500, 5);
             render_rectangle(cobot::Rectangle(cobot::vec2(top_left.x + text_field.m_cursor_pixel_x - cursor_width / 2, top_left.y + text_field.m_cursor_pixel_y + font_size / 2), cobot::vec2(cursor_width, font_size)), TextCursorColor);
         }
     }
