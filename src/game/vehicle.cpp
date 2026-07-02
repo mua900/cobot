@@ -100,6 +100,10 @@ cobot::Rectangle Vehicle::calculate_part_volume_with_parent(VPartTransform paren
             volume = cobot::Rectangle(global.position, global.scale * scale);
             break;
         }
+        case PartPower: {
+            global = chain_part_transform(parent, powerPart.get(part.index).part.transform);
+            break;
+        }
         default:
             panic("Invalid part kind");
     }
@@ -121,7 +125,7 @@ VPartTransform Vehicle::getWorldTransform(PartId part) const
         t = chain_part_transform(data.transform, t);
     }
 
-    t = chain_part_transform(VPartTransform(worldPosition, 1.0), t);
+    t = chain_part_transform(get_vehicle_transform(), t);
 
     return t;
 }
@@ -154,6 +158,9 @@ VPartData& Vehicle::getPartData(PartId id) const
         }
         case PartComputer: {
             return computerPart[id.index].part;
+        }
+        case PartPower: {
+            return powerPart[id.index].part;
         }
         default: panic("Invalid part type");
     }
@@ -212,6 +219,17 @@ PartId Vehicle::add_computer_part(Computer& c) {
     return thisPart;
 }
 
+PartId Vehicle::add_power_part(PowerPart& p) {
+    int index = powerPart.add(p);
+
+    PartId thisPart = PartId(PartPower, index);
+
+    VPartTransform transform = getWorldTransform(PartId(PartPower, index));
+    volume = merge_volumes(volume, cobot::Rectangle(transform.position, transform.scale * get_power_part_scale(p.kind)));
+
+    return thisPart;
+}
+
 GroundPart* Vehicle::get_ground_part(PartId t) {
     if (t.kind != PartGround) {
         return nullptr;
@@ -231,6 +249,13 @@ Computer* Vehicle::get_computer_part(PartId c) {
         return nullptr;
     }
     return computerPart.get_ptr(c.index);
+}
+
+PowerPart* Vehicle::get_power_part(PartId p) {
+    if (p.kind != PartPower) {
+        return nullptr;
+    }
+    return powerPart.get_ptr(p.index);
 }
 
 int Vehicle::add_root(PartId part)
@@ -393,6 +418,17 @@ PartId Vehicle::get_part_on_location(PartId part, cobot::vec2 location, VPartTra
                 return NullPartId;
             }
         }
+        case PartPower: {
+            PowerPart& power = powerPart[part.index];
+            VPartTransform t = chain_part_transform(parent, power.part.transform);
+            cobot::vec2 scale = get_power_part_scale(power.kind);
+            if (cobot::Rectangle(t.position, scale * t.scale).contains_centered(location)) {
+                return part;
+            }
+            else {
+                return NullPartId;
+            }
+        }
         default: panic("Invalid part type");
     }
 }
@@ -509,6 +545,16 @@ void draw_computer_part(const Computer& computer, VPartTransform parent, const R
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 }
 
+void draw_power_part(const PowerPart& power, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
+{
+    AssetId imageId = parameters.partImages->partImages[PartPower][power.kind];
+    SDL_Texture* texture = catalog.get_image(imageId);
+
+    VPartTransform transform = chain_part_transform(parent, power.part.transform);
+    cobot::Rectangle area = cobot::Rectangle(transform.position, get_power_part_scale(power.kind) * transform.scale);
+    render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
+}
+
 void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters)
 {
     switch (part.kind)
@@ -526,6 +572,11 @@ void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& 
         case PartComputer: {
             const Computer& computer = vehicle.computerPart[part.index];
             draw_computer_part(computer, parent, context, catalog, vehicle, parameters);
+            break;
+        }
+        case PartPower: {
+            const PowerPart& power = vehicle.powerPart[part.index];
+            draw_power_part(power, parent, context, catalog, vehicle, parameters);
             break;
         }
         default: panic("Invalid part type");
@@ -552,6 +603,7 @@ SDL_Texture* get_part_texture(PartKindId partKind, AssetCatalog& catalog)
         case PartStructure:      name = get_structure_part_name(StructurePartKind(subKind)); break;
         case PartGround:         name = get_ground_part_name(GroundPartKind(subKind)); break;
         case PartComputer:       name = get_computer_part_name(ComputerKind(subKind)); break;
+        case PartPower:          name = get_power_part_name(PowerPartKind(subKind)); break;
         default: panic("Invalid part kind");
     }
 

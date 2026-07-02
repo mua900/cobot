@@ -171,7 +171,7 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
 
     SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 1, cameraData, sizeof(cameraData));
 
-    bool (*comparePlanetDepth)(Planet& a, Planet& b) = [](Planet& a, Planet& b) { return a.body.position.z > b.body.position.z; };
+    bool (*comparePlanetDepth)(Planet& a, Planet& b) = [](Planet& a, Planet& b) { return a.body.position.z < b.body.position.z; };
     sort_array(system.planets, comparePlanetDepth);
 
     for (auto& planet : system.planets)

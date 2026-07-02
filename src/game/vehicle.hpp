@@ -53,10 +53,12 @@ struct Vehicle {
     PartId add_ground_part(GroundPart& t);
     PartId add_structure_part(StructurePart& c);
     PartId add_computer_part(Computer& c);
+    PartId add_power_part(PowerPart& p);
 
     GroundPart* get_ground_part(PartId t);
     StructurePart* get_structure_part(PartId c);
     Computer* get_computer_part(PartId c);
+    PowerPart* get_power_part(PartId p);
 
     int add_root(PartId part);
 
@@ -101,6 +103,7 @@ struct VehicleDrawParameters {
 void draw_structure_part(const StructurePart& sp, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
 void draw_ground_part(const GroundPart& ground, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
 void draw_computer_part(const Computer& computer, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
+void draw_power_part(const PowerPart& power, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
 
 void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
 

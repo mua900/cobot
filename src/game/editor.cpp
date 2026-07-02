@@ -77,6 +77,14 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
             id = vehicle.add_ground_part(ground);
             break;
         }
+        case PartPower:
+        {
+            PowerPart power = PowerPart();
+            power.kind = PowerPartKind(subkind);
+            power.part = partData;
+            id = vehicle.add_power_part(power);
+            break;
+        }
         default:
             panic("Unknown part kind");
     }
