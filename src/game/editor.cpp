@@ -114,6 +114,8 @@ void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, Ve
 
     cobot::vec2 ws = render.render_size;
 
+	draw_vehicle_editor_background(render, catalog, input, editor);
+	
     if (editor.haveSeletedPart)
     {
         SDL_Texture* texture = get_part_texture(editor.selectedPartKind, catalog);
@@ -133,4 +135,10 @@ void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, Ve
     }
 
     draw_vehicle(render, catalog, editor.vehicle, VehicleDrawParameters(&partImages, NullPartId, true));
+}
+
+void draw_vehicle_editor_background(RenderContext& render, AssetCatalog& catalog, Input& input, VehicleEditor& editor)
+{
+	draw_arc(render, cobot::vec2(0,0), 300, 320, 10 * cobot::DEGREE_TO_RADIAN_F, 160 * cobot::DEGREE_TO_RADIAN_F, cobot::ColorF(0.8,0.8,0.8));
+	draw_arc(render, cobot::vec2(0,0), 300, 320, 190 * cobot::DEGREE_TO_RADIAN_F, 160 * cobot::DEGREE_TO_RADIAN_F, cobot::ColorF(0.8,0.8,0.8));
 }

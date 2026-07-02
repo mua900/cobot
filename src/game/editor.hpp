@@ -17,5 +17,6 @@ struct VehicleEditor {
 };
 
 void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, VehicleEditor& editor, VPartImages& partImages);
+void draw_vehicle_editor_background(RenderContext& render, AssetCatalog& catalog, Input& input, VehicleEditor& editor);
 
 #endif // EDITOR_HPP

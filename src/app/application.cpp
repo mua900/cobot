@@ -151,6 +151,7 @@ bool Application::initialize()
 		m_rendered_text[TextFrontRight] = create_text(m_render.renderer, String("FrontRight"), font, textColor);
 		m_rendered_text[TextBackLeft] = create_text(m_render.renderer, String("BackLeft"), font, textColor);
 		m_rendered_text[TextBackRight] = create_text(m_render.renderer, String("BackRight"), font, textColor);
+		m_rendered_text[TextTop] = create_text(m_render.renderer, String("Top"), font, textColor);
 	}
 
 	quit = false;
@@ -396,6 +397,10 @@ void Application::mouse_move_vehicle_editor()
 		else if (string_compare(name, String("BackRight")))
 		{
 			ui.hoverText.text = m_rendered_text[TextBackRight];
+		}
+		else if (string_compare(name, String("Top")))
+		{
+			ui.hoverText.text = m_rendered_text[TextTop];
 		}
 		else
 		{
@@ -1174,7 +1179,11 @@ bool Application::mouse_input_solar_system()
 
 bool Application::mouse_input_game()
 {
+	const Camera* camera = get_active_camera();
+	ASSERT(camera);
+
     cobot::vec2 mouse_pos = m_input.mouse.pos;
+	cobot::vec2 mouseWorld = camera->screen_to_world(mouse_pos);
     UiState& ui = m_ui[UiGame];
 
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
@@ -1295,12 +1304,11 @@ bool Application::mouse_input_game()
                 }
             }
         }
-
+		
         auto vehicle = game.get_active_vehicle();
-        if (!vehicle->volume.contains_centered(mouse_pos))
+        if (!vehicle->volume.contains_centered(mouseWorld))
         {
-            const Camera* camera = get_active_camera();
-            PartId part = vehicle->getPartAt(camera->screen_to_world(mouse_pos));
+            PartId part = vehicle->getPartAt(mouseWorld);
             if (part.is_null())
             {
                 for (auto& menu : ui.control) {
@@ -1312,10 +1320,9 @@ bool Application::mouse_input_game()
     else if (m_input.mouse.buttonFlags & MOUSE_RIGHT_MASK)
     {
         auto vehicle = game.get_active_vehicle();
-        if (vehicle->volume.contains_centered(mouse_pos))
+        if (vehicle->volume.contains_centered(mouseWorld))
         {
-            const Camera* camera = get_active_camera();
-            PartId part = vehicle->getPartAt(camera->screen_to_world(mouse_pos));
+            PartId part = vehicle->getPartAt(mouseWorld);
             if (part.is_valid())
             {
                 auto& menu = ui.control.get_ref(part.kind);
@@ -2101,6 +2108,7 @@ void Application::draw_vehicle_editor()
 
     draw_veditor(m_render, m_catalog, m_input, editor, partImages);
 
+	// indicators
     m_render.space = CoordinateSpace::Screen;
     draw_circle(m_render, cobot::vec2(ws.x * 0.5, ws.y * 0.95), ws.y * 0.04, editor.rootPart ? cobot::ColorF(0.2, 0.6, 0.2) : cobot::ColorF(0.7, 0.3, 0.1));
     m_render.space = CoordinateSpace::World;

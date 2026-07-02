@@ -147,6 +147,7 @@ struct Chassis {
     AttachmentPoint frontRight = {};
     AttachmentPoint backLeft = {};
     AttachmentPoint backRight = {};
+	AttachmentPoint top = {};
 };
 
 struct StructurePart {

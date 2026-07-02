@@ -621,7 +621,7 @@ void draw_arrow(const RenderContext& context, cobot::vec2 start, cobot::vec2 end
 void draw_arc(const RenderContext& context, cobot::vec2 center, float inner_radius, float outer_radius, float start_angle, float arc, cobot::ColorF color)
 {
     // resolution
-    #define NVERTICES 16
+    #define NVERTICES 64
     SDL_Vertex vertices[NVERTICES];
 
     // the angle between vertices and it's sin and cos

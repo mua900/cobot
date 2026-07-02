@@ -83,6 +83,7 @@ cobot::Rectangle Vehicle::calculate_part_volume_with_parent(VPartTransform paren
                     if (sp.chassis.frontRight.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, sp.chassis.frontRight.part));
                     if (sp.chassis.backLeft.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, sp.chassis.backLeft.part));
                     if (sp.chassis.backRight.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, sp.chassis.backRight.part));
+					if (sp.chassis.top.part.is_valid()) volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, sp.chassis.top.part));
                     break;
                 }
             }
@@ -189,6 +190,7 @@ PartId Vehicle::add_structure_part(StructurePart& sp) {
             if (sp.chassis.frontRight.part.is_valid()) getParentRef(sp.chassis.frontRight.part) = thisPart;
             if (sp.chassis.backLeft.part.is_valid())   getParentRef(sp.chassis.backLeft.part) = thisPart;
             if (sp.chassis.backRight.part.is_valid())  getParentRef(sp.chassis.backRight.part) = thisPart;
+			if (sp.chassis.top.part.is_valid())        getParentRef(sp.chassis.top.part) = thisPart;
             break;
         }
         default: panic("Invalid chassis kind");
@@ -315,21 +317,23 @@ AttachmentDistance Vehicle::get_attachment_point_near(PartId part, VPartTransfor
                 case StructurePartChassis:
                 {
                     AttachmentDistance d = { nullptr, NullPartId, radius + 1 };
-                    AttachmentPoint* points[4] = {
+                    AttachmentPoint* points[] = {
                         &c.chassis.frontLeft,
                         &c.chassis.frontRight,
                         &c.chassis.backLeft,
                         &c.chassis.backRight,
+						&c.chassis.top,
                     };
 
-					const char* names [4] = {
+					const char* names [5] = {
 						"FrontLeft",
 						"FrontRight",
 						"BackLeft",
 						"BackRight",
+						"Top",
 					};
 
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < ARRAY_SIZE(points); i++)
                     {
                         AttachmentDistance dist = {};
                         if (points[i]->part.is_valid())
@@ -384,6 +388,8 @@ PartId Vehicle::get_part_on_location(PartId part, cobot::vec2 location, VPartTra
                     if (part.is_valid()) return part;
                     part = get_part_on_location(sp.chassis.backRight.part, location, t);
                     if (part.is_valid()) return part;
+					part = get_part_on_location(sp.chassis.top.part, location, t);
+					if (part.is_valid()) return part;
                     break;
                 }
                 default: panic("Invalid chassis kind");
@@ -463,11 +469,15 @@ Vehicle get_default_vehicle()
     PartId bl = vehicle.add_ground_part(wheels[2]);
     PartId br = vehicle.add_ground_part(wheels[3]);
 
+	PowerPart solarPanel = SolarPanel();
+	PartId solar = vehicle.add_power_part(solarPanel);
+	
     StructurePart* ch = vehicle.get_structure_part(chassis_id);
     ch->chassis.frontLeft.attach(fl);
     ch->chassis.frontRight.attach(fr);
     ch->chassis.backLeft.attach(bl);
     ch->chassis.backRight.attach(br);
+	ch->chassis.top.attach(solar);
 
     Computer com = {};
     com.kind = ComputerBasic;
@@ -502,14 +512,15 @@ void draw_structure_part(const StructurePart& structure, VPartTransform parent, 
 
     switch (structure.kind) {
         case StructurePartChassis: {
-            const AttachmentPoint points[4] = {
+            const AttachmentPoint points[5] = {
                 structure.chassis.frontLeft,
                 structure.chassis.frontRight,
                 structure.chassis.backLeft,
                 structure.chassis.backRight,
+				structure.chassis.top
             };
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < ARRAY_SIZE(points); i++)
             {
                 if (points[i].part.is_valid())
                 {

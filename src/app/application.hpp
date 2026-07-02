@@ -93,6 +93,7 @@ enum PreRenderedText {
 	TextFrontRight,
 	TextBackLeft,
 	TextBackRight,
+	TextTop,
 	PreRenderedTextCount,
 };
 
