@@ -22,3 +22,6 @@ shader file FragmentShader shader/binary/fragment.spv stage=fragment
 
 shader file PlanetFrag shader/binary/planet.spv stage=fragment nUniforms=2
 # shader file PlanetFrag shader/binary/planet.dxil stage=fragment nUniforms=2
+
+shader file StarFrag shader/binary/star.spv stage=fragment nUniforms=2
+# shader file StarFrag shader/binary/star.dxil stage=fragment nUniforms=2

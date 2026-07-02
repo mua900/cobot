@@ -1661,7 +1661,8 @@ bool Application::init_render()
     }
 
     const char* render_state_shader_name[RenderStateCount] = {
-        "PlanetFrag"
+        "PlanetFrag",
+        "StarFrag",
     };
 
     for (int i = 0; i < RenderStateCount; i++)

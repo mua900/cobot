@@ -130,6 +130,38 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
     cobot::vec2 render_size = context.render_size;
     auto& system = game.starSystem;
 
+    ASSERT(context.camera);
+    const Camera* camera = context.camera;
+
+    float cameraData[8] = {
+        camera->position.x, camera->position.y,
+        camera->zoom, camera->rotation,
+        camera->offset.x, camera->offset.y
+    };
+
+    // @todo
+    /*
+    if (!SDL_SetGPURenderState(context.renderer, context.render_states[RenderStateStar]))
+    {
+        return;
+    }
+
+    cobot::Quad starQuad;
+    starQuad.vertices[cobot::QuadTopLeft]     = cobot::vec2(-system.star.radius,system.star.radius);
+    starQuad.vertices[cobot::QuadTopRight]    = cobot::vec2(system.star.radius,system.star.radius);
+    starQuad.vertices[cobot::QuadBottomLeft]  = cobot::vec2(-system.star.radius,-system.star.radius);
+    starQuad.vertices[cobot::QuadBottomRight] = cobot::vec2(system.star.radius,-system.star.radius);
+
+    log_info("%f", system.star.radius);
+
+    cobot::vec4 uniformStarPosition = {
+        0, 0, 0, system.star.radius
+    };
+    SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 0, &uniformStarPosition, sizeof(uniformStarPosition));
+    SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 1, cameraData, sizeof(cameraData));
+
+    draw_quad(context, starQuad, cobot::ColorF(0.6, 0.5, 0.1));
+    */
     draw_circle(context, cobot::vec2(0,0), system.star.radius, cobot::ColorF(0.6, 0.5, 0.1));
 
 	if (!SDL_SetGPURenderState(context.renderer, context.render_states[RenderStatePlanet]))
@@ -137,25 +169,17 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
         return;
     }
 
+    SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 1, cameraData, sizeof(cameraData));
+
     bool (*comparePlanetDepth)(Planet& a, Planet& b) = [](Planet& a, Planet& b) { return a.body.position.z > b.body.position.z; };
     sort_array(system.planets, comparePlanetDepth);
 
     for (auto& planet : system.planets)
     {
-        ASSERT(context.camera);
-        const Camera* camera = context.camera;
-
         cobot::vec4 uniformPosition = {
             planet.body.position.x, planet.body.position.y, planet.body.position.z, planet.body.radius
         };
         SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 0, &uniformPosition, sizeof(uniformPosition));
-
-        float cameraData[8] = {
-            camera->position.x, camera->position.y,
-            camera->zoom, camera->rotation,
-            camera->offset.x, camera->offset.y
-        };
-        SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanet], 1, cameraData, sizeof(cameraData));
 
         cobot::vec2 planetPos = planet.body.position.xy();
         float rad = planet.body.radius;
