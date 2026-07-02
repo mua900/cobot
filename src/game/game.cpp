@@ -117,6 +117,13 @@ bool load_part_images(VPartImages& images, AssetCatalog& catalog)
         images.partImages[PartComputer][i] = id;
     }
 
+	for (int i = 0; i < PowerPartCount; i++) {
+		String name = String(get_power_part_name(PowerPartKind(i)));
+		AssetId id = get_asset(name, catalog);
+		if (!id.is_valid()) return false;
+		images.partImages[PartPower][i] = id;
+	}
+	
     return true;
 }
 

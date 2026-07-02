@@ -550,7 +550,7 @@ void draw_power_part(const PowerPart& power, VPartTransform parent, const Render
     AssetId imageId = parameters.partImages->partImages[PartPower][power.kind];
     SDL_Texture* texture = catalog.get_image(imageId);
 
-    VPartTransform transform = chain_part_transform(parent, power.part.transform);
+	VPartTransform transform = chain_part_transform(parent, power.part.transform);
     cobot::Rectangle area = cobot::Rectangle(transform.position, get_power_part_scale(power.kind) * transform.scale);
     render_texture_rotate(context, area, texture, transform.rotation, FlipNone, true);
 }
