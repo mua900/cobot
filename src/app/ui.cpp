@@ -124,6 +124,17 @@ void GapBuffer::get_string(String_Builder& sb)
 
 void Text_Field::calculate_cursor_from_selection(String string, Font font, bool wrapped)
 {
+    auto cursorPosition = get_cursor_from_selection(m_cursor, string, font, wrapped);
+
+    m_cursor_line = cursorPosition.line;
+    m_cursor_pixel_x = cursorPosition.pixel_x;
+    m_cursor_pixel_y = cursorPosition.pixel_y;
+}
+
+CursorScreenPosition Text_Field::get_cursor_from_selection(int cursor, String string, Font font, bool wrapped)
+{
+    CursorScreenPosition pos = {};
+
     int line_skip = TTF_GetFontLineSkip(font.font);
 
     // calculate cursor position
@@ -135,13 +146,13 @@ void Text_Field::calculate_cursor_from_selection(String string, Font font, bool 
 
     if (wrapped)
     {
-        while (cursor_byte < m_cursor)
+        while (cursor_byte < cursor)
         {
             size_t to_next_newline = 0;
             size_t cursor_character_this_line = 0;
 
             // measure distance to linebreak
-            while (cursor_byte + to_next_newline < m_cursor && string.data[cursor_byte + to_next_newline] != '\n') {
+            while (cursor_byte + to_next_newline < cursor && string.data[cursor_byte + to_next_newline] != '\n') {
                 to_next_newline += 1;
             }
 
@@ -156,7 +167,7 @@ void Text_Field::calculate_cursor_from_selection(String string, Font font, bool 
             }
 
             // measure distance to end of text render area
-            TTF_MeasureString(font.font, string.data + cursor_byte, m_cursor - cursor_byte, area.w, &cursor_pixel_x, &cursor_character_this_line);
+            TTF_MeasureString(font.font, string.data + cursor_byte, cursor - cursor_byte, area.w, &cursor_pixel_x, &cursor_character_this_line);
 
             // take the minimum
             cursor_character_this_line = MIN(cursor_character_this_line, to_next_newline);
@@ -178,17 +189,20 @@ void Text_Field::calculate_cursor_from_selection(String string, Font font, bool 
 
         int cursor_pixel_y = cursor_line * line_skip;
 
-        m_cursor_line = cursor_line;
-        m_cursor_pixel_x = cursor_pixel_x;
-        m_cursor_pixel_y = cursor_pixel_y;
+        pos.line = cursor_line;
+        pos.pixel_x = cursor_pixel_x;
+        pos.pixel_y = cursor_pixel_y;
+        return pos;
     }
     else {
-        TTF_MeasureString(font.font, string.data, m_cursor, MAX_INTEGER, &cursor_pixel_x, nullptr);
+        TTF_MeasureString(font.font, string.data, cursor, MAX_INTEGER, &cursor_pixel_x, nullptr);
 
-        m_cursor_line = 0;
-        m_cursor_pixel_x = cursor_pixel_x;
-        m_cursor_pixel_y = 0;
+        pos.line = 0;
+        pos.pixel_x = cursor_pixel_x;
+        pos.pixel_y = 0;
     }
+
+    return pos;
 }
 
 size_t Text_Field::calculate_cursor_from_mouse(cobot::vec2 position, String string, Font font, bool wrapped)

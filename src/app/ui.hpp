@@ -176,12 +176,18 @@ enum Text_Input_Target : u8 {
     NO_TARGET,
 };
 
-constexpr cobot::Color TextCursorColor (0x33, 0x56, 0x74, 0xaa);
+constexpr cobot::Color TextCursorColor (0x33, 0x56, 0x74, 0xDD);
 
 struct TextSelection
 {
     int start;
     int end;
+};
+
+struct CursorScreenPosition {
+    int line;
+    int pixel_x;
+    int pixel_y;
 };
 
 struct Text_Field
@@ -372,6 +378,9 @@ struct Text_Field
         const SDL_Rect area = { int(m_area.x), int(m_area.y) + m_cursor_line * line_skip, int(m_area.w), line_skip};
         SDL_SetTextInputArea(window, &area, m_cursor_pixel_x);
     }
+
+    CursorScreenPosition get_cursor_from_selection(int cursor, String string, Font font, bool wrapped);
+    size_t get_cursor_from_mouse(cobot::vec2 mouse_position, String string, Font font, bool wrapped);
 
     void calculate_cursor_from_selection(String string, Font font, bool wrapped);
     size_t calculate_cursor_from_mouse(cobot::vec2 mouse_position, String string, Font font, bool wrapped);

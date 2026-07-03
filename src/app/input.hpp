@@ -28,6 +28,8 @@
 #define KEY_RIGHT SDL_SCANCODE_RIGHT
 #define KEY_LEFT SDL_SCANCODE_LEFT
 
+#define KEYMOD_LEFT_SHIFT SDL_KMOD_LSHIFT
+
 using Scancode = SDL_Scancode;
 
 using KeyboardEvent = SDL_KeyboardEvent;

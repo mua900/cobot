@@ -181,7 +181,7 @@ private:
 	void draw_ui();
     void draw_messages();
 
-    void draw_ui_state(const UiState& state);
+    void draw_ui_state(UiState& state);
 
     bool on_mouse_down();
     void on_mouse_up(int button);
@@ -222,8 +222,8 @@ private:
     Icon create_icon(AssetId image, cobot::Color background);
 
     void render_slider(cobot::Rectangle area, cobot::vec2 knob_scale, float value, cobot::Color slider_color, cobot::Color knob_color, const Text& text) const;
-    void render_text_field(const Text_Field& text_field) const;
-    void render_text_editor(const TextEditor& editor) const;
+    void render_text_field(Text_Field& text_field) const;
+    void render_text_editor(TextEditor& editor) const;
     void render_dropdown(const Drop_Down_List& list) const;
     void render_control_menu(const ControlMenu& menu) const;
     void render_discrete_slider(const DiscreteSlider& slider) const;

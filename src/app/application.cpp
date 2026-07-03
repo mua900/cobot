@@ -661,10 +661,20 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             if (doing_text_input) {
                 auto field = get_active_ui().get_selected_text_field();
                 if (field) {
+                    int selectionPos = field->m_selection_point;
                     field->m_cursor = MAX(0, field->m_cursor - 1);
-                    field->m_selection_point = field->m_cursor;
+
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
+
+                    if (m_input.keyboard.mod_state & KEYMOD_LEFT_SHIFT)
+                    {
+                        field->m_selection_point = selectionPos;
+                    }
+                    else
+                    {
+                        field->m_selection_point = field->m_cursor;
+                    }
                 }
                 return true;
             }
@@ -675,10 +685,20 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             if (doing_text_input) {
                 auto field = get_active_ui().get_selected_text_field();
                 if (field) {
+                    int selectionPos = field->m_selection_point;
                     field->m_cursor = MIN(field->m_cursor + 1, field->m_buffer.length);
-                    field->m_selection_point = field->m_cursor;
+
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
+
+                    if (m_input.keyboard.mod_state & KEYMOD_LEFT_SHIFT)
+                    {
+                        field->m_selection_point = selectionPos;
+                    }
+                    else
+                    {
+                        field->m_selection_point = field->m_cursor;
+                    }
                 }
                 return true;
             }
@@ -2027,7 +2047,6 @@ void Application::draw()
     // SDL_FlushRenderer(m_render.renderer);
 
     // game graphics
-    SDL_SetRenderDrawBlendMode(m_render.renderer, SDL_BLENDMODE_BLEND);
     m_render.space = CoordinateSpace::World;
 
     switch (m_mode)
@@ -2050,8 +2069,6 @@ void Application::draw()
     }
 
     // ui
-    SDL_SetRenderDrawBlendMode(m_render.renderer, SDL_BLENDMODE_NONE);
-
     m_render.space = CoordinateSpace::Screen;
 
     draw_ui();
@@ -2146,16 +2163,16 @@ void Application::draw_messages() {
     }
 }
 
-void Application::draw_ui_state(const UiState& state)
+void Application::draw_ui_state(UiState& state)
 {
 	cobot::vec2 mouse_pos = m_input.mouse.pos;
 
-    for (const TextEditor& editor : state.editor)
+    for (TextEditor& editor : state.editor)
     {
         render_text_editor(editor);
     }
 
-    for (const Text_Field& field : state.text_field)
+    for (Text_Field& field : state.text_field)
     {
         if (field.info.visible)
         {
@@ -2462,7 +2479,7 @@ void Application::render_control_menu(const ControlMenu& menu) const
     }
 }
 
-void Application::render_text_editor(const TextEditor& editor) const
+void Application::render_text_editor(TextEditor& editor) const
 {
     cobot::Rectangle text_area = editor.field.m_area;
     cobot::Rectangle title_area = editor.get_title_area();
@@ -2480,12 +2497,14 @@ void Application::render_text_editor(const TextEditor& editor) const
     render_text_field(editor.field);
 }
 
-void Application::render_text_field(const Text_Field& text_field) const
+void Application::render_text_field(Text_Field& text_field) const
 {
     cobot::Rectangle area = text_field.m_area;
     render_rectangle(area, text_field.background);
 
     SDL_Texture* text_texture = text_field.m_texture;
+
+    Font font = m_catalog.get_font(text_field.fontId);
 
     if (text_texture)
     {
@@ -2495,6 +2514,8 @@ void Application::render_text_field(const Text_Field& text_field) const
 
         int line_count = text_field.m_line_count;
         float font_size = text_field.m_font_size;
+
+        int line_skip = TTF_GetFontLineSkip(font.font);
 
         SDL_Rect clip = {
             int(area.x - area.w / 2),
@@ -2510,8 +2531,54 @@ void Application::render_text_field(const Text_Field& text_field) const
 
         if (doing_text_input)
         {
-            float cursor_width = cobot::max(area.w / 500, 5);
-            render_rectangle(cobot::Rectangle(cobot::vec2(top_left.x + text_field.m_cursor_pixel_x - cursor_width / 2, top_left.y + text_field.m_cursor_pixel_y + font_size / 2), cobot::vec2(cursor_width, font_size)), TextCursorColor);
+            String string = text_field.get_string();
+
+            cobot::ColorF highlightColor (0.2, 0.2, 0.6, 0.5);
+
+            // selected area
+            CursorScreenPosition cursorPos = text_field.get_cursor_from_selection(text_field.m_selection_point, string, font, true);
+            int lineCount = std::abs(text_field.m_cursor_line - cursorPos.line);
+            if (lineCount == 0)
+            {
+                float width = std::fabsf(text_field.m_cursor_pixel_x - cursorPos.pixel_x);
+                int pixelX = cobot::min(text_field.m_cursor_pixel_x, cursorPos.pixel_x);
+                cobot::Rectangle area = {
+                    top_left.x + pixelX, top_left.y + cursorPos.pixel_y,
+                    width, float(line_skip)
+                };
+                render_rectangle(area, highlightColor, false);
+            }
+            else
+            {
+                CursorScreenPosition start;
+                CursorScreenPosition end;
+                if (text_field.m_cursor_line > cursorPos.line)
+                {
+                    start = cursorPos;
+                    end = { text_field.m_cursor_line, text_field.m_cursor_pixel_x, text_field.m_cursor_pixel_y };
+                }
+                else
+                {
+                    start = { text_field.m_cursor_line, text_field.m_cursor_pixel_x, text_field.m_cursor_pixel_y };
+                    end = cursorPos;
+                }
+
+                render_rectangle(cobot::Rectangle(top_left.x + start.pixel_x, top_left.y + start.line * line_skip, area.w - start.pixel_x, line_skip), highlightColor, false);
+                for (int i = start.line + 1; i < end.line; i++)
+                {
+                    log_info("%d", i);
+                    render_rectangle(cobot::Rectangle(top_left.x, top_left.y + i * line_skip, area.w, line_skip), highlightColor, false);
+                }
+                render_rectangle(cobot::Rectangle(top_left.x, top_left.y +  end.line * line_skip, end.pixel_x, line_skip), highlightColor, false);
+            }
+
+            // cursor
+            float cursor_width = 5;
+            render_rectangle(
+                cobot::Rectangle(cobot::vec2(top_left.x + text_field.m_cursor_pixel_x - cursor_width / 2,
+                                            top_left.y + text_field.m_cursor_pixel_y + font_size / 2),
+                                cobot::vec2(cursor_width, font_size)),
+                                TextCursorColor);
         }
     }
 }
