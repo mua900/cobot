@@ -40,13 +40,14 @@ struct Vehicle {
     float speed = 0;
     float orientation = 0;  // radians, 0 looking right
     cobot::Rectangle volume = {};
+    float electricCharge;
 
     DArray<PartId> rootParts = {};
     
     BucketList<GroundPart> groundPart = {};
     BucketList<StructurePart> structurePart = {};
     BucketList<Computer> computerPart = {};
-	BucketList<PowerPart> powerPart = {};
+    BucketList<PowerPart> powerPart = {};
 
     BucketList<Script> scripts = {};
 
@@ -77,6 +78,9 @@ struct Vehicle {
 
     PartId getPartAt(cobot::vec2 position) const;
     AttachmentDistance getAttachmentPointClosest(cobot::vec2 position, float radius);
+
+    float calculatePowerConsumption() const;
+    float calculatePowerGeneration() const;
 private:
     cobot::Rectangle calculate_part_volume_with_parent(VPartTransform parent, PartId part) const;
     AttachmentDistance get_attachment_point_near(PartId part, VPartTransform parent, cobot::vec2 position, float radius);

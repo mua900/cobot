@@ -1409,6 +1409,8 @@ bool Application::mouse_input_mission_editor()
     cobot::vec2 ws = get_window_size();
     cobot::vec2 mouse_pos = m_input.mouse.pos;
 
+    Font font = m_catalog.get_font(m_font);
+
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
     {
         for (auto& button : ui.image_button)
@@ -1437,6 +1439,16 @@ bool Application::mouse_input_mission_editor()
                         if (edit_mission.is_valid())
                         {
                             int mission = game.mission.add(edit_mission);
+
+                            UiState& solarSystemUi = m_ui[UiSolarSystem];
+                            ValuePanelTab& missionsTab = solarSystemUi.get_value_panel(PlanetPanel)->tabs.get_ref(PlanetPanelTabMissions);
+
+                            missionsTab.fields.add(
+                                ValueField(create_text(m_render.renderer, edit_mission.name, font, cobot::Color(0x55, 0x11, 0x66)),
+                                            solarSystemUi.text_field.add(Text_Field(m_font, 20, cobot::Color(0x66, 0x33, 0x88), cobot::Color(0x44, 0x66, 0x11), true, false)),
+                                            0,
+                                            ValueString));
+
                             load_mission(game.mission.get_ref(mission));
                             switch_modes(ModeGame);
                         }
@@ -1791,6 +1803,8 @@ bool Application::init_mission_editor_ui()
     UiState& ui = m_ui[UiMissionEditor];
 
     Font font = m_catalog.get_font(m_font);
+
+    // @todo text field for the mission name
 
     // @todo show pictures of what's selected maybe
     Drop_Down_List vehicle_list;

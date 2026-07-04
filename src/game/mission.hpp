@@ -12,6 +12,7 @@ struct Mission {
     String name = {};
     String objective = {};
 
+    // where on the planet we are?
     float latitude = 0;
     float longitude = 0;
 

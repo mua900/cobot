@@ -45,6 +45,16 @@ VPartTransform Vehicle::get_vehicle_transform() const
     return VPartTransform(worldPosition, orientation, 1.0);
 }
 
+float Vehicle::calculatePowerConsumption() const
+{
+    return 0;  // @todo
+}
+
+float Vehicle::calculatePowerGeneration() const
+{
+    return 0;  // @todo
+}
+
 cobot::Rectangle Vehicle::calculate_volume() const
 {
     cobot::Rectangle volume = {};
