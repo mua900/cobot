@@ -1,5 +1,8 @@
 - fix inconsistent editor bug where it doesn't detect empty attachment slots
 - add a grid mode for vehicle editor where you can build structural parts in a grid
 - switch to sdfs for font rendering
-- fix vsync
+- fix vsync (it is broken in a weird way)
 - an easier way to update assets
+- rescalable ui
+- hotload code
+- use proper color palettes instead of assigning random colors to everything

@@ -20,8 +20,8 @@ def compile_shaders(shaders : List[str], shader_stage : str):
     for s in shaders:
         path = Path(s).stem
 
-        subprocess.run(["dxc", "-T", target, "-E", "main", s, "-Fo", "binary/" + path + ".dxil"])
-        subprocess.run(["dxc", "-spirv", "-T", target, "-E", "main", s, "-Fo", "binary/" + path + ".spv"])
+        subprocess.run(["dxc", "-T", target, "-E", "main", s, "-Fo", "binary/" + path + ".dxil"], check=True)
+        subprocess.run(["dxc", "-spirv", "-T", target, "-E", "main", s, "-Fo", "binary/" + path + ".spv"], check=True)
 
 def main():
     parser = argparse.ArgumentParser()

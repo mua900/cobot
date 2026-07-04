@@ -43,6 +43,8 @@ struct GameState {
     UpdateState* updateState = nullptr;
     KeyboardCallback keyboard = nullptr;
 
+    String_Builder builder;
+
     Vehicle* get_active_vehicle() const;
     void update(TimeInfo time);
 };

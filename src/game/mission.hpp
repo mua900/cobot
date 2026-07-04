@@ -10,7 +10,7 @@ struct Mission {
     VehicleId vehicle = NullVehicleId;
     PlanetId planet = NullPlanetId;
     String name = {};
-    String objective = {};
+    String description = {};
 
     // where on the planet we are?
     float latitude = 0;
@@ -19,7 +19,7 @@ struct Mission {
     String_Builder buffer = {};
 
     bool is_valid() const {
-        return vehicle != NullVehicleId && planet != NullPlanetId;
+        return vehicle != NullVehicleId && planet != NullPlanetId && name.size != 0;
     }
 };
 

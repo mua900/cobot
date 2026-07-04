@@ -144,6 +144,7 @@ bool Application::initialize()
         return false;
     }
 
+	// @todo move this somewhere not top level
 	{
 		cobot::Color textColor(0xBB, 0xAA, 0x88);
 		Font font = m_catalog.get_font(m_font);
@@ -490,7 +491,6 @@ bool Application::keyboard_input_up(SDL_KeyboardEvent keyboard)
     {
         case SDL_SCANCODE_DOWN: // fallthrough
         case SDL_SCANCODE_UP: {
-            game.get_active_vehicle()->velocity.y = 0;
             return true;
         }
     }
@@ -1108,7 +1108,7 @@ bool Application::mouse_input_solar_system()
                     case ValueString: {
                         if (area.contains_centered(mouse_pos))
                         {
-                            // @todo text field
+                            // these are already handled by the mouse_input_common
                         }
                         break;
                     }
@@ -1436,9 +1436,15 @@ bool Application::mouse_input_mission_editor()
                 {
                     case LaunchButton:
                     {
+                        edit_mission.name = ui.get_text_field(MissionName)->get_string();
+
                         if (edit_mission.is_valid())
                         {
-                            int mission = game.mission.add(edit_mission);
+                            int mission = load_mission(edit_mission);
+                            if (mission == -1)
+                            {
+                                return true;
+                            }
 
                             UiState& solarSystemUi = m_ui[UiSolarSystem];
                             ValuePanelTab& missionsTab = solarSystemUi.get_value_panel(PlanetPanel)->tabs.get_ref(PlanetPanelTabMissions);
@@ -1446,16 +1452,18 @@ bool Application::mouse_input_mission_editor()
                             missionsTab.fields.add(
                                 ValueField(create_text(m_render.renderer, edit_mission.name, font, cobot::Color(0x55, 0x11, 0x66)),
                                             solarSystemUi.text_field.add(Text_Field(m_font, 20, cobot::Color(0x66, 0x33, 0x88), cobot::Color(0x44, 0x66, 0x11), true, false)),
-                                            0,
+                                            mission,
                                             ValueString));
 
-                            load_mission(game.mission.get_ref(mission));
                             switch_modes(ModeGame);
                         }
                         else
                         {
                             display_message(ws / 2, cobot::vec2(ws.x * 0.2, ws.y * 0.1), "Invalid mission setting", 2, cobot::Color(0x66, 0x44, 0x33), cobot::Color(0x22, 0x33, 0x44));
                         }
+
+                        edit_mission = {};
+                        return true;
                     }
                 }
             }
@@ -1804,7 +1812,7 @@ bool Application::init_mission_editor_ui()
 
     Font font = m_catalog.get_font(m_font);
 
-    // @todo text field for the mission name
+    Text_Field nameField = Text_Field(cobot::Rectangle(ws.x * 0.5, ws.y * 0.9, ws.x * 0.4, ws.y * 0.2), m_font, cobot::Color(0xAA, 0x44, 0x55), cobot::Color(0x33, 0x22, 0x77), MissionName);
 
     // @todo show pictures of what's selected maybe
     Drop_Down_List vehicle_list;
@@ -1847,6 +1855,7 @@ bool Application::init_mission_editor_ui()
     TextButton launchMission = TextButton(create_text(m_render.renderer, String("Launch Mission"), font, cobot::Color(0x66, 0x55, 0x66)), cobot::vec2(ws.x * 0.85, ws.y * 0.85), cobot::vec2(ws.x * 0.2, ws.y * 0.1), cobot::Color(0x88, 0x11, 0x22));
     launchMission.id = LaunchButton;
 
+    ui.text_field.add(nameField);
     ui.drop_down.add(vehicle_list);
     ui.drop_down.add(planet_list);
     ui.image_button.add(add_vehicle);
@@ -2331,13 +2340,19 @@ void Application::switch_menu(MenuName menu) {
 
 bool Application::load_mission(Mission& mission)
 {
-    if (!mission.is_valid()) return false;
+    if (!mission.is_valid())
+    {
+        return -1;
+    }
 
     game.active_vehicle = mission.vehicle;
     game.active_planet = mission.planet;
     // @todo heightmaps etc.
 
-    return true;
+    String name = game.builder.put_string(mission.name);
+    mission.name = name;
+
+    return game.mission.add(edit_mission);
 }
 
 void Application::render_rectangle(cobot::Rectangle rect, cobot::Color color, bool center) const

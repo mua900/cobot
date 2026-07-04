@@ -36,6 +36,7 @@ enum UiElementId {
     LaunchButton,
     PlanetPanel,
     AddMission,
+    MissionName,
     AddVehicle,
     VehicleList,
     SaveVehicle,
