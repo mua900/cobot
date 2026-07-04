@@ -627,8 +627,10 @@ struct Panel {
 };
 
 enum PlanetPanelTabs {
-    PlanetPanelTabOrbit = 0,
-    PlanetPanelTabMissions = 1,
+    PlanetPanelTabProperties = 0,
+    PlanetPanelTabOrbit = 1,
+    PlanetPanelTabMissions = 2,
+    PlanetPanelTabCount
 };
 
 enum ValueType {

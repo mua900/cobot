@@ -1159,23 +1159,30 @@ bool Application::mouse_input_solar_system()
                 String_Builder builder = {};
 
                 ValuePanel* panel = ui.get_value_panel(PlanetPanel);
-                ValuePanelTab& tab = panel->tabs.get_ref(PlanetPanelTabOrbit);
-                Font font = m_catalog.get_font(ui.text_field.get_ref(tab.fields.get_ref(OrbitSemiMajorAxis).ui_element).fontId);
-                cobot::Color color = ui.text_field.get_ref(tab.fields.get_ref(OrbitSemiMajorAxis).ui_element).text_color;
-                builder.append_float(planet.body.parameters.semiMajorAxis);
-                ui.text_field.get_ref(tab.fields.get_ref(OrbitSemiMajorAxis).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
-                builder.clear_and_append_float(planet.body.parameters.eccentricity);
-                ui.text_field.get_ref(tab.fields.get_ref(OrbitEccentricity).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
-                builder.clear_and_append_float(planet.body.parameters.inclination);
-                ui.text_field.get_ref(tab.fields.get_ref(OrbitInclination).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
-                builder.clear_and_append_float(planet.body.parameters.argumentOfPeriapsis);
-                ui.text_field.get_ref(tab.fields.get_ref(OrbitArgumentOfPeriapsis).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
-                builder.clear_and_append_float(planet.body.parameters.longitudeOfAscendingNode);
-                ui.text_field.get_ref(tab.fields.get_ref(OrbitLongitudeOfTheAscendingNode).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
-                builder.clear_and_append_float(planet.body.parameters.trueAnomaly);
-                ui.text_field.get_ref(tab.fields.get_ref(OrbitTrueAnomaly).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+                ValuePanelTab& propertiesTab = panel->tabs.get_ref(PlanetPanelTabProperties);
+                ValuePanelTab& orbitTab = panel->tabs.get_ref(PlanetPanelTabOrbit);
 
-                break;
+                Font font = m_catalog.get_font(ui.text_field.get_ref(orbitTab.fields.get_ref(OrbitSemiMajorAxis).ui_element).fontId);
+                cobot::Color color = ui.text_field.get_ref(orbitTab.fields.get_ref(OrbitSemiMajorAxis).ui_element).text_color;
+
+                // @todo fix
+                builder.clear_and_append(planet.name);
+                ui.text_field.get_ref(propertiesTab.fields.get_ref(0).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+
+                builder.clear_and_append_float(planet.body.parameters.semiMajorAxis);
+                ui.text_field.get_ref(orbitTab.fields.get_ref(OrbitSemiMajorAxis).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+                builder.clear_and_append_float(planet.body.parameters.eccentricity);
+                ui.text_field.get_ref(orbitTab.fields.get_ref(OrbitEccentricity).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+                builder.clear_and_append_float(planet.body.parameters.inclination);
+                ui.text_field.get_ref(orbitTab.fields.get_ref(OrbitInclination).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+                builder.clear_and_append_float(planet.body.parameters.argumentOfPeriapsis);
+                ui.text_field.get_ref(orbitTab.fields.get_ref(OrbitArgumentOfPeriapsis).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+                builder.clear_and_append_float(planet.body.parameters.longitudeOfAscendingNode);
+                ui.text_field.get_ref(orbitTab.fields.get_ref(OrbitLongitudeOfTheAscendingNode).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+                builder.clear_and_append_float(planet.body.parameters.trueAnomaly);
+                ui.text_field.get_ref(orbitTab.fields.get_ref(OrbitTrueAnomaly).ui_element).set_and_render_text(m_render.renderer, font, builder.to_string(), false);
+
+                return true;
             }
         }
 
@@ -1873,45 +1880,56 @@ bool Application::init_solar_system_ui()
 
     AssetId orbitalTabId = get_asset(String("orbit"), m_catalog);
     AssetId missionTabId = get_asset(String("mission"), m_catalog);
-    if (!(orbitalTabId.is_valid() && missionTabId.is_valid()))
+	// @todo a proper icon for planet properties
+	AssetId propertiesTabId = get_asset(String("planetProperties"), m_catalog);
+	if (!(orbitalTabId.is_valid() && missionTabId.is_valid() && propertiesTabId.is_valid()))
     {
         return false;
     }
     SDL_Texture* orbitalParameterTab = m_catalog.get_image(orbitalTabId);
     SDL_Texture* missionTab = m_catalog.get_image(missionTabId);
+	SDL_Texture* propertiesTab = m_catalog.get_image(propertiesTabId);
     if (!(orbitalParameterTab && missionTab))
     {
         return false;
     }
 
     ValuePanel planet_panel (PlanetPanel, cobot::Rectangle(ws.x * 0.9, ws.y * 0.5, ws.x * 0.2, ws.y), 25, 50, cobot::DirWest);
-    ValuePanelTab orbital_parameter_tab = {};
-    ValuePanelTab missions_tab = {};
-    orbital_parameter_tab.field_height = 20;
-    orbital_parameter_tab.color = cobot::Color(0x44, 0x55, 0x33);
-    orbital_parameter_tab.tabIcon = Icon(orbitalParameterTab, cobot::Color(0x99, 0x55, 0x33));
+    ValuePanelTab tabs[PlanetPanelTabCount];
 
-    missions_tab.field_height = 20;
-    missions_tab.color = cobot::Color(0x88, 0x66, 0x77);
-    missions_tab.tabIcon = Icon(missionTab, cobot::Color(0x88, 0x33, 0x22));
+    tabs[PlanetPanelTabProperties].field_height = 20;
+    tabs[PlanetPanelTabProperties].color = cobot::Color(0x33, 0x44, 0x33);
+    tabs[PlanetPanelTabProperties].tabIcon = Icon(propertiesTab, cobot::Color(0x99, 0x55, 0x33));
+
+    tabs[PlanetPanelTabOrbit].field_height = 20;
+    tabs[PlanetPanelTabOrbit].color = cobot::Color(0x44, 0x55, 0x33);
+    tabs[PlanetPanelTabOrbit].tabIcon = Icon(orbitalParameterTab, cobot::Color(0x99, 0x55, 0x33));
+
+    tabs[PlanetPanelTabMissions].field_height = 20;
+    tabs[PlanetPanelTabMissions].color = cobot::Color(0x88, 0x66, 0x77);
+    tabs[PlanetPanelTabMissions].tabIcon = Icon(missionTab, cobot::Color(0x88, 0x33, 0x22));
 
     cobot::Color valueBackground (0x77, 0x66, 0x44);
     cobot::Color valueText (0x33, 0x44, 0x88);
 
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("SemiMajorAxis"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitSemiMajorAxis, ValueNumber));
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("Eccentricity"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitEccentricity, ValueNumber));
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("TrueAnomaly"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitTrueAnomaly, ValueNumber));
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("LongitudeOfTheAscendingNode"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitLongitudeOfTheAscendingNode, ValueNumber));
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitArgumentOfPeriapsis, ValueNumber));
-    orbital_parameter_tab.fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitInclination, ValueNumber));
+	tabs[PlanetPanelTabProperties].fields.add(ValueField(create_text(m_render.renderer, String("Name"), font, cobot::Color(0xAA, 0x44, 0x66)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), 0, ValueString));
+	
+    tabs[PlanetPanelTabOrbit].fields.add(ValueField(create_text(m_render.renderer, String("SemiMajorAxis"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitSemiMajorAxis, ValueNumber));
+    tabs[PlanetPanelTabOrbit].fields.add(ValueField(create_text(m_render.renderer, String("Eccentricity"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitEccentricity, ValueNumber));
+    tabs[PlanetPanelTabOrbit].fields.add(ValueField(create_text(m_render.renderer, String("TrueAnomaly"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitTrueAnomaly, ValueNumber));
+    tabs[PlanetPanelTabOrbit].fields.add(ValueField(create_text(m_render.renderer, String("LongitudeOfTheAscendingNode"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitLongitudeOfTheAscendingNode, ValueNumber));
+    tabs[PlanetPanelTabOrbit].fields.add(ValueField(create_text(m_render.renderer, String("ArgumentOfPeriapsis"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitArgumentOfPeriapsis, ValueNumber));
+    tabs[PlanetPanelTabOrbit].fields.add(ValueField(create_text(m_render.renderer, String("Inclination"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitInclination, ValueNumber));
 
-    missions_tab.fields.add(ValueField(create_text(m_render.renderer, String("Add Mission"), font, cobot::Color(0xAA, 0xAA, 0xDD)), 0, AddMission, ValueButton));
+    tabs[PlanetPanelTabMissions].fields.add(ValueField(create_text(m_render.renderer, String("Add Mission"), font, cobot::Color(0xAA, 0xAA, 0xDD)), 0, AddMission, ValueButton));
 
     TextButton showOrbits = TextButton(create_text(m_render.renderer, String("Show Orbits"), font, cobot::Color(0xAA, 0xAA, 0xAA)), cobot::vec2(ws.x * 0.1, ws.y * 0.9), cobot::vec2(ws.x * 0.1, ws.y * 0.1), cobot::Color(0x22, 0x77, 0x22));
     showOrbits.id = ShowOrbits;
 
-    planet_panel.tabs.add(orbital_parameter_tab);
-    planet_panel.tabs.add(missions_tab);
+    for (int i = 0; i < PlanetPanelTabCount; i++)
+    {
+        planet_panel.tabs.add(tabs[i]);
+    }
 
     ui.discrete_slider.add(timescaleControl);
     ui.value_panel.add(planet_panel);
