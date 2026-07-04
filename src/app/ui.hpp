@@ -202,12 +202,14 @@ struct Text_Field
 
     GapBuffer m_buffer = {};
     String_Builder m_text = {};
+    int text_gap = 0;
     AssetId fontId = {};
     int m_cursor_pixel_x = 0;
     int m_cursor_pixel_y = 0;
     int m_cursor_line = 0;
     int m_line_count = 0;
 
+    // bytes
     int m_cursor = 0;
     int m_selection_point = 0;
 
@@ -255,7 +257,10 @@ struct Text_Field
 
     String get_string()
     {
-        m_buffer.get_string(m_text);
+        if (text_gap != m_buffer.gap_index || m_text.cursor != m_buffer.length)
+        {
+            m_buffer.get_string(m_text);
+        }
         return m_text.to_string();
     }
 
@@ -281,6 +286,7 @@ struct Text_Field
     {
         clear();
         m_buffer.append(s, 0);
+        text_gap = m_buffer.gap_index;
     }
 
     void append_string(String s)
@@ -290,10 +296,12 @@ struct Text_Field
             TextSelection selection = get_selection();
             m_buffer.remove(selection.start, selection.end - selection.start);
             m_buffer.append(s, m_cursor);
+            text_gap = m_buffer.gap_index;
         }
         else
         {
             m_buffer.append(s, m_cursor);
+            text_gap = m_buffer.gap_index;
             m_cursor += s.size;
         }
 
@@ -316,6 +324,7 @@ struct Text_Field
         m_cursor = 0;
         m_selection_point = 0;
         m_font_size = 0;
+        text_gap = 0;
     }
 
     void reset()
@@ -323,6 +332,7 @@ struct Text_Field
         clear();
         m_buffer.reset();
         m_text.free_buffer();
+        text_gap = 0;
     }
 
     void delete_text()
@@ -330,6 +340,7 @@ struct Text_Field
         TextSelection s = get_selection();
         int amount = s.end - s.start;
         m_buffer.remove(s.start, amount);
+        text_gap = m_buffer.gap_index;
 
         m_selection_point = m_cursor;
     }
@@ -344,8 +355,12 @@ struct Text_Field
         if (m_cursor == 0)
             return;
 
-        m_cursor -= 1;
-        m_buffer.remove(m_cursor, 1);
+        String current = this->get_string();
+        int codepointSize = utf8_previous(current, m_cursor);
+
+        m_cursor -= codepointSize;
+        m_buffer.remove(m_cursor, codepointSize);
+        text_gap = m_buffer.gap_index;
         m_selection_point = m_cursor;
     }
 
@@ -356,7 +371,11 @@ struct Text_Field
         if (m_cursor == m_buffer.length)
             return;
 
-        m_buffer.remove(m_cursor, 1);
+        String current = this->get_string();
+        int codepointSize = utf8_next(current, m_cursor);
+
+        m_buffer.remove(m_cursor, codepointSize);
+        text_gap = m_buffer.gap_index;
         m_selection_point = m_cursor;
     }
 
@@ -365,9 +384,13 @@ struct Text_Field
         if (character >= m_buffer.length - 1)
             return;
 
+        String current = this->get_string();
+        int codepointSize = utf8_next(current, m_cursor);
+
         m_cursor = character;
-        m_selection_point = character + 1;
+        m_selection_point = character + codepointSize;
         delete_text();
+        text_gap = m_buffer.gap_index;
     }
 
     void insert_tab(int tab_width);

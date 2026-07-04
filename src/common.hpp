@@ -419,4 +419,13 @@ static inline char to_upper_ascii(char c)
     return is_alpha_lower(c) ? (c - 'a' + 'A') : (c);
 }
 
+
+int utf8_handle_start_character(u8 c);
+bool utf8_is_continuation(u8 c);
+
+int utf8_next(String s, int offset);
+int utf8_previous(String s, int offset);
+
+int string_length_utf8(String s);
+
 #define BOOL_STRING(b) ((b) ? ("true") : ("false"))

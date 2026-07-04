@@ -520,3 +520,105 @@ bool String::operator==(const String& other) const
 {
     return string_compare(*this, other);
 }
+
+
+int utf8_handle_start_character(u8 c)
+{
+    if (!(c & 0x80))                return 1;
+    if ((c & 0xE0) == 0xC0)         return 2;
+    if ((c & 0xF0) == 0xE0)         return 3;
+    if ((c & 0xF8) == 0xF0)         return 4;
+    return 0;
+}
+
+bool utf8_is_continuation(u8 c)
+{
+    return (c & 0xC0) == 0x80;
+}
+
+// 0 for error
+int utf8_next(String s, int offset)
+{
+    if (offset >= s.size)
+    {
+        return 0;
+    }
+
+    u8 c = s.data[offset];
+    int len = utf8_handle_start_character(c);
+
+    if (offset + len - 1 >= s.size)
+    {
+        return 0;
+    }
+
+    int i = 1;
+    while (i < len)
+    {
+        c = s.data[offset + i];
+
+        if (!utf8_is_continuation(c))
+        {
+            return 0;
+        }
+
+        i += 1;
+    }
+
+    return len;
+}
+
+int utf8_previous(String s, int offset)
+{
+    if (offset > s.size || offset < 0)
+    {
+        return 0;
+    }
+
+    u8 c = s.data[offset - 1];
+    int i = 1;
+    while (utf8_is_continuation(c))
+    {
+        i += 1;
+
+        if (i > 4 || offset < i)
+        {
+            return 0;
+        }
+
+        c = s.data[offset - i];
+    }
+
+    int len = utf8_handle_start_character(c);
+
+    if (len != i)
+    {
+        return 0;
+    }
+
+    return len;
+}
+
+int string_length_utf8(String s)
+{
+    int count = 0;
+    int pos = 0;
+    while (pos < s.size)
+    {
+        int next = utf8_next(s, pos);
+        if (next == 0)
+        {
+            return 0;
+        }
+
+        pos += next;
+        count += 1;
+    }
+
+    if (pos != s.size)
+    {
+        return 0;
+    }
+
+    return count;
+}

@@ -499,7 +499,7 @@ bool Application::keyboard_input_up(SDL_KeyboardEvent keyboard)
 }
 
 bool Application::keyboard_input_down(SDL_KeyboardEvent keyboard)
-{	
+{
     if (keyboard_input_down_common(keyboard))
     {
         return true;
@@ -600,7 +600,14 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                 auto field = get_active_ui().get_selected_text_field();
                 if (field)
                 {
-                    field->delete_at_cursor();
+                    if (field->m_cursor == field->m_selection_point)
+                    {
+                        field->delete_at_cursor();
+                    }
+                    else
+                    {
+                        field->delete_text();
+                    }
 
                     Font font = m_catalog.get_font(m_editor_font);
                     field->update_text(m_render.renderer, m_catalog.get_font(field->fontId), true);
@@ -615,7 +622,14 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                 auto field = get_active_ui().get_selected_text_field();
                 if (field)
                 {
-                    field->delete_after_cursor();
+                    if (field->m_cursor == field->m_selection_point)
+                    {
+                        field->delete_after_cursor();
+                    }
+                    else
+                    {
+                        field->delete_text();
+                    }
                     field->update_text(m_render.renderer, m_catalog.get_font(field->fontId), true);
                 }
                 return true;
@@ -661,8 +675,12 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             if (doing_text_input) {
                 auto field = get_active_ui().get_selected_text_field();
                 if (field) {
+                    String s = field->get_string();
+                    int step = utf8_previous(s, field->m_cursor);
+                    log_info("%d", step);
+
                     int selectionPos = field->m_selection_point;
-                    field->m_cursor = MAX(0, field->m_cursor - 1);
+                    field->m_cursor = MAX(0, field->m_cursor - step);
 
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
@@ -685,8 +703,12 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             if (doing_text_input) {
                 auto field = get_active_ui().get_selected_text_field();
                 if (field) {
+                    String s = field->get_string();
+                    int step = utf8_next(s, field->m_cursor);
+                    log_info("%d", step);
+
                     int selectionPos = field->m_selection_point;
-                    field->m_cursor = MIN(field->m_cursor + 1, field->m_buffer.length);
+                    field->m_cursor = MIN(field->m_cursor + step, field->m_buffer.length);
 
                     Font font = m_catalog.get_font(field->fontId);
                     field->update_text(m_render.renderer, font, true);
