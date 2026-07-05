@@ -260,12 +260,36 @@ void sort_array(DArray<T>& array, bool (*CompareFunc)(T& a, T& b))
 }
 
 template<typename T>
+struct Array {
+	T* data = nullptr;
+	size_t count = 0;
+
+	bool in_bounds(int index) {
+		return index >= 0 && index < count;
+	}
+
+	T& get(int index) {
+		if (!in_bounds(index))
+		{
+			panic("Out of bounds array access");
+		}
+		return data[index];
+	}
+	T& operator[](int index) { return data[index]; }
+
+	Array() {}
+	Array(T* d, size_t c) : data(d), count(c) {}
+};
+
+template<typename T>
 struct BucketList {
+	using FlagType = u32;
+
 	static const int BUCKET_SIZE = 32;
 	static const u32 BUCKET_FLAGS_FULL = 0xFFFFFFFF;  // match the bucket size in the number of bits
 	struct Bucket {
 		T elements[BUCKET_SIZE];
-		uint32_t occupied_flags = 0;  // at least as many bits as bucket size
+		FlagType occupied_flags = 0;  // at least as many bits as bucket size
 	};
 
 	// due to the fact that the dynamic array can relocate, the pointers are not stable but slot ids are
@@ -294,7 +318,7 @@ struct BucketList {
 				continue;
 			}
 
-			u16 inverse_flags = ~flags;
+			FlagType inverse_flags = ~flags;
 			int index = lsb_index(inverse_flags);
 			bucket.elements[index] = std::move(elem);
 			bucket.occupied_flags |= BIT(index);
@@ -320,7 +344,7 @@ struct BucketList {
 				continue;
 			}
 
-			u16 inverse_flags = ~flags;
+			FlagType inverse_flags = ~flags;
 			int index = lsb_index(inverse_flags);
 			bucket.elements[index] = std::move(elem);
 			bucket.occupied_flags |= BIT(index);
@@ -339,6 +363,10 @@ struct BucketList {
 		int bucket_index = elem_index / BUCKET_SIZE;
 		int index = elem_index % BUCKET_SIZE;
 
+		if (buckets[bucket_index].occupied_flags & BIT(index))
+		{
+			panic("Trying to remove an empty slot in bucket list");
+		}
 		buckets.get_ref(bucket_index).occupied_flags &= ~BIT(index);
 	}
 
@@ -355,6 +383,10 @@ struct BucketList {
 		int index = elem_index % BUCKET_SIZE;
 
 		if (!in_bounds(elem_index)) panic("Out of bounds array access");
+		if (!buckets[bucket_index].occupied_flags & BIT(index))
+		{
+			panic("Accessing an empty slot in bucket list");
+		}
 		return buckets[bucket_index].elements[index];
 	}
 

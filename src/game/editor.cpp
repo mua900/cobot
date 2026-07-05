@@ -10,7 +10,7 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
         return false;
     }
 
-    PartKindId partKind = selectedPartKind;
+    PartKind kind = selectedPartKind;
 
     if (dist.point && rootPart)
     {
@@ -25,12 +25,7 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
         return false;
     }
 
-    PartKind kind = get_part_kind(partKind);
-    u16 subkind = get_subkind(partKind);
-
-    PartId id = {};
-
-    bool firstRootPart = rootPart && (vehicle.rootParts.size() == 0);
+    bool firstRootPart = rootPart && (vehicle.rootParts.count() == 0);
     VPartData partData = VPartData();
 
     if (dist.point)
@@ -43,51 +38,11 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
         partData.transform.position = firstRootPart ? cobot::vec2() : where - vehicle.worldPosition;
     }
 
-    switch (kind)
-    {
-        case PartStructure:
-        {
-            StructurePart structure = StructurePart();
-            structure.kind = StructurePartKind(subkind);
-            structure.part = partData;
-            switch (subkind)
-            {
-                case StructurePartChassis:
-                {
-                    structure.chassis = getChassis();
-                    break;
-                }
-            }
-            id = vehicle.add_structure_part(structure);
-            break;
-        }
-        case PartComputer:
-        {
-            Computer computer = Computer();
-            computer.kind = ComputerKind(subkind);
-            computer.part = partData;
-            id = vehicle.add_computer_part(computer);
-            break;
-        }
-        case PartGround:
-        {
-            GroundPart ground = GroundPart();
-            ground.kind = GroundPartKind(subkind);
-            ground.part = partData;
-            id = vehicle.add_ground_part(ground);
-            break;
-        }
-        case PartPower:
-        {
-            PowerPart power = PowerPart();
-            power.kind = PowerPartKind(subkind);
-            power.part = partData;
-            id = vehicle.add_power_part(power);
-            break;
-        }
-        default:
-            panic("Unknown part kind");
-    }
+    VehiclePart part(kind);
+    part.partData = partData;
+    part.init();
+
+    PartId id = vehicle.add_part(part);
 
     if (dist.point)
     {
@@ -96,7 +51,7 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
     
     if (rootPart)
     {
-        if (vehicle.rootParts.size() == 0)
+        if (vehicle.rootParts.count() == 0)
         {
             vehicle.worldPosition = where;
         }

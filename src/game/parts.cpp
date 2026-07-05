@@ -1,4 +1,5 @@
 #include "parts.hpp"
+#include "log.hpp"
 
 VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child)
 {
@@ -13,171 +14,89 @@ VPartTransform VPartTransform::inverse() const
     return VPartTransform(-position, -rotation, 1.0 / scale);
 }
 
-Chassis getChassis()
+void VehiclePart::init()
+{
+    if (kind == PartKindChassis)
+    {
+        data.chassis.init();
+    }
+}
+
+Array<AttachmentPoint> VehiclePart::getAttachments()
+{
+    if (kind == PartKindChassis)
+    {
+        return Array<AttachmentPoint>(data.chassis.points, ChassisAttachmentCount);
+    }
+
+    return {};
+}
+
+void Chassis::init()
 {
     int hDist = 25;
     int vDist = 36;
 
-    Chassis c;
-    c.frontLeft.position = cobot::vec2(-hDist, vDist);
-    c.frontRight.position = cobot::vec2(hDist, vDist);
-    c.backLeft.position = cobot::vec2(-hDist, -vDist);
-    c.backRight.position = cobot::vec2(hDist, -vDist);
-	return c;
+    points[ChassisFrontLeft].position = cobot::vec2(-hDist, vDist);
+    points[ChassisFrontRight].position = cobot::vec2(hDist, vDist);
+    points[ChassisBackLeft].position = cobot::vec2(-hDist, -vDist);
+    points[ChassisBackRight].position = cobot::vec2(hDist, -vDist);
 }
 
 
-const char* get_structure_part_name(StructurePartKind kind) {
+PartCategory getPartCategory(PartKind kind)
+{
     switch (kind)
     {
-        case StructurePartChassis:
-            return "Chassis";
-        case StructurePartSentinel:
+        case PartKindSolarPanel:    return CategoryPower;
+        case PartKindBattery:       return CategoryPower;
+        case PartKindWheel:         return CategoryGround;
+        case PartKindChassis:       return CategoryComputer;
+        case PartKindComputer:      return CategoryStructure;
+        case PartKindSentinel:  // fallthrough
         default:
-            panic("Invalid structure part type");
+            panic("Invalid part type");
     }
-    
 }
 
-const char* get_ground_part_name(GroundPartKind kind) {
+const char* get_part_name(PartKind kind) {
     switch (kind)
     {
-        case GroundPartWheel:
-        {
-            return "Wheel";
-        }
-        case GroundPartSentinel:
+        case PartKindSolarPanel:    return "SolarPanel";
+        case PartKindBattery:       return "Battery";
+        case PartKindWheel:         return "Wheel";
+        case PartKindChassis:       return "Chassis";
+        case PartKindComputer:      return "BasicComputer";
+        case PartKindSentinel:  // fallthrough
         default:
-            panic("Invalid ground part type");
+            panic("Invalid part type");
     }
 }
 
-const char* get_computer_part_name(ComputerKind kind) {
+cobot::vec2 get_part_scale(PartKind kind)
+{
     switch (kind)
     {
-        case ComputerBasic:
-            return "BasicComputer";
-        case ComputerSentinel:
-        default:
-            panic("Invalid computer part type");
+        case PartKindSolarPanel:    return cobot::vec2(20, 20);
+        case PartKindBattery:       return cobot::vec2(40, 40);
+        case PartKindWheel:         return cobot::vec2(25, 25);
+        case PartKindChassis:       return cobot::vec2(100, 100);
+        case PartKindComputer:      return cobot::vec2(10, 10);
+        case PartKindSentinel:  // fallthrough
+        default: panic("Invalid part type");
     }
 }
 
-const char* get_power_part_name(PowerPartKind kind) {
-    switch (kind)
+bool load_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog)
+{
+    for (int i = 0; i < PartKindCount; i++)
     {
-        case PowerPartSolarPanel: {
-            return "SolarPanel";
-        }
-        case PowerPartSentinel:
-        default: {
-            panic("Invalid power part type");
-        }
-    }
-}
-
-
-cobot::vec2 get_part_scale(PartKindId id)
-{
-    PartKind kind = get_part_kind(id);
-    u16 subKind = get_subkind(id);
-    switch (kind)
-    {
-        case PartGround:     return get_ground_part_scale(GroundPartKind(subKind));
-        case PartStructure:  return get_structure_part_scale(StructurePartKind(subKind));
-        case PartComputer:   return get_computer_part_scale(ComputerKind(subKind));
-        case PartPower:      return get_power_part_scale(PowerPartKind(subKind));
-        default: panic("Unhandled part kind");
-    }
-}
-
-cobot::vec2 get_structure_part_scale(StructurePartKind kind) {
-    return cobot::vec2(100, 100);
-}
-
-cobot::vec2 get_ground_part_scale(GroundPartKind kind) {
-    return cobot::vec2(25, 25);
-}
-
-cobot::vec2 get_computer_part_scale(ComputerKind kind) {
-    return cobot::vec2(10, 10);
-}
-
-cobot::vec2 get_power_part_scale(PowerPartKind kind) {
-    return cobot::vec2(20, 20);
-}
-
-
-u16 get_subkind(PartKindId kindId)
-{
-    return kindId & 0xffff;
-}
-
-PartKind get_part_kind(PartKindId kindId)
-{
-    return PartKind((kindId >> 16) & 0xffff);
-}
-
-PartKindId get_part_kind_id(PartKind partKind, u16 subType)
-{
-    return (partKind << 16) | (subType);
-}
-
-bool load_ground_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog)
-{
-    for (int i = 0; i < (int)GroundPartKindCount; i++)
-    {
-        const char* name = get_ground_part_name(GroundPartKind(i));
+        const char* name = get_part_name(PartKind(i));
         AssetId id = get_asset(String(name), catalog);
         if (!id.is_valid()) return false;
         SDL_Texture* texture = catalog.get_image(id);
 
-        icons.add(IconButton(texture, background, get_part_kind_id(PartGround, i)));
-    }
-
-    return true;
-}
-
-bool load_structure_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog)
-{
-    for (int i = 0; i < (int)StructurePartKindCount; i++)
-    {
-        const char* name = get_structure_part_name(StructurePartKind(i));
-        AssetId id = get_asset(String(name), catalog);
-        if (!id.is_valid()) return false;
-        SDL_Texture* texture = catalog.get_image(id);
-
-        icons.add(IconButton(texture, background, get_part_kind_id(PartStructure, i)));
-    }
-
-    return true;
-}
-
-bool load_computer_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog)
-{
-    for (int i = 0; i < (int)ComputerKindCount; i++)
-    {
-        const char* name = get_computer_part_name(ComputerKind(i));
-        AssetId id = get_asset(String(name), catalog);
-        if (!id.is_valid()) return false;
-        SDL_Texture* texture = catalog.get_image(id);
-
-        icons.add(IconButton(texture, background, get_part_kind_id(PartComputer, i)));
-    }
-
-    return true;
-}
-
-bool load_power_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog)
-{
-    for (int i = 0; i < (int)PowerPartCount; i++)
-    {
-        const char* name = get_power_part_name(PowerPartKind(i));
-        AssetId id = get_asset(String(name), catalog);
-        if (!id.is_valid()) return false;
-        SDL_Texture* texture = catalog.get_image(id);
-
-        icons.add(IconButton(texture, background, get_part_kind_id(PartPower, i)));
+        icons.add(IconButton(texture, background, i));
     }
 
     return true;

@@ -411,6 +411,8 @@ AssetId get_asset(String name, AssetCatalog& catalog)
         }
     }
 
+    SCOPE_STRING(name, asset_name);
+    log_error("Couldn't find requested asset with name: %s", asset_name);
     return NullAssetId;
 }
 
@@ -418,6 +420,7 @@ AssetId get_asset_at_index(int index, AssetCatalog& catalog)
 {
     if (!catalog.assets.in_bounds(index))
     {
+        log_error("Couldn't load asset: Requested asset index is out of bounds %d", index);
         return NullAssetId;
     }
 

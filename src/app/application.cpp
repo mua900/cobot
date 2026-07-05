@@ -937,10 +937,10 @@ bool Application::mouse_input_vehicle_editor()
                 PanelTab& tab = panel.tabs.get_ref(panel.activeTab);
                 for (int i = 0; i < tab.icons.size(); i++) {
                     cobot::Rectangle area = panel.get_icon_area(i);
-                    PartKindId partKindId = tab.icons.get_ref(i).data.number;
+                    PartKind partKind = PartKind(tab.icons.get_ref(i).data.number);
                     if (area.contains_top_left(mouse_pos))
                     {
-                        editor.selectedPartKind = partKindId;
+                        editor.selectedPartKind = partKind;
                         editor.haveSeletedPart = true;
                         return true;
                     }
@@ -1366,7 +1366,7 @@ bool Application::mouse_input_game()
         if (!vehicle->volume.contains_centered(mouseWorld))
         {
             PartId part = vehicle->getPartAt(mouseWorld);
-            if (part.is_null())
+            if (part == NullPartId)
             {
                 for (auto& menu : ui.control) {
                     menu.visible = false;
@@ -1380,9 +1380,9 @@ bool Application::mouse_input_game()
         if (vehicle->volume.contains_centered(mouseWorld))
         {
             PartId part = vehicle->getPartAt(mouseWorld);
-            if (part.is_valid())
+            if (part != NullPartId)
             {
-                auto& menu = ui.control.get_ref(part.kind);
+                auto& menu = ui.control.get_ref(part);
                 menu.position = mouse_pos + menu.scale / 2;
                 menu.visible = true;
             }
@@ -2029,33 +2029,53 @@ bool Application::init_vehicle_editor_ui() {
     cobot::Color iconColor = cobot::Color(0x77, 0x33, 0x44);
     cobot::Color tabIconColor = cobot::Color(0x33, 0x66, 0x44);
 
-    AssetId tireIconId = get_asset(String("groundTabIcon"), m_catalog);
-    if (!tireIconId.is_valid()) return false;
-    Icon tireIcon = Icon(m_catalog.get_image(tireIconId), tabIconColor);
-    DArray <IconButton> tireTabIcons;
-    if (!load_ground_part_icons(tireTabIcons, iconColor, m_catalog)) return false;
+    // @todo we can delegate categorization to to load_part_icons which would be better
+    DArray<IconButton> partIcons;
+    if (!load_part_icons(partIcons, iconColor, m_catalog))
+    {
+        return false;
+    }
 
-    AssetId chasisIconId = get_asset(String("structuralTabIcon"), m_catalog);
-    if (!chasisIconId.is_valid()) return false;
-    Icon chasisIcon = Icon(m_catalog.get_image(chasisIconId), tabIconColor);
-    DArray<IconButton> chasisTabIcons;
-    if (!load_structure_part_icons(chasisTabIcons, iconColor, m_catalog)) return false;
+    DArray <IconButton> groundTabIcons;
+    DArray<IconButton> structureTabIcons;
+    DArray<IconButton> computerTabIcons;
+    DArray<IconButton> powerTabIcons;
 
-    AssetId controllerIconId = get_asset(String("computerTabIcon"), m_catalog);
-    if (!controllerIconId.is_valid()) return false;
-    Icon controllerIcon = Icon(m_catalog.get_image(controllerIconId), tabIconColor);
-    DArray<IconButton> controllerTabIcons;
-    if (!load_computer_part_icons(controllerTabIcons, iconColor, m_catalog)) return false;
+    for (auto& icon : partIcons)
+    {
+        PartKind kind = PartKind(icon.data.number);
+        switch (getPartCategory(kind))
+        {
+            case CategoryPower:         powerTabIcons.add(icon);     break;
+            case CategoryComputer:      computerTabIcons.add(icon);  break;
+            case CategoryStructure:     structureTabIcons.add(icon); break;
+            case CategoryGround:        groundTabIcons.add(icon);    break;
+            default:
+                panic("Invalid part category");
+        }
+    }
 
+    partIcons.reset();
+
+    AssetId groundIconId = get_asset(String("groundTabIcon"), m_catalog);
+    if (!groundIconId.is_valid()) return false;
+    Icon groundIcon = Icon(m_catalog.get_image(groundIconId), tabIconColor);
+
+    AssetId structureIconId = get_asset(String("structuralTabIcon"), m_catalog);
+    if (!structureIconId.is_valid()) return false;
+    Icon structureIcon = Icon(m_catalog.get_image(structureIconId), tabIconColor);
+    
+    AssetId computerIconId = get_asset(String("computerTabIcon"), m_catalog);
+    if (!computerIconId.is_valid()) return false;
+    Icon computerIcon = Icon(m_catalog.get_image(computerIconId), tabIconColor);
+    
     AssetId powerIconId = get_asset(String("powerTabIcon"), m_catalog);
     if (!powerIconId.is_valid()) return false;
     Icon powerIcon = Icon(m_catalog.get_image(powerIconId), tabIconColor);
-    DArray<IconButton> powerTabIcons;
-    if (!load_power_part_icons(powerTabIcons, iconColor, m_catalog)) return false;
 
-    partsPanel.tabs.add(PanelTab(tireIcon, tireTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(chasisIcon, chasisTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(controllerIcon, controllerTabIcons, panel_color));
+    partsPanel.tabs.add(PanelTab(groundIcon, groundTabIcons, panel_color));
+    partsPanel.tabs.add(PanelTab(structureIcon, structureTabIcons, panel_color));
+    partsPanel.tabs.add(PanelTab(computerIcon, computerTabIcons, panel_color));
     partsPanel.tabs.add(PanelTab(powerIcon, powerTabIcons, panel_color));
 
     cobot::Rectangle propertiesPanelArea = {
@@ -2196,10 +2216,15 @@ void Application::draw_vehicle_editor()
 
     draw_veditor(m_render, m_catalog, m_input, editor, partImages);
 
+    // @move this to ui
 	// indicators
     m_render.space = CoordinateSpace::Screen;
     draw_circle(m_render, cobot::vec2(ws.x * 0.5, ws.y * 0.95), ws.y * 0.04, editor.rootPart ? cobot::ColorF(0.2, 0.6, 0.2) : cobot::ColorF(0.7, 0.3, 0.1));
     m_render.space = CoordinateSpace::World;
+
+    auto volume = game.get_active_vehicle()->volume;
+    log_info("%f %f %f %f", volume.x, volume.y, volume.w, volume.h);
+    render_rectangle_outline(volume, cobot::Color(0x66, 0x33, 0x22));
 }
 
 void Application::draw_solar_system()

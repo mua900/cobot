@@ -26,21 +26,26 @@ void vehicleSimulationUpdate(GameState* game, TimeInfo time)
 {
     Vehicle* vehicle = game->get_active_vehicle();
 
-    for (auto& computer : vehicle->computerPart)
+    for (auto& part : vehicle->parts)
     {
-        Script& s = vehicle->scripts.get(computer.script);
-        run_script(s);
-
-        if (!s.commands.is_empty())
+        if (part.kind == PartKindComputer)
         {
-            if (s.activeCommand == s.commands.size())
-            {
-                continue;
-            }
+            auto& computer = part.data.computer;
 
-            if (vehicle->execute_command(s.commands.get_ref(s.activeCommand)))
+            Script& s = vehicle->scripts.get(computer.script);
+            run_script(s);
+
+            if (!s.commands.is_empty())
             {
-                s.activeCommand += 1;
+                if (s.activeCommand == s.commands.size())
+                {
+                    continue;
+                }
+
+                if (vehicle->execute_command(s.commands.get_ref(s.activeCommand)))
+                {
+                    s.activeCommand += 1;
+                }
             }
         }
     }
@@ -96,33 +101,13 @@ Vehicle* GameState::get_active_vehicle() const
 
 bool load_part_images(VPartImages& images, AssetCatalog& catalog)
 {
-    for (int i = 0; i < StructurePartKindCount; i++) {
-        String name = String(get_structure_part_name(StructurePartKind(i)));
+    for (int i = 0; i < PartKindCount; i++)
+    {
+        String name = String(get_part_name(PartKind(i)));
         AssetId id = get_asset(name, catalog);
         if (!id.is_valid()) return false;
-        images.partImages[PartStructure][i] = id;
+        images.partImages[i] = id;
     }
-    
-    for (int i = 0; i < GroundPartKindCount; i++) {
-        String name = String(get_ground_part_name(GroundPartKind(i)));
-        AssetId id = get_asset(name, catalog);
-        if (!id.is_valid()) return false;
-        images.partImages[PartGround][i] = id;
-    }
-
-    for (int i = 0; i < ComputerKindCount; i++) {
-        String name = String(get_computer_part_name(ComputerKind(i)));
-        AssetId id = get_asset(name, catalog);
-        if (!id.is_valid()) return false;
-        images.partImages[PartComputer][i] = id;
-    }
-
-	for (int i = 0; i < PowerPartCount; i++) {
-		String name = String(get_power_part_name(PowerPartKind(i)));
-		AssetId id = get_asset(name, catalog);
-		if (!id.is_valid()) return false;
-		images.partImages[PartPower][i] = id;
-	}
 	
     return true;
 }

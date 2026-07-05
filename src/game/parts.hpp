@@ -8,35 +8,27 @@
 #include "template.hpp"
 #include "script.hpp"
 
-enum PartKind : u16 {
-    PartGround = 0,
-    PartStructure,
-	PartPower,
-    PartComputer,
+enum PartCategory {
+    CategoryPower,
+    CategoryStructure,
+    CategoryComputer,
+    CategoryGround,
+};
+
+enum PartKind {
+    PartKindWheel = 0,
+    PartKindChassis,
+	PartKindSolarPanel,
+    PartKindBattery,
+    PartKindComputer,
     PartKindCount,
     PartKindSentinel
 };
 
 #define PART_KIND_MASK(partKind) BIT(partKind)
 
-struct PartId {
-    PartKind kind = PartKindSentinel;
-    u16 index = 0;
-
-    PartId() {}
-    PartId(PartKind kind, u16 index) : kind(kind), index(index) {}
-
-    bool is_valid() const { return kind != PartKindSentinel; }
-    bool is_null() const { return kind == PartKindSentinel; }
-};
-
-static const PartId NullPartId = PartId();
-
-// the lower 16 bits are the subkind and the higher 16 bits are the kind
-using PartKindId = u32;
-PartKindId get_part_kind_id(PartKind kind, u16 subkind);
-PartKind get_part_kind(PartKindId kindId);
-u16 get_subkind(PartKindId kindId);
+using PartId = u32;
+static const PartId NullPartId = -1;
 
 struct VPartTransform {
     cobot::vec2 position = {};
@@ -63,160 +55,112 @@ struct VPartData {
     VPartData(PartId parent, cobot::vec2 position, float scale) : parent(parent), transform(position, scale) {}
 };
 
+// @todo grid
+
 struct AttachmentPoint {
     cobot::vec2 position = {};
     PartId part = {};  // the part that is attached
-    u32 kindMask = 0;  // what kind of parts can be attached (it is ignored if it's 0)
+    // @todo
+    // u32 mask;
 
     AttachmentPoint() {}
-    AttachmentPoint(u32 kind_mask) : kindMask(kind_mask) {}
 
     bool attach(PartId part_id) {
-        if (kindMask != 0 && !(kindMask & BIT(part_id.kind))) {
-            return false;
-        }
-
         part = part_id;
         return true;
     }
+};
+
+struct Computer {
+    u32 script = 0;
+    u32 codeSizeLimit = 0;
+};
+
+enum ChassisAttachment {
+    ChassisFrontLeft,
+    ChassisFrontRight,
+    ChassisBackLeft,
+    ChassisBackRight,
+    ChassisTop,
+    ChassisAttachmentCount
+};
+
+struct Chassis {
+    // @todo parameters
+    AttachmentPoint points[ChassisAttachmentCount] = {};
+
+    Chassis() {}
+    void init();
+};
+
+struct Wheel {
+    // @todo parameters
+    float diameter = 0;
+    float tranction = 0;
+};
+
+struct SolarPanel {
+    // @todo parameters
+    float photonFlux = 0;
+};
+
+struct Battery {
+    float capacity;
+    // tracked at the top level
+    // float storedCharge;
+};
+
+struct VehiclePart {
+    PartKind kind = PartKindSentinel;
+    VPartData partData = {};
+    union {
+        Chassis chassis;
+        Wheel wheel;
+        Computer computer;
+        SolarPanel solarPanel;
+        Battery battery;
+    } data = {};
+
+    VehiclePart() : kind(PartKindSentinel) {}
+    VehiclePart(PartKind type) : kind(type) {}
+    VehiclePart(Chassis c) : kind(PartKindChassis) {
+        data.chassis = c;
+    }
+    VehiclePart(Wheel w) : kind(PartKindWheel) {
+        data.wheel = w;
+    }
+    VehiclePart(Computer c) : kind(PartKindComputer) {
+        data.computer = c;
+    }
+    VehiclePart(SolarPanel sp) : kind(PartKindSolarPanel) {
+        data.solarPanel = sp;
+    }
+    VehiclePart(Battery b) : kind(PartKindBattery) {
+        data.battery = b;
+    }
+
+    void init();
+
+    Array<AttachmentPoint> getAttachments();
 };
 
 struct AttachmentDistance {
     AttachmentPoint* point;
     PartId parent;
     float distance;
-	const char* name = nullptr;
+    const char* name = nullptr;
 };
-
-enum PowerPartKind {
-	PowerPartSolarPanel,
-	PowerPartCount,
-	PowerPartSentinel,
-};
-
-struct SolarPanel {
-	float photonFlux = 0;
-};
-
-struct PowerPart {
-	PowerPartKind kind = PowerPartSentinel;
-	VPartData part = {};
-	union {
-		SolarPanel solar;
-	};
-
-	PowerPart() : solar{} {}
-	// implicit
-	PowerPart(SolarPanel solarPanel) : kind(PowerPartSolarPanel), solar(solarPanel) {}
-	PowerPart(VPartData data, SolarPanel solarPanel) : kind(PowerPartSolarPanel), part(data), solar(solarPanel) {}
-};
-
-enum GroundPartKind {
-    GroundPartWheel = 0,
-    GroundPartKindCount,
-    GroundPartSentinel,
-};
-
-struct Wheel {
-    float size = 0;
-};
-
-struct GroundPart {
-    GroundPartKind kind = GroundPartSentinel;
-    VPartData part = {};
-    union {
-        Wheel wheel;
-    };
-
-    GroundPart() {
-        wheel = {};
-    }
-    // implicit
-    GroundPart(Wheel t) : kind(GroundPartWheel), wheel(t) {}
-    GroundPart(VPartData part, Wheel t) : kind(GroundPartWheel), part(part), wheel(wheel) {}
-};
-
-enum StructurePartKind {
-    StructurePartChassis = 0,
-    StructurePartKindCount,
-    StructurePartSentinel,
-};
-
-struct Chassis {
-    AttachmentPoint frontLeft = {};
-    AttachmentPoint frontRight = {};
-    AttachmentPoint backLeft = {};
-    AttachmentPoint backRight = {};
-	AttachmentPoint top = {};
-};
-
-struct StructurePart {
-    StructurePartKind kind = StructurePartSentinel;
-    VPartData part = {};
-    union {
-        Chassis chassis;
-    };
-
-    StructurePart() {
-        chassis = {};
-    }
-    // implicit
-    StructurePart(Chassis c) : kind(StructurePartChassis), chassis(c) {}
-    StructurePart(VPartData part, Chassis c) : kind(StructurePartChassis), part(part), chassis(c) {}
-};
-
-Chassis getChassis();
-
-enum ComputerKind {
-    ComputerBasic = 0,
-    ComputerKindCount,
-    ComputerSentinel,
-};
-
-struct BasicComputer {
-    u32 codeSizeLimit = 0;
-};
-
-struct Computer {
-    ComputerKind kind = ComputerSentinel;
-    int script = 0;
-    VPartData part = {};
-    union {
-        BasicComputer basic;
-    };
-
-    Computer() {
-        basic = {};
-    }
-    // implicit
-    Computer(BasicComputer c) : kind(ComputerBasic), basic(c) {}
-    Computer(VPartData part, BasicComputer c) : kind(ComputerBasic), part(part), basic(c) {}
-};
-
-constexpr static int MaxPartCount = cobot::max(cobot::max(StructurePartKindCount, GroundPartKindCount), ComputerKindCount);
 
 struct VPartImages {
-    AssetId partImages [PartKindCount][MaxPartCount] = {};
+    AssetId partImages [PartKindCount] = {};
 };
 
 bool load_part_images(VPartImages& images, AssetCatalog& catalog);
+const char* get_part_name(PartKind kind);
+cobot::vec2 get_part_scale(PartKind id);
+SDL_Texture* get_part_texture(PartKind partKind, AssetCatalog& catalog);
+bool load_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
 
-const char* get_structure_part_name(StructurePartKind kind);
-const char* get_ground_part_name(GroundPartKind kind);
-const char* get_computer_part_name(ComputerKind kind);
-const char* get_power_part_name(PowerPartKind kind);
-
-cobot::vec2 get_part_scale(PartKindId id);
-cobot::vec2 get_structure_part_scale(StructurePartKind kind);
-cobot::vec2 get_ground_part_scale(GroundPartKind kind);
-cobot::vec2 get_computer_part_scale(ComputerKind kind);
-cobot::vec2 get_power_part_scale(PowerPartKind kind);
-
-SDL_Texture* get_part_texture(PartKindId partKind, AssetCatalog& catalog);
-
-bool load_ground_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
-bool load_structure_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
-bool load_computer_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
-bool load_power_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
+PartCategory getPartCategory(PartKind kind);
 
 #endif // PARTS_HPP

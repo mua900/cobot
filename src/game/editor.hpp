@@ -7,7 +7,7 @@
 
 struct VehicleEditor {
     Vehicle vehicle = {};
-    PartKindId selectedPartKind = {};
+    PartKind selectedPartKind = {};
     bool haveSeletedPart = false;
     VPartTransform snap = {};
     bool haveSnap = false;
