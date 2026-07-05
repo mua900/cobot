@@ -151,10 +151,14 @@ target_include_directories(cobot PRIVATE src/lua/src)
 
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 
-# use vendored dependencies. Turn off if you want to use system libraries
-set(SDLIMAGE_VENDORED ON)
-set(SDLTTF_VENDORED ON)
-set(SDLMIXER_VENDORED ON)
+option(USE_VENDORED_DEPENDENCIES "Use vendored dependecies for SDL libraries" ON)
+
+# use vendored dependencies. Turn on or off if you want to use system libraries
+if (USE_VENDORED_DEPENDENCIES)
+	set(SDLIMAGE_VENDORED ON)
+	set(SDLTTF_VENDORED ON)
+	set(SDLMIXER_VENDORED ON)
+endif()
 
 # turn unused image formats off
 set(SDLIMAGE_ANI  OFF)

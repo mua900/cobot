@@ -51,8 +51,8 @@ PartCategory getPartCategory(PartKind kind)
         case PartKindSolarPanel:    return CategoryPower;
         case PartKindBattery:       return CategoryPower;
         case PartKindWheel:         return CategoryGround;
-        case PartKindChassis:       return CategoryComputer;
-        case PartKindComputer:      return CategoryStructure;
+        case PartKindChassis:       return CategoryStructure;
+        case PartKindComputer:      return CategoryComputer;
         case PartKindSentinel:  // fallthrough
         default:
             panic("Invalid part type");

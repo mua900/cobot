@@ -908,6 +908,20 @@ bool Application::mouse_input_vehicle_editor()
     UiState& ui = m_ui[UiVehicleEditor];
 
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) {
+        if (editor.haveSeletedPart)
+        {
+            Camera& camera = cameras[CameraVehicleEditor];
+            
+            const char* errorMessage = nullptr;
+            if (!editor.place_part(camera.screen_to_world(mouse_pos), &errorMessage))
+            {
+                display_message(ws * 0.5, cobot::vec2(ws.x * 0.4, ws.y * 0.1), errorMessage, 5, cobot::Color(0xAA, 0xAA, 0xAA), cobot::Color(0xCC, 0x33, 0x33));
+            }
+            editor.haveSeletedPart = false;
+            editor.selectedPartKind = {};
+            return true;
+        }
+
         for (Panel& panel : ui.panel) {
             if (panel.drag.drag) {
                 panel.drag.drag = false;
@@ -956,19 +970,6 @@ bool Application::mouse_input_vehicle_editor()
                     panel.activeTab = i;
                     return true;
                 }
-            }
-
-            if (editor.haveSeletedPart)
-            {
-				Camera& camera = cameras[CameraVehicleEditor];
-				
-                const char* errorMessage = nullptr;
-                if (!editor.place_part(camera.screen_to_world(mouse_pos), &errorMessage))
-                {
-                    display_message(ws * 0.5, cobot::vec2(ws.x * 0.4, ws.y * 0.1), errorMessage, 5, cobot::Color(0xAA, 0xAA, 0xAA), cobot::Color(0xCC, 0x33, 0x33));
-                }
-                editor.haveSeletedPart = false;
-                editor.selectedPartKind = {};
             }
         }
 		
