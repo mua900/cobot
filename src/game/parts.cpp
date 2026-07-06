@@ -37,10 +37,11 @@ void Chassis::init()
     int hDist = 25;
     int vDist = 36;
 
-    points[ChassisFrontLeft].position = cobot::vec2(-hDist, vDist);
-    points[ChassisFrontRight].position = cobot::vec2(hDist, vDist);
-    points[ChassisBackLeft].position = cobot::vec2(-hDist, -vDist);
-    points[ChassisBackRight].position = cobot::vec2(hDist, -vDist);
+    points[ChassisFrontLeft] = AttachmentPoint(cobot::vec2(-hDist, vDist), NullPartId);
+    points[ChassisFrontRight] = AttachmentPoint(cobot::vec2(hDist, vDist), NullPartId);
+    points[ChassisBackLeft] = AttachmentPoint(cobot::vec2(-hDist, -vDist), NullPartId);
+    points[ChassisBackRight] = AttachmentPoint(cobot::vec2(hDist, -vDist), NullPartId);
+    points[ChassisTop] = AttachmentPoint(cobot::vec2(0, 0), NullPartId);
 }
 
 

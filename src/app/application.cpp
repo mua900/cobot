@@ -677,7 +677,6 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                 if (field) {
                     String s = field->get_string();
                     int step = utf8_previous(s, field->m_cursor);
-                    log_info("%d", step);
 
                     int selectionPos = field->m_selection_point;
                     field->m_cursor = MAX(0, field->m_cursor - step);
@@ -705,7 +704,6 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
                 if (field) {
                     String s = field->get_string();
                     int step = utf8_next(s, field->m_cursor);
-                    log_info("%d", step);
 
                     int selectionPos = field->m_selection_point;
                     field->m_cursor = MIN(field->m_cursor + step, field->m_buffer.length);
@@ -880,7 +878,6 @@ bool Application::mouse_input_common()
                 // if we are already doing text input
                 field.mouse_x = relative.x;
                 field.mouse_y = relative.y;
-                log_info("%f %f", relative.x, relative.y);
             }
             else
             {
@@ -2224,7 +2221,6 @@ void Application::draw_vehicle_editor()
     m_render.space = CoordinateSpace::World;
 
     auto volume = game.get_active_vehicle()->volume;
-    log_info("%f %f %f %f", volume.x, volume.y, volume.w, volume.h);
     render_rectangle_outline(volume, cobot::Color(0x66, 0x33, 0x22));
 }
 

@@ -64,6 +64,7 @@ struct AttachmentPoint {
     // u32 mask;
 
     AttachmentPoint() {}
+    AttachmentPoint(cobot::vec2 pos, PartId attached) : position(pos), part(attached) {}
 
     bool attach(PartId part_id) {
         part = part_id;
