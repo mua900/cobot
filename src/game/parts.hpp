@@ -62,12 +62,14 @@ struct AttachmentPoint {
     PartId part = {};  // the part that is attached
     // @todo
     // u32 mask;
+	bool used = false;
 
     AttachmentPoint() {}
     AttachmentPoint(cobot::vec2 pos, PartId attached) : position(pos), part(attached) {}
 
     bool attach(PartId part_id) {
         part = part_id;
+		used = true;
         return true;
     }
 };

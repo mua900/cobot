@@ -12,6 +12,9 @@
 typedef u32 VehicleId;
 constexpr VehicleId NullVehicleId = -1;
 
+// maximum depth for part hierarchy
+constexpr int VehicleMaxDepth = 1024;
+
 struct Vehicle {
     MutableString name = {};
     cobot::vec2 worldPosition = {};

@@ -86,7 +86,7 @@ cobot::Rectangle Vehicle::calculate_part_volume_with_parent(VPartTransform paren
 
     for (int i = 0; i < points.count; i++)
     {
-        if (points[i].part != NullPartId)
+        if (points[i].used)
         {
             volume = cobot::merge_volumes(volume, calculate_part_volume_with_parent(global, points[i].part));
         }
@@ -102,11 +102,22 @@ cobot::vec2 Vehicle::forward() const
 
 VPartTransform Vehicle::getWorldTransform(PartId part) const
 {
-    VPartData data = getPartData(part);
+	VPartData data = getPartData(part);
     VPartTransform t = data.transform;
+	int depth = 0;
     while (data.parent != NullPartId) {
         data = getPartData(data.parent);
         t = chain_part_transform(data.transform, t);
+
+		depth += 1;
+
+		if (depth >= VehicleMaxDepth)
+		{
+			log_error("----------");
+			log_error("Vehicle hierarchy is deeper than maximum depth or too many iterations : %d in getWorldTransform for vehicle", VehicleMaxDepth);
+			log_error("----------");
+			return t;
+		}
     }
 
     t = chain_part_transform(get_vehicle_transform(), t);
@@ -138,6 +149,7 @@ PartId Vehicle::add_part(VehiclePart& part)
 
 int Vehicle::add_root(PartId part)
 {
+    get_part(part).partData.parent = NullPartId;
     return rootParts.add(part);
 }
 
@@ -200,7 +212,7 @@ AttachmentDistance Vehicle::get_attachment_point_near(PartId part, VPartTransfor
         };
 
         AttachmentDistance dist = {};
-        if (points[i].part != NullPartId)
+        if (points[i].used)
         {
             dist = get_attachment_point_near(points[i].part, t, position, radius);
         }
@@ -230,7 +242,7 @@ PartId Vehicle::get_part_on_location(PartId part, cobot::vec2 location, VPartTra
     Array<AttachmentPoint> points = p.getAttachments();
     for (int i = 0; i < points.count; i++)
     {
-        if (points[i].part != NullPartId)
+        if (points[i].used)
         {
             PartId child = get_part_on_location(points[i].part, location, t);
             if (child)
@@ -259,6 +271,7 @@ Vehicle get_default_vehicle()
     vehicle.volume = cobot::Rectangle(vehicle.worldPosition, cobot::vec2());
 
     VehiclePart chassis = VehiclePart(PartKindChassis);
+	chassis.partData.parent = NullPartId;
     chassis.init();
 
     PartId chassis_id = vehicle.add_part(chassis);
@@ -316,7 +329,7 @@ void draw_vehicle_part(PartId id, VPartTransform parent, const RenderContext& co
     auto points = part.getAttachments();
     for (int i = 0; i < points.count; i++)
     {
-        if (points[i].part != NullPartId)
+        if (points[i].used)
         {
             draw_vehicle_part(points[i].part, chain_part_transform(transform, VPartTransform(points[i].position, 1)), context, catalog, vehicle, parameters);
         }
