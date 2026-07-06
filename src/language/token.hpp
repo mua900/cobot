@@ -1,5 +1,5 @@
-#ifndef _TOKEN_H
-#define _TOKEN_H
+#ifndef TOKEN_HPP
+#define TOKEN_HPP
 
 #include "common.hpp"
 #include "template.hpp"
@@ -71,4 +71,4 @@ const char* get_token_type_string(Token_Type type);
 
 DArray<Token> tokenize(String expression);
 
-#endif // _TOKEN_H
+#endif // TOKEN_HPP

@@ -1,5 +1,5 @@
-#ifndef _LANG_H
-#define _LANG_H
+#ifndef LANG_HPP
+#define LANG_HPP
 
 #include "common.hpp"
 
@@ -56,4 +56,4 @@ extern "C" {
     void interp_clear_input_stream(Interp* interp);
 }
 
-#endif // _LANG_H
+#endif // LANG_HPP

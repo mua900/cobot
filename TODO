@@ -6,6 +6,3 @@
 - rescalable ui
 - hotload code
 - use proper color palettes instead of assigning random colors to everything
-- toggle in the make vehicle editor interactable by mouse, add it to the regular ui
-- fix memory leaks
-- rewrite how parts work

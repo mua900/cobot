@@ -1,5 +1,5 @@
-#ifndef _BUILTIN_H
-#define _BUILTIN_H
+#ifndef FUNCTION_HPP
+#define FUNCTION_HPP
 
 #include "common.hpp"
 #include "expr.hpp"
@@ -124,4 +124,4 @@ Function_ID get_function_id(String name);
 double get_builtin_constant(String name);
 BuiltinVar_ID get_builtin_var_id(String name);
 
-#endif // _BUILTIN_H
+#endif // FUNCTION_HPP

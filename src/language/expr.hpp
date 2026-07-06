@@ -1,5 +1,5 @@
-#ifndef _EXPR_H
-#define _EXPR_H
+#ifndef EXPR_HPP
+#define EXPR_HPP
 
 #include "lang.hpp"
 #include "token.hpp"
@@ -171,4 +171,4 @@ struct Expr_Tuple : Expr {
 Expr* collapse_expr(Expr* root, const char** error_string);
 void free_tree(Expr* node);
 
-#endif // _EXPR_H
+#endif // EXPR_HPP

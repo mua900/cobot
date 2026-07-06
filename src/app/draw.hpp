@@ -50,6 +50,11 @@ struct GPUTexture {
     u32 height = 0;
 };
 
+enum MeshType {
+	Quad,
+	Count,	
+};
+
 struct MeshData {
     DArray<Vertex> vertices = {};
     DArray<u16> indices = {};

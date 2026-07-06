@@ -1,5 +1,5 @@
-#ifndef _LANG_COMMON
-#define _LANG_COMMON
+#ifndef LANG_COMMON_HPP
+#define LANG_COMMON_HPP
 
 #include "common.hpp"
 
@@ -15,4 +15,4 @@ struct Variable {
     }
 };
 
-#endif // _LANG_COMMON
+#endif // LANG_COMMON_HPP

@@ -76,6 +76,7 @@ add_library(language STATIC
 	src/language/function.cpp
 )
 
+# lua 5.5
 add_library(lua STATIC
 	src/lua/src/lapi.c
 	src/lua/src/lapi.h

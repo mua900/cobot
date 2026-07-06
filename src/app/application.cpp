@@ -2157,27 +2157,6 @@ void Application::draw()
     SDL_RenderPresent(renderer);
 }
 
-void Application::do_gpu_frame()
-{
-    start_frame(m_render, m_window.window);
-
-    m_render.start_copy_pass();
-
-    for (auto& mesh : meshes)
-    {
-        m_render.add_mesh(mesh.data, mesh.ref);
-    }
-
-    m_render.end_copy_pass();
-
-    m_render.start_render_pass();
-
-    // m_render.draw_mesh(meshes[MeshType::Quad].ref);
-
-    m_render.end_render_pass();
-    end_frame(m_render);
-}
-
 bool Application::is_minimized() const
 {
     SDL_WindowFlags flags = SDL_GetWindowFlags(m_window.window);

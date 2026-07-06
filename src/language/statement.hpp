@@ -1,5 +1,5 @@
-#ifndef _STATEMENT_H
-#define _STATEMENT_H
+#ifndef STATEMENT_HPP
+#define STATEMENT_HPP
 
 #include "common.hpp"
 #include "template.hpp"
@@ -158,4 +158,4 @@ struct StmtExpression : Statement {
     }
 };
 
-#endif // _STATEMENT_H
+#endif // STATEMENT_HPP

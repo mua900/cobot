@@ -69,11 +69,6 @@ struct ApplicationMessage {
     ApplicationMessage(cobot::vec2 w, cobot::vec2 s, const char* m, cobot::Color color) : where(w), scale(s), message(m), background(color) {}
 };
 
-enum MeshType {
-    Quad,
-    Count,
-};
-
 enum UpdateStateId {
     UpdateStateIdle,
     UpdateStateVehicleSimulation,
@@ -122,8 +117,6 @@ public:
     AssetId m_font = {};
     AssetId m_editor_font = {};
 
-    Mesh meshes[MeshType::Count] = {};
-
     Camera cameras[CameraCount] = {};
 
     GameState game = {};
@@ -159,8 +152,6 @@ private:
     bool init_solar_system_ui();
 
     void update_game_state();
-
-    void do_gpu_frame();
 
     bool load_assets();
 
@@ -246,8 +237,6 @@ private:
 };
 
 void get_base_path(String_Builder& builder);
-// make a lua state
-lua_State* init_lua(VehicleProgram* program);
 
 void initialize_libraries();
 
