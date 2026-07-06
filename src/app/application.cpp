@@ -1350,10 +1350,9 @@ bool Application::mouse_input_game()
             cobot::Rectangle area = cobot::Rectangle(button.position, button.scale);
             if (area.contains_centered(mouse_pos)) {
                 switch (button.id) {
-                    case BackButton:
+                    case MapButton:
                     {
-                        switch_modes(ModeMenu);
-                        switch_menu(MenuMain);
+                        switch_modes(ModeSolarSystem);
                         return true;
                     }
                 }
@@ -1968,7 +1967,7 @@ bool Application::init_game_ui() {
     cobot::Color button_color = cobot::Color(0x77, 0x55, 0x55);
     cobot::Color background = cobot::Color(0x33, 0x55, 0x66);
 
-    add_button(UiGame, BackButton, TextButton(create_text(m_render.renderer, String("Main Menu"), font, button_color), ws * 0.05, ws * 0.1, background, true));
+    add_button(UiGame, MapButton, TextButton(create_text(m_render.renderer, String("Map"), font, button_color), ws * 0.05, ws * 0.1, background, true));
 
     AssetId buildIcon = get_asset(String("buildIcon"), m_catalog);
     AssetId debugIcon = get_asset(String("debugIcon"), m_catalog);

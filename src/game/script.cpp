@@ -3,7 +3,7 @@
 
 bool Script::set_source(ScriptLanguage language, String source) {
 	commands.discard_data();
-	
+
     if (language == ScriptLanguage::LANGUAGE) {
         Interp* interp = interp_create();
         if (!interp) return false;
@@ -41,10 +41,10 @@ void run_script(Script& s)
     }
 }
 
-lua_State* init_lua_script(Script& s)
+void init_lua_script(Script& s)
 {
-    lua_State* L = luaL_newstate();
-    if (!L) nullptr;
+    lua_State* L = s.data.lua;
+    if (!L) return;
 
     luaL_openselectedlibs(L, LUA_MATHLIBK | LUA_TABLIBK | LUA_STRLIBK, 0);
 
@@ -61,12 +61,8 @@ lua_State* init_lua_script(Script& s)
     lua_setfield(L, -2, "lookat");
     lua_setglobal(L, "vehicle");
 
-	s = Script(L);
-	
     lua_pushlightuserdata(L, &s.commands);
     lua_setfield(L, LUA_REGISTRYINDEX, "_commands");
-	
-    return L;
 }
 
 // -- lua functions

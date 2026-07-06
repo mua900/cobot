@@ -27,6 +27,7 @@ enum UiElementId {
     SettingsButton,
     QuitButton,
     BackButton,
+    MapButton,
     MainEditor,
     PartsPanel,
     PartPropertyPanel,

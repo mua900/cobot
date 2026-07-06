@@ -143,6 +143,15 @@ VPartData& Vehicle::getPartData(PartId id) const
 
 PartId Vehicle::add_part(VehiclePart& part)
 {
+    if (part.kind == PartKindComputer)
+    {
+        lua_State* L = luaL_newstate();
+        if (!L) return NullPartId;
+
+        int s = scripts.add(Script(L));
+        init_lua_script(scripts.get(s));
+    }
+
     u32 id = parts.add(part);
     return id;
 }
