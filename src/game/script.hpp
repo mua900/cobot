@@ -63,11 +63,4 @@ struct Script {
 
 void run_script(Script& s);
 
-// make a script that uses lua
-void init_lua_script(Script& s);
-
-// functions
-int move(lua_State* L);   // float x, y
-int lookat(lua_State* L); // float x, y
-
 #endif // SCRIPT_HPP

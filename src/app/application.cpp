@@ -2037,16 +2037,18 @@ bool Application::init_vehicle_editor_ui() {
     DArray<IconButton> structureTabIcons;
     DArray<IconButton> computerTabIcons;
     DArray<IconButton> powerTabIcons;
+    DArray<IconButton> instrumentTabIcons;
 
     for (auto& icon : partIcons)
     {
         PartKind kind = PartKind(icon.data.number);
         switch (getPartCategory(kind))
         {
-            case CategoryPower:         powerTabIcons.add(icon);     break;
-            case CategoryComputer:      computerTabIcons.add(icon);  break;
-            case CategoryStructure:     structureTabIcons.add(icon); break;
-            case CategoryGround:        groundTabIcons.add(icon);    break;
+            case CategoryPower:         powerTabIcons.add(icon);      break;
+            case CategoryComputer:      computerTabIcons.add(icon);   break;
+            case CategoryStructure:     structureTabIcons.add(icon);  break;
+            case CategoryGround:        groundTabIcons.add(icon);     break;
+            case CategoryInstrument:    instrumentTabIcons.add(icon); break;
             default:
                 panic("Invalid part category");
         }
@@ -2070,10 +2072,15 @@ bool Application::init_vehicle_editor_ui() {
     if (!powerIconId.is_valid()) return false;
     Icon powerIcon = Icon(m_catalog.get_image(powerIconId), tabIconColor);
 
+    AssetId instrumentIconId = get_asset(String("instrumentTabIcon"), m_catalog);
+    if (!instrumentIconId.is_valid()) return false;
+    Icon instrumentIcon = Icon(m_catalog.get_image(instrumentIconId), tabIconColor);
+
     partsPanel.tabs.add(PanelTab(groundIcon, groundTabIcons, panel_color));
     partsPanel.tabs.add(PanelTab(structureIcon, structureTabIcons, panel_color));
     partsPanel.tabs.add(PanelTab(computerIcon, computerTabIcons, panel_color));
     partsPanel.tabs.add(PanelTab(powerIcon, powerTabIcons, panel_color));
+    partsPanel.tabs.add(PanelTab(instrumentIcon, instrumentTabIcons, panel_color));
 
     cobot::Rectangle propertiesPanelArea = {
         ws.x * 0.9f, ws.y * 0.5f,

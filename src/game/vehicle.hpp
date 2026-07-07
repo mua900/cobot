@@ -79,4 +79,7 @@ void draw_vehicle_part(PartId part, VPartTransform parent, const RenderContext& 
 
 void draw_vehicle(const RenderContext& context, const AssetCatalog& catalog, const Vehicle& vehicle, const VehicleDrawParameters& parameters);
 
+// init a script that uses lua
+void init_script(Script& s, Vehicle* vehicle);
+
 #endif // VEHICLE_HPP

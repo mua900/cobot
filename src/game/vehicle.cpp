@@ -149,7 +149,7 @@ PartId Vehicle::add_part(VehiclePart& part)
         if (!L) return NullPartId;
 
         int s = scripts.add(Script(L));
-        init_lua_script(scripts.get(s));
+        init_script(scripts.get(s), this);
     }
 
     u32 id = parts.add(part);

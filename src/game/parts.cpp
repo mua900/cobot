@@ -54,6 +54,9 @@ PartCategory getPartCategory(PartKind kind)
         case PartKindWheel:         return CategoryGround;
         case PartKindChassis:       return CategoryStructure;
         case PartKindComputer:      return CategoryComputer;
+        case PartKindThermometer:   return CategoryInstrument;
+        case PartKindLidar:         return CategoryInstrument;
+
         case PartKindSentinel:  // fallthrough
         default:
             panic("Invalid part type");
@@ -68,6 +71,9 @@ const char* get_part_name(PartKind kind) {
         case PartKindWheel:         return "Wheel";
         case PartKindChassis:       return "Chassis";
         case PartKindComputer:      return "BasicComputer";
+        case PartKindThermometer:   return "Thermometer";
+        case PartKindLidar:         return "Lidar";
+
         case PartKindSentinel:  // fallthrough
         default:
             panic("Invalid part type");
@@ -78,11 +84,15 @@ cobot::vec2 get_part_scale(PartKind kind)
 {
     switch (kind)
     {
+        // @todo sensible numbers
         case PartKindSolarPanel:    return cobot::vec2(20, 20);
         case PartKindBattery:       return cobot::vec2(40, 40);
         case PartKindWheel:         return cobot::vec2(25, 25);
         case PartKindChassis:       return cobot::vec2(100, 100);
         case PartKindComputer:      return cobot::vec2(10, 10);
+        case PartKindThermometer:   return cobot::vec2(10, 10);
+        case PartKindLidar:         return cobot::vec2(10, 15);
+
         case PartKindSentinel:  // fallthrough
         default: panic("Invalid part type");
     }

@@ -52,6 +52,8 @@ add_executable(cobot
 	src/game/physics.cpp
 	src/game/vehicle.hpp
 	src/game/vehicle.cpp
+	src/game/vehicle_script.hpp
+	src/game/vehicle_script.cpp
 	src/game/map.hpp
 	src/game/map.cpp
 	src/game/space.hpp

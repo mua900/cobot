@@ -13,14 +13,19 @@ enum PartCategory {
     CategoryStructure,
     CategoryComputer,
     CategoryGround,
+    CategoryInstrument,
 };
 
+// to add a part add it to getPartCategory, get_part_name and get_part_scale
+// alongside adding icons and part images for it to assets
 enum PartKind {
     PartKindWheel = 0,
     PartKindChassis,
 	PartKindSolarPanel,
     PartKindBattery,
     PartKindComputer,
+    PartKindThermometer,
+    PartKindLidar,
     PartKindCount,
     PartKindSentinel
 };
