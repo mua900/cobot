@@ -45,6 +45,13 @@ enum UiElementId {
     PlanetList,
 };
 
+enum PlanetPanelTabs {
+    PlanetPanelTabProperties = 0,
+    PlanetPanelTabOrbit = 1,
+    PlanetPanelTabMissions = 2,
+    PlanetPanelTabCount
+};
+
 struct UiElementInfo {
     bool visible = false;
 
@@ -626,13 +633,6 @@ struct Panel {
 
     cobot::Rectangle get_icon_area(int index) const;
     cobot::Rectangle get_tab_header_area(int index) const;
-};
-
-enum PlanetPanelTabs {
-    PlanetPanelTabProperties = 0,
-    PlanetPanelTabOrbit = 1,
-    PlanetPanelTabMissions = 2,
-    PlanetPanelTabCount
 };
 
 enum ValueType {

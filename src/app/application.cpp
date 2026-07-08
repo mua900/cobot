@@ -919,6 +919,14 @@ bool Application::mouse_input_vehicle_editor()
             return true;
         }
 
+        {
+            ValuePanel* properties = ui.get_value_panel(PartPropertyPanel);
+            ASSERT(properties);
+            ValuePanelTab& tab = properties->get_active_tab();
+
+
+        }
+
         for (Panel& panel : ui.panel) {
             if (panel.drag.drag) {
                 panel.drag.drag = false;
@@ -1149,7 +1157,7 @@ bool Application::mouse_input_solar_system()
 
 			cobot::vec2 position = camera.world_to_screen(worldPosition);
 			
-            if ((mouse_pos - position).magnitude() < planet.body.radius)
+            if ((mouse_pos - position).magnitude() < planet.body.radius * camera.zoom)
             {
                 gameInfo.selectedPlanet = i;
                 found = true;
