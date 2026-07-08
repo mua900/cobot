@@ -4,13 +4,13 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
 {
     AttachmentDistance dist = vehicle.getAttachmentPointClosest(where, 20);
 
-    if (!haveSeletedPart)
+    if (!haveSelectedEditorPart)
     {
         *errorMessage = "No part selected";
         return false;
     }
 
-    PartKind kind = selectedPartKind;
+    PartKind kind = selectedEditorPartKind;
 
     if (dist.point && rootPart)
     {
@@ -62,6 +62,49 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
     return true;
 }
 
+void VehicleEditor::draw_selected_part(SDL_Texture* part, RenderContext& render, cobot::vec2 where)
+{
+    cobot::vec2 textureSize;
+    SDL_GetTextureSize(part, &textureSize.x, &textureSize.y);
+
+    cobot::RectangleRot area = {};
+    if (haveSnap)
+    {
+        area = cobot::RectangleRot(snap.position, textureSize, snap.rotation);
+    }
+    else
+    {
+        area = cobot::RectangleRot(where, textureSize, 0);
+    }
+
+    cobot::Quad points = area.get_points();
+    draw_quad_with_texture(render, points, part, cobot::ColorF(0.9,0.9,0.9,0.5));
+}
+
+
+bool input_mouse_vehicle_editor(VehicleEditor& editor, Input& input, const Camera* camera)
+{
+    cobot::vec2 ms = input.mouse.pos;
+    cobot::vec2 mouseWorld = camera->screen_to_world(ms);
+
+    PartId part = editor.vehicle.getPartAt(mouseWorld);
+    if (part == NullPartId)
+    {
+        return false;
+    }
+
+    editor.vehicle.unattach_from_parent(part);
+
+    editor.selectedPart = part;
+    editor.haveSelectedPart = true;
+    return true;
+}
+
+bool input_keyboard_vehicle_editor(VehicleEditor& editor, Input& input)
+{
+    return false;
+}
+
 void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, VehicleEditor& editor, VPartImages& partImages)
 {
 	const Camera* camera = render.camera;
@@ -69,24 +112,19 @@ void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, Ve
 
     cobot::vec2 ws = render.render_size;
 
+    auto mouseWorld = camera->screen_to_world(input.mouse.pos);
+
 	draw_vehicle_editor_background(render, catalog, input, editor);
 	
-    if (editor.haveSeletedPart)
+    if (editor.haveSelectedEditorPart)
     {
-        SDL_Texture* texture = get_part_texture(editor.selectedPartKind, catalog);
-    
-        cobot::RectangleRot area = {};
-        if (editor.haveSnap)
-        {
-            area = cobot::RectangleRot(editor.snap.position, cobot::vec2(100, 100), editor.snap.rotation);
-        }
-        else
-        {
-            area = cobot::RectangleRot(camera->screen_to_world(input.mouse.pos), cobot::vec2(100, 100), 0);
-        }
-
-        cobot::Quad points = area.get_points();
-        draw_quad_with_texture(render, points, texture, cobot::ColorF(0.9,0.9,0.9,0.5));
+        SDL_Texture* texture = get_part_texture(editor.selectedEditorPartKind, catalog);
+        editor.draw_selected_part(texture, render, mouseWorld);
+    }
+    else if (editor.haveSelectedPart)
+    {
+        SDL_Texture* texture = get_part_texture(editor.vehicle.get_part(editor.selectedPart).kind, catalog);
+        editor.draw_selected_part(texture, render, mouseWorld);
     }
 
     draw_vehicle(render, catalog, editor.vehicle, VehicleDrawParameters(&partImages, NullPartId, true));

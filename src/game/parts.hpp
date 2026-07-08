@@ -77,6 +77,17 @@ struct AttachmentPoint {
 		used = true;
         return true;
     }
+
+    bool unattach() {
+        if (!used)
+        {
+            return false;
+        }
+
+        used = false;
+        part = NullPartId;
+        return true;
+    }
 };
 
 struct Computer {

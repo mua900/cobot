@@ -904,8 +904,9 @@ bool Application::mouse_input_vehicle_editor()
     cobot::vec2 mouse_pos = m_input.mouse.pos;
     UiState& ui = m_ui[UiVehicleEditor];
 
+    // ui
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) {
-        if (editor.haveSeletedPart)
+        if (editor.haveSelectedEditorPart)
         {
             Camera& camera = cameras[CameraVehicleEditor];
             
@@ -914,8 +915,8 @@ bool Application::mouse_input_vehicle_editor()
             {
                 display_message(ws * 0.5, cobot::vec2(ws.x * 0.4, ws.y * 0.1), errorMessage, 5, cobot::Color(0xAA, 0xAA, 0xAA), cobot::Color(0xCC, 0x33, 0x33));
             }
-            editor.haveSeletedPart = false;
-            editor.selectedPartKind = {};
+            editor.haveSelectedEditorPart = false;
+            editor.selectedEditorPartKind = {};
             return true;
         }
 
@@ -924,7 +925,34 @@ bool Application::mouse_input_vehicle_editor()
             ASSERT(properties);
             ValuePanelTab& tab = properties->get_active_tab();
 
+            float height = 0;
+            for (int i = 0; i < tab.fields.size(); i++)
+            {
+                ValueField& field = tab.fields[i];
+                cobot::Rectangle title_area = properties->get_field_title_area(properties->activeTab, i);
+                title_area.y += height;
+                height += title_area.h;
 
+                cobot::Rectangle area = properties->get_field_area(properties->activeTab, i, &get_active_ui());
+                area.y += height;
+                height += area.h;
+
+                switch (field.type)
+                {
+                    case ValueInteger: // fallthrough
+                    case ValueNumber: // fallthrough
+                    case ValueString: // these are already handled by the mouse_input_common
+                        break;
+                    case ValueButton: {
+                        break;
+                    }
+                    case ValueSelection: {
+                        break;
+                    }
+                }
+
+                height += tab.field_margin;
+            }
         }
 
         for (Panel& panel : ui.panel) {
@@ -959,14 +987,14 @@ bool Application::mouse_input_vehicle_editor()
                     PartKind partKind = PartKind(tab.icons.get_ref(i).data.number);
                     if (area.contains_top_left(mouse_pos))
                     {
-                        editor.selectedPartKind = partKind;
-                        editor.haveSeletedPart = true;
+                        editor.selectedEditorPartKind = partKind;
+                        editor.haveSelectedEditorPart = true;
                         return true;
                     }
                 }
 
-                editor.selectedPartKind = {};
-                editor.haveSeletedPart = false;
+                editor.selectedEditorPartKind = {};
+                editor.haveSelectedEditorPart = false;
                 return true;
             }
 
@@ -1006,6 +1034,12 @@ bool Application::mouse_input_vehicle_editor()
 				}
 			}
 		}
+    }
+
+    // editor
+    if (input_mouse_vehicle_editor(editor, m_input, &cameras[CameraVehicleEditor]))
+    {
+        return true;
     }
 
     return false;

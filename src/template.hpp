@@ -279,6 +279,26 @@ struct Array {
 
 	Array() {}
 	Array(T* d, size_t c) : data(d), count(c) {}
+
+	T* begin()
+	{
+		return data;
+	}
+
+	T* end()
+	{
+		return data + count;
+	}
+
+	const T* begin() const
+	{
+		return data;
+	}
+
+	const T* end() const
+	{
+		return data + count;
+	}
 };
 
 template<typename T>

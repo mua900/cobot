@@ -95,6 +95,30 @@ cobot::Rectangle Vehicle::calculate_part_volume_with_parent(VPartTransform paren
     return volume;
 }
 
+bool Vehicle::unattach_from_parent(PartId id)
+{
+    VehiclePart& part = get_part(id);
+    auto parentId = part.partData.parent;
+
+    if (parentId != NullPartId)
+    {
+        VehiclePart& parent = get_part(parentId);
+        Array<AttachmentPoint> points = parent.getAttachments();
+        for (auto& p : points)
+        {
+            if (p.part == parentId)
+            {
+                if (!p.unattach())
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 cobot::vec2 Vehicle::forward() const
 {
     return cobot::vec2(std::cosf(orientation), std::sinf(orientation));
