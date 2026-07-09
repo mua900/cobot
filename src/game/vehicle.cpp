@@ -109,7 +109,10 @@ bool Vehicle::remove_part(PartId id)
     Array<AttachmentPoint> points = part.getAttachments();
     for (auto& p : points)
     {
-        remove_part(p.part);
+        if (p.used)
+        {
+            remove_part(p.part);
+        }
     }
 
     parts.remove(id);
