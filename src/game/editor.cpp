@@ -1,17 +1,21 @@
 #include "editor.hpp"
+#include "log.hpp"
 
-bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
+void VehicleEditor::set_part_position(cobot::vec2 where, AttachmentDistance dist, VPartData& partData, bool firstRoot)
 {
-    AttachmentDistance dist = vehicle.getAttachmentPointClosest(where, 20);
-
-    if (!haveSelectedEditorPart)
+    if (dist.point)
     {
-        *errorMessage = "No part selected";
-        return false;
+        partData.parent = dist.parent;
     }
 
-    PartKind kind = selectedEditorPartKind;
+    if (rootPart)
+    {
+        partData.transform.position = firstRoot ? cobot::vec2() : where - vehicle.worldPosition;
+    }
+}
 
+bool VehicleEditor::check_placement(AttachmentDistance dist, const char** errorMessage)
+{
     if (dist.point && rootPart)
     {
         // trying to attach a root part to an attachment point
@@ -25,22 +29,70 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
         return false;
     }
 
+    return true;
+}
+
+bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
+{
+    if (!haveSelectedPart)
+    {
+        *errorMessage = "No part selected";
+        return false;
+    }
+
+    AttachmentDistance dist = vehicle.getAttachmentPointClosest(where, 20);
+
+    if (!check_placement(dist, errorMessage))
+    {
+        vehicle.remove_part(selectedPart);
+        return false;
+    }
+
     bool firstRootPart = rootPart && (vehicle.rootParts.count() == 0);
-    VPartData partData = VPartData();
+    VehiclePart& part = vehicle.get_part(selectedPart);
+
+    set_part_position(where, dist, part.partData, firstRootPart);
 
     if (dist.point)
     {
-        partData.parent = dist.parent;
+        dist.point->attach(selectedPart);
     }
 
+    if (firstRootPart)
+    {
+        vehicle.worldPosition = where;
+    }
+    
     if (rootPart)
     {
-        partData.transform.position = firstRootPart ? cobot::vec2() : where - vehicle.worldPosition;
+        vehicle.add_root(selectedPart);
     }
 
-    VehiclePart part(kind);
-    part.partData = partData;
+    return true;
+}
+
+bool VehicleEditor::place_editor_part(cobot::vec2 where, const char** errorMessage)
+{
+    if (!haveSelectedEditorPart)
+    {
+        *errorMessage = "No part selected";
+        return false;
+    }
+
+    AttachmentDistance dist = vehicle.getAttachmentPointClosest(where, 20);
+
+    PartKind kind = selectedEditorPartKind;
+
+    if (!check_placement(dist, errorMessage))
+    {
+        return false;
+    }
+
+    bool firstRootPart = rootPart && (vehicle.rootParts.count() == 0);
+    VehiclePart part (kind);
     part.init();
+
+    set_part_position(where, dist, part.partData, firstRootPart);
 
     PartId id = vehicle.add_part(part);
 
@@ -49,13 +101,13 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
         dist.point->attach(id);
     }
     
+    if (firstRootPart)
+    {
+        vehicle.worldPosition = where;
+    }
+
     if (rootPart)
     {
-        if (vehicle.rootParts.count() == 0)
-        {
-            vehicle.worldPosition = where;
-        }
-
         vehicle.add_root(id);
     }
 
@@ -92,6 +144,8 @@ bool input_mouse_vehicle_editor(VehicleEditor& editor, Input& input, const Camer
     {
         return false;
     }
+
+    log_info("%u", part);
 
     editor.vehicle.unattach_from_parent(part);
 

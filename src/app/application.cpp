@@ -904,20 +904,32 @@ bool Application::mouse_input_vehicle_editor()
     cobot::vec2 mouse_pos = m_input.mouse.pos;
     UiState& ui = m_ui[UiVehicleEditor];
 
+    Camera& camera = cameras[CameraVehicleEditor];
+    cobot::vec2 mouseWorld = camera.screen_to_world(mouse_pos);
+
     // ui
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) {
+        const char* errorMessage = nullptr;
+
+        if (editor.haveSelectedPart)
+        {
+            editor.place_part(mouseWorld, &errorMessage);
+            editor.haveSelectedPart = false;
+            editor.selectedPart = {};
+            return false;
+        }
+
         if (editor.haveSelectedEditorPart)
         {
-            Camera& camera = cameras[CameraVehicleEditor];
-            
-            const char* errorMessage = nullptr;
-            if (!editor.place_part(camera.screen_to_world(mouse_pos), &errorMessage))
-            {
-                display_message(ws * 0.5, cobot::vec2(ws.x * 0.4, ws.y * 0.1), errorMessage, 5, cobot::Color(0xAA, 0xAA, 0xAA), cobot::Color(0xCC, 0x33, 0x33));
-            }
+            editor.place_editor_part(mouseWorld, &errorMessage);
             editor.haveSelectedEditorPart = false;
             editor.selectedEditorPartKind = {};
             return true;
+        }
+
+        if (errorMessage)
+        {
+            display_message(ws * 0.5, cobot::vec2(ws.x * 0.4, ws.y * 0.1), errorMessage, 5, cobot::Color(0xAA, 0xAA, 0xAA), cobot::Color(0xCC, 0x33, 0x33));
         }
 
         {

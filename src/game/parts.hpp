@@ -52,7 +52,6 @@ VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child)
 struct VPartData {
     PartId parent = {};
     VPartTransform transform = {};
-    float weight = 0;
 
     VPartData() {}
     VPartData(cobot::vec2 position) : transform(position, 1.0) {}

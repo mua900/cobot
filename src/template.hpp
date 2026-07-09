@@ -383,7 +383,7 @@ struct BucketList {
 		int bucket_index = elem_index / BUCKET_SIZE;
 		int index = elem_index % BUCKET_SIZE;
 
-		if (buckets[bucket_index].occupied_flags & BIT(index))
+		if (!(buckets[bucket_index].occupied_flags & BIT(index)))
 		{
 			panic("Trying to remove an empty slot in bucket list");
 		}
@@ -403,7 +403,7 @@ struct BucketList {
 		int index = elem_index % BUCKET_SIZE;
 
 		if (!in_bounds(elem_index)) panic("Out of bounds array access");
-		if (!buckets[bucket_index].occupied_flags & BIT(index))
+		if (!(buckets[bucket_index].occupied_flags & BIT(index)))
 		{
 			panic("Accessing an empty slot in bucket list");
 		}
@@ -434,34 +434,45 @@ struct BucketList {
 		return &buckets[bucket_index].elements[index];
 	}
 
+	bool get_next(int* bucket_index, int* slot_index) const
+	{
+		for (int i = *bucket_index; i < buckets.size(); i++)
+		{
+			Bucket& bucket = buckets.get_ref(i);
+			auto flags = bucket.occupied_flags;
+			flags &= BUCKET_FLAGS_FULL << *slot_index;  // ignore flags before the point we are looking
+			if (flags != 0)
+			{
+				int index = lsb_index(flags);
+
+				*bucket_index = i;
+				*slot_index = index;
+				return true;
+			}
+			else
+			{
+				*slot_index = 0;
+			}
+		}
+
+		*bucket_index = buckets.size();
+		*slot_index = 0;
+		return false;
+	}
+
 	struct Iterator {
 		BucketList<T>* list = {};
 		int bucket_index = 0;
 		int slot_index = 0;
 
+		int index() const
+		{
+			return bucket_index * BUCKET_SIZE + slot_index;
+		}
+
 		void next()
 		{
-			for (int i = bucket_index; i < list->buckets.size(); i++)
-			{
-				Bucket& bucket = list->buckets.get_ref(i);
-				auto flags = bucket.occupied_flags;
-				flags &= BUCKET_FLAGS_FULL << slot_index;  // ignore flags before the point we are looking
-				if (flags != 0)
-				{
-					int index = lsb_index(flags);
-
-					bucket_index = i;
-					slot_index = index;
-					return;
-				}
-				else
-				{
-					slot_index = 0;
-				}
-			}
-
-			bucket_index = list->buckets.size();
-			slot_index = 0;
+			list->get_next(&bucket_index, &slot_index);
 		}
 
 		Iterator& operator++() {
@@ -501,29 +512,14 @@ struct BucketList {
 		int bucket_index = 0;
 		int slot_index = 0;
 
+		int index() const
+		{
+			return bucket_index * BUCKET_SIZE + slot_index;
+		}
+
 		void next()
 		{
-			for (int i = bucket_index; i < list->buckets.size(); i++)
-			{
-				const Bucket& bucket = list->buckets.get_ref(i);
-				auto flags = bucket.occupied_flags;
-				flags &= BUCKET_FLAGS_FULL << slot_index;  // ignore flags before the point we are looking
-				if (flags != 0)
-				{
-					int index = lsb_index(flags);
-
-					bucket_index = i;
-					slot_index = index;
-					return;
-				}
-				else
-				{
-					slot_index = 0;
-				}
-			}
-
-			bucket_index = list->buckets.size();
-			slot_index = 0;
+			list->get_next(&bucket_index, &slot_index);
 		}
 
 		ConstIterator& operator++() {

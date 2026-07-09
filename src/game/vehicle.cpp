@@ -95,6 +95,27 @@ cobot::Rectangle Vehicle::calculate_part_volume_with_parent(VPartTransform paren
     return volume;
 }
 
+bool Vehicle::remove_part(PartId id)
+{
+    VehiclePart& part = get_part(id);
+    unattach_from_parent(id);
+
+    if (part.kind == PartKindComputer)
+    {
+        int s = part.data.computer.script;
+        scripts.remove(s);
+    }
+
+    Array<AttachmentPoint> points = part.getAttachments();
+    for (auto& p : points)
+    {
+        remove_part(p.part);
+    }
+
+    parts.remove(id);
+    return true;
+}
+
 bool Vehicle::unattach_from_parent(PartId id)
 {
     VehiclePart& part = get_part(id);
@@ -102,16 +123,33 @@ bool Vehicle::unattach_from_parent(PartId id)
 
     if (parentId != NullPartId)
     {
+        bool detached = false;
+
         VehiclePart& parent = get_part(parentId);
         Array<AttachmentPoint> points = parent.getAttachments();
         for (auto& p : points)
         {
-            if (p.part == parentId)
+            if (p.used && p.part == id)
             {
                 if (!p.unattach())
                 {
                     return false;
                 }
+
+                detached = true;
+            }
+        }
+
+        ASSERT(detached);
+    }
+    else
+    {
+        // root part
+        for (auto it = rootParts.begin(); it != rootParts.end(); ++it)
+        {
+            if (*it == id)
+            {
+                rootParts.remove(it.index());
             }
         }
     }
@@ -137,9 +175,7 @@ VPartTransform Vehicle::getWorldTransform(PartId part) const
 
 		if (depth >= VehicleMaxDepth)
 		{
-			log_error("----------");
 			log_error("Vehicle hierarchy is deeper than maximum depth or too many iterations : %d in getWorldTransform for vehicle", VehicleMaxDepth);
-			log_error("----------");
 			return t;
 		}
     }

@@ -50,7 +50,8 @@ struct Vehicle {
     PartId getPartAt(cobot::vec2 position) const;
     AttachmentDistance getAttachmentPointClosest(cobot::vec2 position, float radius);
 
-    bool unattach_from_parent(PartId part);
+    bool remove_part(PartId id);
+    bool unattach_from_parent(PartId id);
 
     float calculatePowerConsumption() const;
     float calculatePowerGeneration() const;

@@ -19,7 +19,11 @@ struct VehicleEditor {
     PartKind selectedEditorPartKind = {};
     bool haveSelectedEditorPart = false;
 
+    bool check_placement(AttachmentDistance dist, const char** errorMessage);
+    void set_part_position(cobot::vec2 where, AttachmentDistance dist, VPartData& partData, bool firstRoot);
+
     bool place_part(cobot::vec2 where, const char** errorMessage);
+    bool place_editor_part(cobot::vec2 where, const char** errorMessage);
 
     void draw_selected_part(SDL_Texture* part, RenderContext& render, cobot::vec2 where);
 };
