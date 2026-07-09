@@ -5,6 +5,8 @@
 #include "app/draw.hpp"
 #include "vehicle.hpp"
 
+#define EDITOR_DEBUG 1
+
 struct VehicleEditor {
     Vehicle vehicle = {};
     VPartTransform snap = {};

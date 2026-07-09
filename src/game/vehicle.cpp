@@ -141,6 +141,7 @@ bool Vehicle::unattach_from_parent(PartId id)
         }
 
         ASSERT(detached);
+        part.partData.parent = NullPartId;
     }
     else
     {

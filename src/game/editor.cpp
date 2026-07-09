@@ -45,6 +45,11 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
     if (!check_placement(dist, errorMessage))
     {
         vehicle.remove_part(selectedPart);
+
+#if EDITOR_DEBUG
+        log_debug("Removed part: %u", selectedPart);
+#endif
+
         return false;
     }
 
@@ -67,6 +72,10 @@ bool VehicleEditor::place_part(cobot::vec2 where, const char** errorMessage)
     {
         vehicle.add_root(selectedPart);
     }
+
+#if EDITOR_DEBUG
+    log_debug("Attached part: %u", selectedPart);
+#endif
 
     return true;
 }
@@ -111,6 +120,10 @@ bool VehicleEditor::place_editor_part(cobot::vec2 where, const char** errorMessa
         vehicle.add_root(id);
     }
 
+#if EDITOR_DEBUG
+    log_debug("Attached part kind: %u", selectedEditorPartKind);
+#endif
+
     return true;
 }
 
@@ -140,18 +153,16 @@ bool input_mouse_vehicle_editor(VehicleEditor& editor, Input& input, const Camer
     cobot::vec2 mouseWorld = camera->screen_to_world(ms);
 
     PartId part = editor.vehicle.getPartAt(mouseWorld);
-    if (part == NullPartId)
+    if (part != NullPartId)
     {
-        return false;
+        editor.vehicle.unattach_from_parent(part);
+
+        editor.selectedPart = part;
+        editor.haveSelectedPart = true;
+        return true;
     }
 
-    log_info("%u", part);
-
-    editor.vehicle.unattach_from_parent(part);
-
-    editor.selectedPart = part;
-    editor.haveSelectedPart = true;
-    return true;
+    return false;
 }
 
 bool input_keyboard_vehicle_editor(VehicleEditor& editor, Input& input)

@@ -909,27 +909,30 @@ bool Application::mouse_input_vehicle_editor()
 
     // ui
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) {
-        const char* errorMessage = nullptr;
-
-        if (editor.haveSelectedPart)
+        if (editor.haveSelectedPart || editor.haveSelectedEditorPart)
         {
-            editor.place_part(mouseWorld, &errorMessage);
-            editor.haveSelectedPart = false;
-            editor.selectedPart = {};
-            return false;
-        }
+            const char* errorMessage = nullptr;
 
-        if (editor.haveSelectedEditorPart)
-        {
-            editor.place_editor_part(mouseWorld, &errorMessage);
-            editor.haveSelectedEditorPart = false;
-            editor.selectedEditorPartKind = {};
-            return true;
-        }
+            if (editor.haveSelectedPart)
+            {
+                editor.place_part(mouseWorld, &errorMessage);
+                editor.haveSelectedPart = false;
+                editor.selectedPart = {};
+                return true;
+            }
 
-        if (errorMessage)
-        {
-            display_message(ws * 0.5, cobot::vec2(ws.x * 0.4, ws.y * 0.1), errorMessage, 5, cobot::Color(0xAA, 0xAA, 0xAA), cobot::Color(0xCC, 0x33, 0x33));
+            if (editor.haveSelectedEditorPart)
+            {
+                editor.place_editor_part(mouseWorld, &errorMessage);
+                editor.haveSelectedEditorPart = false;
+                editor.selectedEditorPartKind = {};
+                return true;
+            }
+
+            if (errorMessage)
+            {
+                display_message(ws * 0.5, cobot::vec2(ws.x * 0.4, ws.y * 0.1), errorMessage, 5, cobot::Color(0xAA, 0xAA, 0xAA), cobot::Color(0xCC, 0x33, 0x33));
+            }
         }
 
         {
