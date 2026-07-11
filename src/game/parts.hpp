@@ -128,6 +128,14 @@ struct Battery {
     // float storedCharge;
 };
 
+struct Thermometer {
+
+};
+
+struct Lidar {
+
+};
+
 struct VehiclePart {
     PartKind kind = PartKindSentinel;
     VPartData partData = {};
@@ -137,6 +145,8 @@ struct VehiclePart {
         Computer computer;
         SolarPanel solarPanel;
         Battery battery;
+        Thermometer thermometer;
+        Lidar lidar;
     } data = {};
 
     VehiclePart() : kind(PartKindSentinel) {}

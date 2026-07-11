@@ -227,9 +227,6 @@ private:
 
     bool load_mission(Mission& mission);
 
-    void add_button(UiId ui, UiElementId id, TextButton button);
-    void add_label(UiId ui, UiElementId id, Label label);
-
     bool is_minimized() const;
     bool is_maximized() const;
     bool is_fullscreen() const;

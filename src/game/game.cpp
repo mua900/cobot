@@ -225,3 +225,37 @@ void draw_planet_outline(RenderContext& context, const GameState& game, int plan
     draw_arc(context, planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(190), cobot::degree_to_radian_f(70), planet.color);
     draw_arc(context, planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(280), cobot::degree_to_radian_f(70), planet.color);
 }
+
+bool initialize_game_ui(cobot::vec2 windowSize, AssetId fontId, AssetId editorFontId, UiState& ui, AssetCatalog& catalog, RenderContext& render)
+{
+    Font editor_font = catalog.get_font(editorFontId);
+    Font font = catalog.get_font(fontId);
+    cobot::Color button_color = cobot::Color(0x77, 0x55, 0x55);
+    cobot::Color background = cobot::Color(0x33, 0x55, 0x66);
+
+    auto mapButton = TextButton(create_text(render.renderer, String("Map"), font, button_color), windowSize * 0.05, windowSize * 0.1, background, true);
+    mapButton.id = MapButton;
+
+    AssetId buildIcon = get_asset(String("buildIcon"), catalog);
+    AssetId debugIcon = get_asset(String("debugIcon"), catalog);
+    AssetId runIcon = get_asset(String("runIcon"), catalog);
+
+    if (!(buildIcon.is_valid() && debugIcon.is_valid() && runIcon.is_valid()))
+    {
+        return false;
+    }
+
+    TextEditor editor = TextEditor(MainEditor, cobot::Rectangle(900, 300, 500, 500), editorFontId,
+                                    cobot::Color(0x22, 0x88, 0x22), cobot::Color(0x88, 0x22, 0x33), cobot::Color(0x55, 0x77, 0x44), cobot::Color(0x88, 0x33, 0x66),
+                                    String("Program"), 30);
+    cobot::Color icon_background(0x66, 0x11, 0x33);
+    editor.icon1 = Icon(catalog.get_image(runIcon), icon_background);
+    editor.icon2 = Icon(catalog.get_image(buildIcon), icon_background);
+    editor.icon3 = Icon(catalog.get_image(debugIcon), icon_background);
+
+
+    ui.button.add(mapButton);
+    ui.editor.add(editor);
+
+    return true;
+}

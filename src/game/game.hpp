@@ -7,6 +7,7 @@
 #include "app/text.hpp"
 #include "app/time.hpp"
 #include "app/input.hpp"
+#include "app/ui.hpp"
 
 #include "vehicle.hpp"
 #include "script.hpp"
@@ -67,5 +68,7 @@ void draw_star_system(const RenderContext& context, const AssetCatalog& catalog,
 void draw_planet_orbit(RenderContext& context, const Planet& planet, double centralBodyMass, float thick);
 void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_planet_outline(RenderContext& context, const GameState& game, int planet);
+
+bool initialize_game_ui(cobot::vec2 windowSize, AssetId fontId, AssetId editorFontId, UiState& ui, AssetCatalog& catalog, RenderContext& render);
 
 #endif // GAME_HPP

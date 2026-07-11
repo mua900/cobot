@@ -37,4 +37,6 @@ bool input_keyboard_vehicle_editor(VehicleEditor& editor, Input& input);
 void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, VehicleEditor& editor, VPartImages& partImages);
 void draw_vehicle_editor_background(RenderContext& render, AssetCatalog& catalog, Input& input, VehicleEditor& editor);
 
+bool initialize_vehicle_editor_ui(cobot::vec2 windowSize, AssetId fontId, UiState& ui, AssetCatalog& catalog, RenderContext& render);
+
 #endif // EDITOR_HPP

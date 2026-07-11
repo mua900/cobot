@@ -1772,16 +1772,6 @@ void Application::cleanup()
     TTF_Quit();
 }
 
-void Application::add_button(UiId ui, UiElementId id, TextButton button) {
-    button.id = id;
-    m_ui[ui].button.add(button);
-}
-
-void Application::add_label(UiId ui, UiElementId id, Label label) {
-    label.id = id;
-    m_ui[ui].label.add(label);
-}
-
 bool Application::init_render()
 {
     if (!initialize_render_context(&m_render, m_window.window))
@@ -1841,13 +1831,22 @@ bool Application::init_ui()
     cobot::Color button_color = cobot::Color(0x77, 0x55, 0x55);
     cobot::Color background = cobot::Color(0x33, 0x55, 0x66);
 
-    // main menu
-    add_button(UiMainMenu, PlayButton, TextButton(create_text(m_render.renderer, String("Play"), font, button_color), cobot::vec2(ws.x * 0.5, ws.y * 0.2), button_scale, background, true));
-    add_button(UiMainMenu, SettingsButton, TextButton(create_text(m_render.renderer, String("Settings"), font, button_color), cobot::vec2(ws.x * 0.5, ws.y * 0.5), button_scale, background, true));
-    add_button(UiMainMenu, QuitButton, TextButton(create_text(m_render.renderer, String("Quit"), font, button_color), cobot::vec2(ws.x * 0.5, ws.y * 0.8), button_scale, background, true));
 
-    // settings
-    add_button(UiSettings, BackButton, TextButton(create_text(m_render.renderer, String("Back"), font, button_color), ws * 0.1, ws * 0.1, background, true));
+    auto playButton = TextButton(create_text(m_render.renderer, String("Play"), font, button_color), cobot::vec2(ws.x * 0.5, ws.y * 0.2), button_scale, background, true);
+    playButton.id = PlayButton;
+    auto settingsButton = TextButton(create_text(m_render.renderer, String("Settings"), font, button_color), cobot::vec2(ws.x * 0.5, ws.y * 0.5), button_scale, background, true);
+    settingsButton.id = SettingsButton;
+    auto quitButton = TextButton(create_text(m_render.renderer, String("Quit"), font, button_color), cobot::vec2(ws.x * 0.5, ws.y * 0.8), button_scale, background, true);
+    quitButton.id = QuitButton;
+
+    m_ui[UiMainMenu].button.add(playButton);
+    m_ui[UiMainMenu].button.add(settingsButton);
+    m_ui[UiMainMenu].button.add(quitButton);
+
+    auto backButton = TextButton(create_text(m_render.renderer, String("Back"), font, button_color), ws * 0.1, ws * 0.1, background, true);
+    backButton.id = BackButton;
+
+    m_ui[UiSettings].button.add(backButton);
 
     if (!init_game_ui()) return false;
     if (!init_load_ui()) return false;
@@ -2016,35 +2015,7 @@ bool Application::init_solar_system_ui()
 }
 
 bool Application::init_game_ui() {
-    cobot::vec2 ws = get_window_size();
-    UiState& ui = m_ui[UiGame];
-    Font editor_font = m_catalog.get_font(m_editor_font);
-    Font font = m_catalog.get_font(m_font);
-    cobot::Color button_color = cobot::Color(0x77, 0x55, 0x55);
-    cobot::Color background = cobot::Color(0x33, 0x55, 0x66);
-
-    add_button(UiGame, MapButton, TextButton(create_text(m_render.renderer, String("Map"), font, button_color), ws * 0.05, ws * 0.1, background, true));
-
-    AssetId buildIcon = get_asset(String("buildIcon"), m_catalog);
-    AssetId debugIcon = get_asset(String("debugIcon"), m_catalog);
-    AssetId runIcon = get_asset(String("runIcon"), m_catalog);
-
-    if (!(buildIcon.is_valid() && debugIcon.is_valid() && runIcon.is_valid()))
-    {
-        return false;
-    }
-
-    TextEditor editor = TextEditor(MainEditor, cobot::Rectangle(900, 300, 500, 500), m_editor_font,
-                                    cobot::Color(0x22, 0x88, 0x22), cobot::Color(0x88, 0x22, 0x33), cobot::Color(0x55, 0x77, 0x44), cobot::Color(0x88, 0x33, 0x66),
-                                    String("Program"), 30);
-    cobot::Color icon_background(0x66, 0x11, 0x33);
-    editor.icon1 = Icon(m_catalog.get_image(runIcon), icon_background);
-    editor.icon2 = Icon(m_catalog.get_image(buildIcon), icon_background);
-    editor.icon3 = Icon(m_catalog.get_image(debugIcon), icon_background);
-
-    ui.editor.add(editor);
-
-    return true;
+    return initialize_game_ui(get_window_size(), m_font, m_editor_font, m_ui[UiGame], m_catalog, m_render);
 }
 
 bool Application::init_load_ui() {
@@ -2053,7 +2024,10 @@ bool Application::init_load_ui() {
     cobot::Color button_color = cobot::Color(0x77, 0x55, 0x55);
     cobot::Color background = cobot::Color(0x33, 0x55, 0x66);
 
-    add_button(UiLoad, BackButton, TextButton(create_text(m_render.renderer, String("Back"), m_catalog.get_font(m_font), button_color), ws * 0.05, ws * 0.1, background));
+    UiState& ui = m_ui[UiLoad];
+
+    auto backButton = TextButton(create_text(m_render.renderer, String("Back"), m_catalog.get_font(m_font), button_color), ws * 0.05, ws * 0.1, background);
+    backButton.id = BackButton;
 
     float buttonY = ws.y * 0.2;
     float buttonX = ws.x * 0.1;
@@ -2062,7 +2036,10 @@ bool Application::init_load_ui() {
     cobot::Color missionTextColor = cobot::Color(0x66, 0x33, 0x77);
     TextButton testSave = TextButton(create_text(m_render.renderer, String("Test Save"), m_catalog.get_font(m_font), missionTextColor), cobot::vec2(buttonX, buttonY), buttonScale, missionBackground);
     testSave.data.number = 0;
-    add_button(UiLoad, LoadButton, testSave);
+    testSave.id = LoadButton;
+
+    ui.button.add(backButton);
+    ui.button.add(testSave);
 
     return true;
 }
@@ -2070,107 +2047,8 @@ bool Application::init_load_ui() {
 bool Application::init_vehicle_editor_ui() {
     cobot::vec2 ws = get_window_size();
     UiState& ui = m_ui[UiVehicleEditor];
-    Font font = m_catalog.get_font(m_font);
 
-    float panelTitleHeight = 10;
-    cobot::Rectangle panel_area = { 0, panelTitleHeight, ws.x * 0.3f, ws.y * 0.9f };
-    cobot::Color panel_color = cobot::Color(0x33, 0x44, 0x44);
-    Panel partsPanel (PartsPanel, panel_area.to_center(), 32, 48, 16);
-    partsPanel.title_height = panelTitleHeight;
-    partsPanel.title_bar_color = cobot::Color(0x44, 0x66, 0x77);
-
-    cobot::Color iconColor = cobot::Color(0x77, 0x33, 0x44);
-    cobot::Color tabIconColor = cobot::Color(0x33, 0x66, 0x44);
-
-    // @todo we can delegate categorization to to load_part_icons which would be better
-    DArray<IconButton> partIcons;
-    if (!load_part_icons(partIcons, iconColor, m_catalog))
-    {
-        return false;
-    }
-
-    DArray <IconButton> groundTabIcons;
-    DArray<IconButton> structureTabIcons;
-    DArray<IconButton> computerTabIcons;
-    DArray<IconButton> powerTabIcons;
-    DArray<IconButton> instrumentTabIcons;
-
-    for (auto& icon : partIcons)
-    {
-        PartKind kind = PartKind(icon.data.number);
-        switch (getPartCategory(kind))
-        {
-            case CategoryPower:         powerTabIcons.add(icon);      break;
-            case CategoryComputer:      computerTabIcons.add(icon);   break;
-            case CategoryStructure:     structureTabIcons.add(icon);  break;
-            case CategoryGround:        groundTabIcons.add(icon);     break;
-            case CategoryInstrument:    instrumentTabIcons.add(icon); break;
-            default:
-                panic("Invalid part category");
-        }
-    }
-
-    partIcons.reset();
-
-    AssetId groundIconId = get_asset(String("groundTabIcon"), m_catalog);
-    if (!groundIconId.is_valid()) return false;
-    Icon groundIcon = Icon(m_catalog.get_image(groundIconId), tabIconColor);
-
-    AssetId structureIconId = get_asset(String("structuralTabIcon"), m_catalog);
-    if (!structureIconId.is_valid()) return false;
-    Icon structureIcon = Icon(m_catalog.get_image(structureIconId), tabIconColor);
-    
-    AssetId computerIconId = get_asset(String("computerTabIcon"), m_catalog);
-    if (!computerIconId.is_valid()) return false;
-    Icon computerIcon = Icon(m_catalog.get_image(computerIconId), tabIconColor);
-    
-    AssetId powerIconId = get_asset(String("powerTabIcon"), m_catalog);
-    if (!powerIconId.is_valid()) return false;
-    Icon powerIcon = Icon(m_catalog.get_image(powerIconId), tabIconColor);
-
-    AssetId instrumentIconId = get_asset(String("instrumentTabIcon"), m_catalog);
-    if (!instrumentIconId.is_valid()) return false;
-    Icon instrumentIcon = Icon(m_catalog.get_image(instrumentIconId), tabIconColor);
-
-    partsPanel.tabs.add(PanelTab(groundIcon, groundTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(structureIcon, structureTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(computerIcon, computerTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(powerIcon, powerTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(instrumentIcon, instrumentTabIcons, panel_color));
-
-    cobot::Rectangle propertiesPanelArea = {
-        ws.x * 0.9f, ws.y * 0.5f,
-        ws.x * 0.2f, ws.y * 0.5f
-    };
-    cobot::ColorF propertiesPanelColor = {
-        0.1f, 0.5f, 0.2f
-    };
-    ValuePanelTab selectedPartTab;
-    selectedPartTab.tabIcon = Icon(nullptr, cobot::Color(0x55, 0x66, 0x44));
-    selectedPartTab.color = propertiesPanelColor;
-    selectedPartTab.field_height = 32;
-    selectedPartTab.field_margin = 8;
-    selectedPartTab.fields.ensure_size(8);
-    ValuePanel propertiesPanel = ValuePanel(PartPropertyPanel, propertiesPanelArea, 25, 32, cobot::DirWest);
-    propertiesPanel.tabs.add(selectedPartTab);
-
-	cobot::Color background = cobot::Color(0x44, 0x88, 0x55);
-	cobot::Color textColor = cobot::Color(0xAA, 0xAA, 0x66);
-	TextButton backButton = TextButton(create_text(m_render.renderer, String("Back"), font, textColor), cobot::vec2(ws.x * 0.95, ws.y * 0.05), ws * 0.1, background);
-	backButton.id = BackButton;
-	TextButton saveVehicle = TextButton(create_text(m_render.renderer, String("Save"), font, textColor), ws * 0.95, ws * 0.1, background);
-    saveVehicle.id = SaveVehicle;
-
-	float nameFieldHeight = 100;
-	float nameFieldWidth = 400;
-
-    ui.panel.add(partsPanel);
-    ui.value_panel.add(propertiesPanel);
-    ui.button.add(saveVehicle);
-    ui.button.add(backButton);
-    ui.text_field.add(Text_Field(cobot::Rectangle(ws.x * 0.5, nameFieldHeight / 2, nameFieldWidth, nameFieldHeight), m_font, cobot::Color(0x55, 0x33, 0x44), cobot::Color(0x99, 0xAA, 0xBB), VehicleName));
-
-    return true;
+    return initialize_vehicle_editor_ui(ws, m_font, ui, m_catalog, m_render);
 }
 
 void Application::draw()
