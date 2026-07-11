@@ -22,8 +22,12 @@ add_executable(cobot
 	src/template.hpp
 	src/log.hpp
 	src/log.cpp
+	src/string_util.hpp
+	src/string_util.cpp
 	src/math_util.hpp
 	src/math_util.cpp
+	src/file_util.hpp
+	src/file_util.cpp
 
 	src/app/application.hpp
 	src/app/application.cpp

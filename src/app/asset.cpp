@@ -1,5 +1,7 @@
 #include "asset.hpp"
 #include "log.hpp"
+#include "string_util.hpp"
+#include "file_util.hpp"
 
 #include <SDL3_image/SDL_image.h>
 
@@ -382,7 +384,7 @@ AssetId get_asset(String name, AssetCatalog& catalog)
                     auto asset_path = catalog.get_asset_path(asset.identifier);
                     SCOPE_STRING(asset_path, folder);
                     get_to_run_tree_path(catalog.path, folder);
-                    catalog.path.append(PathSeparator);
+                    catalog.path.append(make_string(PathSeparator));
 
                     if (!SDL_EnumerateDirectory(catalog.path.c_string(), asset_callback, &catalog)) {
                         log_error("Couldn't load assets in folder: %s", asset_path);
@@ -434,7 +436,7 @@ AssetId get_asset_at_index(int index, AssetCatalog& catalog)
             auto asset_path = catalog.get_asset_path_at_index(index);
             SCOPE_STRING(asset_path, folder);
             get_to_run_tree_path(catalog.path, folder);
-            catalog.path.append(PathSeparator);
+            catalog.path.append(make_string(PathSeparator));
 
             if (!SDL_EnumerateDirectory(catalog.path.c_string(), asset_callback, &catalog)) {
                 log_error("Couldn't load assets in folder: %s", asset_path);

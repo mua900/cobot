@@ -2,6 +2,7 @@
 #include "math_util.hpp"
 #include "common.hpp"
 #include "log.hpp"
+#include "file_util.hpp"
 
 #ifdef GRAPHICS_DEBUG_DX
 

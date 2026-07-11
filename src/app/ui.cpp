@@ -25,7 +25,15 @@ void GapBuffer::append(String string, int where)
     }
 
     if (length + string.size > buffer_size) {
-        resize(buffer_size * 2);
+        ASSERT(buffer_size >= 0);
+        if (buffer_size == 0)
+        {
+            initialize(256);
+        }
+        else
+        {
+            resize(buffer_size * 2);
+        }
     }
 
     if (where != gap_index)
@@ -99,6 +107,7 @@ void GapBuffer::move_gap(int position)
 void GapBuffer::resize(int size)
 {
     if (size < length) {
+        panic("Invalid GapBuffer");
         return;  // failure
     }
 
@@ -509,7 +518,7 @@ void UiState::update_state(cobot::vec2 window_size, const RenderContext& render,
 bool load_font(Font* font, String_Builder& path, String font_folder, String font_file, float size)
 {
     path.append(font_folder);
-    path.append(PathSeparator);
+    path.append(make_string(PathSeparator));
 
     path.append(font_file);
 

@@ -14,6 +14,7 @@ struct VehicleProgram {
     cobot::vec2 turnTarget = {};
 };
 
+// @todo
 enum CommandType {
     CommandMove,
     CommandTurn,

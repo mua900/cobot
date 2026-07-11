@@ -147,7 +147,7 @@ void VehicleEditor::draw_selected_part(SDL_Texture* part, RenderContext& render,
 }
 
 
-bool input_mouse_vehicle_editor(VehicleEditor& editor, Input& input, const Camera* camera)
+bool input_mouse_vehicle_editor(VehicleEditor& editor, Input& input, UiState& ui, const Camera* camera)
 {
     cobot::vec2 ms = input.mouse.pos;
     cobot::vec2 mouseWorld = camera->screen_to_world(ms);
@@ -155,11 +155,23 @@ bool input_mouse_vehicle_editor(VehicleEditor& editor, Input& input, const Camer
     PartId part = editor.vehicle.getPartAt(mouseWorld);
     if (part != NullPartId)
     {
-        editor.vehicle.unattach_from_parent(part);
+        if (input.mouse.buttonFlags & MOUSE_LEFT_MASK)
+        {
+            editor.vehicle.unattach_from_parent(part);
 
-        editor.selectedPart = part;
-        editor.haveSelectedPart = true;
-        return true;
+            editor.selectedPart = part;
+            editor.haveSelectedPart = true;
+            return true;
+        }
+        else if (input.mouse.buttonFlags & MOUSE_RIGHT_MASK)
+        {
+            ValuePanel* properties = ui.get_value_panel(PartPropertyPanel);
+            ASSERT(properties);
+
+            
+
+            return true;
+        }
     }
 
     return false;

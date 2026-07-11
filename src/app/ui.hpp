@@ -131,9 +131,7 @@ struct GapBuffer {
     int gap_index = 0;
     int end_gap = 0;
 
-    GapBuffer() {
-        initialize(256);
-    }
+    GapBuffer() {}
 
     GapBuffer(GapBuffer& other) = delete;
     void operator=(GapBuffer& other) = delete;

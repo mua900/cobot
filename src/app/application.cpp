@@ -196,15 +196,14 @@ bool Application::load_assets()
     int count = m_catalog.assets.size();
     for (int i = 0; i < count; i++)
     {
-        Asset& asset = m_catalog.assets[i];
-        if (!(asset.flags & ASSET_IS_LAZY))
+        if (!(m_catalog.assets[i].flags & ASSET_IS_LAZY))
         {
             AssetId id = get_asset_at_index(i, m_catalog);
             if (!id.is_valid())
             {
                 auto asset_name = m_catalog.get_asset_name_at_index(i);
                 SCOPE_STRING(asset_name, name);
-                if (!(asset.flags & ASSET_IS_OPTIONAL)) {
+                if (!(m_catalog.assets[i].flags & ASSET_IS_OPTIONAL)) {
                     log_error("Couldn't load asset %s", name);
                     return false;
                 }
@@ -1052,7 +1051,7 @@ bool Application::mouse_input_vehicle_editor()
     }
 
     // editor
-    if (input_mouse_vehicle_editor(editor, m_input, &cameras[CameraVehicleEditor]))
+    if (input_mouse_vehicle_editor(editor, m_input, ui, &cameras[CameraVehicleEditor]))
     {
         return true;
     }
