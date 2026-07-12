@@ -1,7 +1,7 @@
 #ifndef FUNCTION_HPP
 #define FUNCTION_HPP
 
-#include "common.hpp"
+#include "util/string_util.hpp"
 #include "expr.hpp"
 
 typedef void (*InterpFunction)(const Value* parameters, Value* return_values);

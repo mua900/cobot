@@ -1,9 +1,9 @@
 #ifndef SPACE_HPP
 #define SPACE_HPP
 
-#include "common.hpp"
-#include "math_util.hpp"
-#include "template.hpp"
+#include "util/common.hpp"
+#include "util/math_util.hpp"
+#include "util/template.hpp"
 #include "map.hpp"
 
 // Keplerian orbit (in 2 dimensions)
@@ -63,16 +63,10 @@ struct Body {
 typedef u32 PlanetId;
 constexpr PlanetId NullPlanetId = -1;
 
-enum DefaultPlanetId : u32 {
-    DefaultPlanetRed,
-    DefaultPlanetGreen,
-    DefaultPlanetBlue,
-    DefaultPlanetCount,
-};
-
 typedef float (*PressureFunction) (float altitude);
 
 struct Atmosphere {
+    // @todo
     PressureFunction pressure_function = nullptr;
 };
 
@@ -83,13 +77,16 @@ struct CelestialRotation {
     float axial_tilt = 0;
 };
 
+struct PlanetMap {
+    
+};
+
 struct Planet {
     PlanetId id = {};
     String name = {};
     cobot::ColorF color = {};
     CelestialRotation rotation = {};
     Atmosphere atmosphere = {};
-    SDL_Texture* map = {};
     Body body = {};
 
     Planet() {}

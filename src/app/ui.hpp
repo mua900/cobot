@@ -3,11 +3,12 @@
 
 #include <SDL3/SDL.h>
 
-#include "common.hpp"
-#include "template.hpp"
-#include "math_util.hpp"
 #include "asset.hpp"
 #include "text.hpp"
+
+#include "util/common.hpp"
+#include "util/template.hpp"
+#include "util/math_util.hpp"
 
 #define INIT_WINDOW_WIDTH  1440
 #define INIT_WINDOW_HEIGHT 810

@@ -1,7 +1,7 @@
 #include "asset.hpp"
-#include "log.hpp"
-#include "string_util.hpp"
-#include "file_util.hpp"
+#include "util/log.hpp"
+#include "util/string_util.hpp"
+#include "util/file_util.hpp"
 
 #include <SDL3_image/SDL_image.h>
 

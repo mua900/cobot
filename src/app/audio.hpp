@@ -3,8 +3,8 @@
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>
 
-#include "common.hpp"
-#include "template.hpp"
+#include "util/common.hpp"
+#include "util/template.hpp"
 
 using TrackId = u32;
 static constexpr TrackId NullTrackId = -1;

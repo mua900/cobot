@@ -4,7 +4,7 @@
 #include "statement.hpp"
 #include "bytecode.hpp"
 
-#include "math_util.hpp"
+#include "util/math_util.hpp"
 
 static const char* interpLastError = nullptr;
 

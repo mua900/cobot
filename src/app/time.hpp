@@ -1,7 +1,7 @@
 #ifndef TIME_HPP
 #define TIME_HPP
 
-#include "common.hpp"
+#include "util/common.hpp"
 
 struct TimeInfo {
     s64 time = 0;  // miliseconds

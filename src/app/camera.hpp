@@ -1,7 +1,7 @@
 #ifndef CAMERA_HPP
 #define CAMERA_HPP
 
-#include "math_util.hpp"
+#include "util/math_util.hpp"
 
 enum Cameras
 {

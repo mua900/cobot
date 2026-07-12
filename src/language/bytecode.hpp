@@ -1,11 +1,12 @@
 #pragma once
 
-#include "common.hpp"
-#include "template.hpp"
 #include "lang_common.hpp"
 #include "lang.hpp"
 #include "statement.hpp"
 #include "function.hpp"
+
+#include "util/common.hpp"
+#include "util/template.hpp"
 
 /*
 Instruction layout:

@@ -1,7 +1,7 @@
 #ifndef LANG_COMMON_HPP
 #define LANG_COMMON_HPP
 
-#include "common.hpp"
+#include "util/string_util.hpp"
 
 struct Variable {
     String name = {};

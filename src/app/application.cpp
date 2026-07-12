@@ -1,5 +1,5 @@
 #include "application.hpp"
-#include "log.hpp"
+#include "util/log.hpp"
 
 #include "external/open_simplex.hpp"
 

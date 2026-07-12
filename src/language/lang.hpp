@@ -1,7 +1,7 @@
 #ifndef LANG_HPP
 #define LANG_HPP
 
-#include "common.hpp"
+#include "util/common.hpp"
 
 extern "C" {
 

@@ -1,5 +1,5 @@
 #include "editor.hpp"
-#include "log.hpp"
+#include "util/log.hpp"
 
 void VehicleEditor::set_part_position(cobot::vec2 where, AttachmentDistance dist, VPartData& partData, bool firstRoot)
 {

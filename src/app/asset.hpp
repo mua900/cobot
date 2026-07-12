@@ -1,11 +1,11 @@
 #ifndef ASSET_HPP
 #define ASSET_HPP
 
-#include "common.hpp"
-#include "template.hpp"
 #include "text.hpp"
 #include "audio.hpp"
 #include "draw.hpp"
+#include "util/common.hpp"
+#include "util/template.hpp"
 
 enum AssetKind {
     ASSET_KIND_ZERO   = 0,

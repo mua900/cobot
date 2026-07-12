@@ -1,5 +1,5 @@
 #include "vehicle.hpp"
-#include "log.hpp"
+#include "util/log.hpp"
 
 bool Vehicle::execute_command(VehicleCommand& command)
 {

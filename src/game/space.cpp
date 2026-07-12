@@ -31,21 +31,18 @@ StarSystem get_default_star_system(SDL_Renderer* renderer)
     body.determine_state_vector(system.star.mass);
     cobot::ColorF p1color(0.5, 0.3, 0.6);
     Planet p1 =  Planet(String("Everest"), p1color, body);
-    p1.map = generate_map(renderer, 543, 256, 256, 0.1, p1color);
     system.planets.add(p1);
 
     body = Body(0.2, 40, 300, 0.4, 0, 0.3, 0.4, 0.6);
     body.determine_state_vector(system.star.mass);
     cobot::ColorF p2color(0.3, 0.8, 0.5);
     Planet p2 = Planet(String("Erciyes"), p2color, body);
-    p2.map = generate_map(renderer, 734, 256, 256, 0.1, p2color);
     system.planets.add(p2);
 
     body = Body(0.7, 50, 300, 0.5, 0, 0, 0, 0);
     body.determine_state_vector(system.star.mass);
     cobot::ColorF p3color(0.8, 0.5, 0.5);
     Planet p3 = Planet(String("Illimani"), p3color, body);
-    p3.map = generate_map(renderer, 173, 256, 256, 0.1, p3color);
     system.planets.add(p3);
 
     return system;

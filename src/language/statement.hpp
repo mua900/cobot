@@ -1,10 +1,11 @@
 #ifndef STATEMENT_HPP
 #define STATEMENT_HPP
 
-#include "common.hpp"
-#include "template.hpp"
 #include "expr.hpp"
 #include "lang_common.hpp"
+
+#include "util/common.hpp"
+#include "util/template.hpp"
 
 enum class StatementKind {
     DeclVar,

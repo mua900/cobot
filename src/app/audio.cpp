@@ -1,6 +1,6 @@
 #include "audio.hpp"
-#include "common.hpp"
-#include "log.hpp"
+#include "util/common.hpp"
+#include "util/log.hpp"
 
 #include <cmath>
 

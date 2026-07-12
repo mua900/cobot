@@ -1,7 +1,7 @@
 #ifndef MISSION_HPP
 #define MISSION_HPP
 
-#include "common.hpp"
+#include "util/common.hpp"
 #include "vehicle.hpp"
 #include "space.hpp"
 #include "map.hpp"
@@ -13,8 +13,10 @@ struct Mission {
     String description = {};
 
     // where on the planet we are?
-    float latitude = 0;
-    float longitude = 0;
+    double latitude;
+    double longitude;
+    // unit 3d vector point to the position
+    cobot::vec3d position;
 
     String_Builder buffer = {};
 

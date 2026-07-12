@@ -1,5 +1,5 @@
 #include "script.hpp"
-#include "log.hpp"
+#include "util/log.hpp"
 
 bool Script::set_source(ScriptLanguage language, String source) {
 	commands.discard_data();

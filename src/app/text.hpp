@@ -1,7 +1,8 @@
 #ifndef TEXT_HPP
 #define TEXT_HPP
 
-#include "math_util.hpp"
+#include "util/math_util.hpp"
+#include "util/string_util.hpp"
 #include <SDL3_ttf/SDL_ttf.h>
 
 struct Font {

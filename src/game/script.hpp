@@ -1,9 +1,9 @@
 #ifndef SCRIPT_HPP
 #define SCRIPT_HPP
 
-#include "common.hpp"
-#include "math_util.hpp"
-#include "template.hpp"
+#include "util/common.hpp"
+#include "util/math_util.hpp"
+#include "util/template.hpp"
 
 #include "language/lang.hpp"
 

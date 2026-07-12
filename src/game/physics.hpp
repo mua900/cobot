@@ -1,9 +1,9 @@
 #ifndef PHYSICS_HPP
 #define PHYSICS_HPP
 
-#include "common.hpp"
-#include "math_util.hpp"
-#include "template.hpp"
+#include "util/common.hpp"
+#include "util/math_util.hpp"
+#include "util/template.hpp"
 
 using ObjectId = u32;
 

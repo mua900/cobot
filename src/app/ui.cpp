@@ -1,5 +1,5 @@
 #include "ui.hpp"
-#include "log.hpp"
+#include "util/log.hpp"
 
 void GapBuffer::initialize(int init_buffer_size) {
     buffer = (char*) std::malloc(init_buffer_size);

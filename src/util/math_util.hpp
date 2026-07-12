@@ -254,6 +254,20 @@ mat4x4 identity_matrix();
 mat4x4 orthographic_projection_matrix(float left, float right, float bottom, float top, float near, float far);
 mat4x4 camera_matrix(vec2 position, vec2 scale);
 
+struct vec3d {
+    double x = 0;
+    double y = 0;
+    double z = 0;
+
+    vec3d() {}
+    vec3d(double x, double y, double z)
+        : x(x), y(y), z(z)
+    {}
+    vec3d(vec3 v)
+        : x(v.x), y(v.y), z(v.z)
+    {}
+};
+
 // @todo quaternions
 
 inline float normalize_angle_radians_f(float x) {

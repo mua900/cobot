@@ -3,9 +3,9 @@
 
 #include "app/asset.hpp"
 #include "app/text.hpp"
-#include "common.hpp"
-#include "math_util.hpp"
-#include "template.hpp"
+#include "util/common.hpp"
+#include "util/math_util.hpp"
+#include "util/template.hpp"
 #include "script.hpp"
 
 enum PartCategory {

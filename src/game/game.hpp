@@ -1,13 +1,14 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
-#include "common.hpp"
-#include "template.hpp"
-#include "math_util.hpp"
 #include "app/text.hpp"
 #include "app/time.hpp"
 #include "app/input.hpp"
 #include "app/ui.hpp"
+
+#include "util/common.hpp"
+#include "util/template.hpp"
+#include "util/math_util.hpp"
 
 #include "vehicle.hpp"
 #include "script.hpp"

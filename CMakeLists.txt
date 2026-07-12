@@ -17,17 +17,17 @@ set(CMAKE_CXX_STANDARD 23)
 add_executable(cobot
 	src/main.cpp
 
-	src/common.hpp
-	src/common.cpp
-	src/template.hpp
-	src/log.hpp
-	src/log.cpp
-	src/string_util.hpp
-	src/string_util.cpp
-	src/math_util.hpp
-	src/math_util.cpp
-	src/file_util.hpp
-	src/file_util.cpp
+	src/util/common.hpp
+	src/util/common.cpp
+	src/util/template.hpp
+	src/util/log.hpp
+	src/util/log.cpp
+	src/util/string_util.hpp
+	src/util/string_util.cpp
+	src/util/math_util.hpp
+	src/util/math_util.cpp
+	src/util/file_util.hpp
+	src/util/file_util.cpp
 
 	src/app/application.hpp
 	src/app/application.cpp

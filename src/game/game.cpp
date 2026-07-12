@@ -1,6 +1,6 @@
 #include "app/draw.hpp"
 #include "game.hpp"
-#include "log.hpp"
+#include "util/log.hpp"
 
 void GameState::update(TimeInfo time)
 {

@@ -1,8 +1,8 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
-#include "common.hpp"
-#include "template.hpp"
+#include "util/common.hpp"
+#include "util/template.hpp"
 
 enum Token_Type {
     TOKEN_TYPE_UNKNOWN = 0,

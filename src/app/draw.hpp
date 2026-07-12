@@ -2,11 +2,12 @@
 #define DRAW_HPP
 
 #include <SDL3/SDL.h>
-#include "common.hpp"
-#include "math_util.hpp"
-#include "template.hpp"
 #include "text.hpp"
 #include "camera.hpp"
+
+#include "util/common.hpp"
+#include "util/math_util.hpp"
+#include "util/template.hpp"
 
 #define GRAPHICS_DEBUG 0
 

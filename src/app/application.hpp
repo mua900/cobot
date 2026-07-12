@@ -1,15 +1,16 @@
 #ifndef APPLICATION_HPP
 #define APPLICATION_HPP
 
-#include "common.hpp"
-#include "template.hpp"
-#include "math_util.hpp"
 #include "ui.hpp"
 #include "asset.hpp"
 #include "input.hpp"
 #include "draw.hpp"
 #include "time.hpp"
 #include "camera.hpp"
+
+#include "util/common.hpp"
+#include "util/template.hpp"
+#include "util/math_util.hpp"
 
 #include "game/game.hpp"
 #include "game/editor.hpp"

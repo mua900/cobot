@@ -1,8 +1,8 @@
 #include "draw.hpp"
-#include "math_util.hpp"
-#include "common.hpp"
-#include "log.hpp"
-#include "file_util.hpp"
+#include "util/math_util.hpp"
+#include "util/common.hpp"
+#include "util/log.hpp"
+#include "util/file_util.hpp"
 
 #ifdef GRAPHICS_DEBUG_DX
 

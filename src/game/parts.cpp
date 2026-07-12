@@ -1,5 +1,5 @@
 #include "parts.hpp"
-#include "log.hpp"
+#include "util/log.hpp"
 
 VPartTransform chain_part_transform(VPartTransform parent, VPartTransform child)
 {
