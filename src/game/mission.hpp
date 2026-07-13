@@ -25,4 +25,6 @@ struct Mission {
     }
 };
 
+#define MISSION_ID_BIT BIT(16)
+
 #endif // MISSION_HPP

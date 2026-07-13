@@ -970,6 +970,7 @@ bool Application::mouse_input_vehicle_editor()
                     case ValueNumber: // fallthrough
                     case ValueString: // these are already handled by the mouse_input_common
                         break;
+                    case ValueLabel: break;
                     case ValueButton: {
                         break;
                     }
@@ -1166,12 +1167,8 @@ bool Application::mouse_input_solar_system()
 
                 switch (field.type)
                 {
-                    case ValueInteger: {
-                        // fallthrough
-                    }
-                    case ValueNumber: {
-                        // fallthrough
-                    }
+                    case ValueInteger: // fallthrough
+                    case ValueNumber: // fallthrough
                     case ValueString: {
                         if (area.contains_centered(mouse_pos))
                         {
@@ -1191,13 +1188,11 @@ bool Application::mouse_input_solar_system()
                                     break;
                                 }
                             }
-                        }
-                        break;
-                    }
-                    case ValueSelection: {
-                        if (area.contains_centered(mouse_pos))
-                        {
-                            // @todo button group
+                            default:
+                            {
+                                int mission = field.identifier & ~(MISSION_ID_BIT);
+                                // @todo load mission etc.
+                            }
                         }
                         break;
                     }
@@ -1517,9 +1512,9 @@ bool Application::mouse_input_mission_editor()
 
                             missionsTab.fields.add(
                                 ValueField(create_text(m_render.renderer, edit_mission.name, font, cobot::Color(0x55, 0x11, 0x66)),
-                                            solarSystemUi.text_field.add(Text_Field(m_font, 20, cobot::Color(0x66, 0x33, 0x88), cobot::Color(0x44, 0x66, 0x11), true, false)),
-                                            mission,
-                                            ValueString));
+                                            0,
+                                            mission | MISSION_ID_BIT,
+                                            ValueButton));
 
                             switch_modes(ModeGame);
                         }
@@ -2442,6 +2437,7 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
                 height += area.h;
                 break;
             }
+            case ValueLabel: { /* nothing extra to display */ break; }
             case ValueSelection: {
                 ButtonGroup& group = ui.button_group.get_ref(value.ui_element);
                 group.position = cobot::vec2(area.x, area.y);

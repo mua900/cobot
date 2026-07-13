@@ -640,11 +640,12 @@ struct Panel {
 };
 
 enum ValueType {
-    ValueInteger,
-    ValueNumber,
-    ValueString,
-    ValueButton,
-    ValueSelection,
+    ValueInteger,   // editable integer
+    ValueNumber,    // editable number
+    ValueString,    // editable string
+    ValueLabel,     // a string value to be shown
+    ValueButton,    // a single button
+    ValueSelection, // a button group
 };
 
 struct ValueField {

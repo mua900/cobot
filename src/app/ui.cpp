@@ -728,6 +728,7 @@ void ValuePanel::switch_tabs(UiState& ui, int tabIndex)
                 // nothing
                 break;
             }
+            case ValueLabel: break;
             case ValueSelection:
             {
                 ui.button_group.get_ref(field.ui_element).info.active = false;
@@ -785,6 +786,7 @@ cobot::Rectangle ValuePanel::get_field_area(int tabIndex, int fieldIndex, const 
             cobot::vec2 position = cobot::vec2(area.x, top_left.y + group.scale.y / 2);
             return cobot::Rectangle(position, scale);
         }
+        case ValueLabel: // fallthrough
         case ValueButton: {
             return cobot::Rectangle();
         }
