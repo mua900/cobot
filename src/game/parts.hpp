@@ -129,11 +129,11 @@ struct Battery {
 };
 
 struct Thermometer {
-
+    
 };
 
 struct Lidar {
-
+    
 };
 
 struct VehiclePart {

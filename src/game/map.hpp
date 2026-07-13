@@ -13,7 +13,7 @@ struct MapPixel {
 struct Map {
     u64 seed = 0;
 
-    MapPixel* heightmap = nullptr;
+    float* heightmap = nullptr;
     int dimension_x = 0;
     int dimension_y = 0;
     SDL_Texture* texture = nullptr;

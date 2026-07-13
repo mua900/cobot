@@ -291,34 +291,49 @@ bool initialize_vehicle_editor_ui(cobot::vec2 windowSize, AssetId fontId, UiStat
         0.1f, 0.5f, 0.2f
     };
 
-    ValuePanel propertiesPanel = ValuePanel(PartPropertyPanel, propertiesPanelArea, 25, 32, cobot::DirWest);
+    ValuePanel propertiesPanel = ValuePanel(PartPropertyPanel, propertiesPanelArea, 25, 32, cobot::DirWest, false);
+
+    auto background = cobot::Color(0x11, 0x33, 0x33);
+    auto textColor = cobot::Color(0x99, 0x55, 0x66);
 
     ValuePanelTab properties[PartKindCount];
     for (int i = 0; i < PartKindCount; i++)
     {
+        PartKind kind = PartKind(i);
+
         ValuePanelTab& prop = properties[i];
         prop.tabIcon = Icon(nullptr, cobot::Color(0x55, 0x66, 0x44));
         prop.color = propertiesPanelColor;
         prop.field_height = 32;
         prop.field_margin = 8;
+
+        // name
+        prop.fields.add(ValueField(
+            create_text(render.renderer, String(get_part_name(kind)), font, textColor),
+            ui.text_field.add(Text_Field(fontId, font.size, background, textColor, false, true)),
+            kind,
+            ValueString));
+
         propertiesPanel.tabs.add(prop);
     }
 
-    cobot::Color background = cobot::Color(0x44, 0x88, 0x55);
-    cobot::Color textColor = cobot::Color(0xAA, 0xAA, 0x66);
-    TextButton backButton = TextButton(create_text(render.renderer, String("Back"), font, textColor), cobot::vec2(windowSize.x * 0.95, windowSize.y * 0.05), windowSize * 0.1, background);
-    backButton.id = BackButton;
-    TextButton saveVehicle = TextButton(create_text(render.renderer, String("Save"), font, textColor), windowSize * 0.95, windowSize * 0.1, background);
-    saveVehicle.id = SaveVehicle;
+    {
+        cobot::Color background = cobot::Color(0x44, 0x88, 0x55);
+        cobot::Color textColor = cobot::Color(0xAA, 0xAA, 0x66);
+        TextButton backButton = TextButton(create_text(render.renderer, String("Back"), font, textColor), cobot::vec2(windowSize.x * 0.95, windowSize.y * 0.05), windowSize * 0.1, background);
+        backButton.id = BackButton;
+        TextButton saveVehicle = TextButton(create_text(render.renderer, String("Save"), font, textColor), windowSize * 0.95, windowSize * 0.1, background);
+        saveVehicle.id = SaveVehicle;
 
-    float nameFieldHeight = 100;
-    float nameFieldWidth = 400;
+        float nameFieldHeight = 100;
+        float nameFieldWidth = 400;
 
-    ui.panel.add(partsPanel);
-    ui.value_panel.add(propertiesPanel);
-    ui.button.add(saveVehicle);
-    ui.button.add(backButton);
-    ui.text_field.add(Text_Field(cobot::Rectangle(windowSize.x * 0.5, nameFieldHeight / 2, nameFieldWidth, nameFieldHeight), fontId, cobot::Color(0x55, 0x33, 0x44), cobot::Color(0x99, 0xAA, 0xBB), VehicleName));
+        ui.panel.add(partsPanel);
+        ui.value_panel.add(propertiesPanel);
+        ui.button.add(saveVehicle);
+        ui.button.add(backButton);
+        ui.text_field.add(Text_Field(cobot::Rectangle(windowSize.x * 0.5, nameFieldHeight / 2, nameFieldWidth, nameFieldHeight), fontId, cobot::Color(0x55, 0x33, 0x44), cobot::Color(0x99, 0xAA, 0xBB), VehicleName));
+    }
 
     return true;
 }

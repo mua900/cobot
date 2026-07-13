@@ -580,6 +580,13 @@ void get_base_path(String_Builder& builder)
     builder.clear_and_append(make_string(base_path));
 }
 
+void get_pref_path(String_Builder& builder, const char *org, const char *app)
+{
+    char* pref_path = SDL_GetPrefPath(org, app);
+    builder.clear_and_append(make_string(pref_path));
+    SDL_free(pref_path);
+}
+
 void get_to_run_tree_path(String_Builder& builder, const char* path)
 {
     get_base_path(builder);

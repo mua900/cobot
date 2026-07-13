@@ -130,6 +130,11 @@ bool Application::initialize()
         return false;
     }
 
+    get_pref_path(path, org_name, cobot_name);
+    if (!read_game_data(path)) {
+        log_info("Couldn't read game data");
+    }
+
     AssetId fontId = get_asset(String("FiraSans"), m_catalog);
     AssetId editorFontId = get_asset(String("FiraCode"), m_catalog);
     if (!(fontId.is_valid() && editorFontId.is_valid()))
@@ -175,6 +180,14 @@ void Application::update_game_state()
     if (gameInfo.wantPause) {
         gameInfo.wantPause = false;
     }
+}
+
+bool Application::read_game_data(String_Builder& path)
+{
+    log_info("Looking for game data in: %s", path.c_string());
+
+    // @todo
+    return false;
 }
 
 bool Application::read_asset_catalog(String_Builder& path)
@@ -864,7 +877,7 @@ bool Application::mouse_input_common()
             continue;
         }
 
-        if (!field.info.visible)
+        if (!field.info.active)
         {
             continue;
         }
@@ -2447,7 +2460,7 @@ void Application::render_value_panel(const UiState& ui, const ValuePanel& panel)
         height += tab.field_margin;
     }
 
-    if (panel.tabs.size() > 1)
+    if (panel.showTabs && panel.tabs.size() > 1)
     {
         for (int i = 0; i < panel.tabs.size(); i++) {
             cobot::Rectangle area = panel.get_tab_header_area(i);

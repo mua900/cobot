@@ -77,8 +77,9 @@ struct CelestialRotation {
     float axial_tilt = 0;
 };
 
+constexpr int PlanetTileCount = 25;
 struct PlanetMap {
-    
+    u64 heightMapSeed[PlanetTileCount];
 };
 
 struct Planet {
@@ -88,6 +89,7 @@ struct Planet {
     CelestialRotation rotation = {};
     Atmosphere atmosphere = {};
     Body body = {};
+    PlanetMap map = {};
 
     Planet() {}
     Planet(String name, cobot::ColorF color, const Body &body) : name(name), color(color), body(body) {}
@@ -107,6 +109,7 @@ struct StarSystem {
     void simulation_step(double dt);
 };
 
+Planet load_planet();
 StarSystem get_default_star_system(SDL_Renderer* renderer);
 
 #endif // SPACE_HPP

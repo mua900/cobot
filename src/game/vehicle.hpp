@@ -53,6 +53,8 @@ struct Vehicle {
     bool remove_part(PartId id);
     bool unattach_from_parent(PartId id);
 
+    Script init_vehicle_script() const;
+
     float calculatePowerConsumption() const;
     float calculatePowerGeneration() const;
 private:

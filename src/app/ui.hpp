@@ -55,6 +55,7 @@ enum PlanetPanelTabs {
 
 struct UiElementInfo {
     bool visible = false;
+    bool active = false;
 
     UiElementInfo() {}
     UiElementInfo(bool vis) : visible(vis) {}
@@ -230,33 +231,37 @@ struct Text_Field
     Text_Field() {}
 
     // height -> empty height
-    Text_Field(AssetId font, float height, cobot::Color background_color, cobot::Color textColor, bool visible = true, bool is_editable = true)
+    Text_Field(AssetId font, float height, cobot::Color background_color, cobot::Color textColor, bool visible = true, bool is_editable = true, bool active = true)
     {
         m_font_size = height;
         fontId = font;
         background = background_color;
         text_color = textColor;
 		info.visible = visible;
+        info.active = active;
         editable = is_editable;
     }
 
-    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, bool visible = true, bool is_editable = true)
+    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, bool visible = true, bool is_editable = true, bool active = true)
     {
         fontId = font;
         background = background_color;
         text_color = textColor;
         m_area = area;
 		info.visible = visible;
+        info.active = active;
         editable = is_editable;
     }
 
-    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, UiElementId ident, bool visible = true, bool is_editable = true) : id(ident)
+    Text_Field(cobot::Rectangle area, AssetId font, cobot::Color background_color, cobot::Color textColor, UiElementId ident, bool visible = true, bool is_editable = true, bool active = true)
+        : id(ident)
     {
         fontId = font;
         background = background_color;
         text_color = textColor;
         m_area = area;
 		info.visible = visible;
+        info.active = active;
         editable = is_editable;
     }
 
@@ -669,6 +674,7 @@ struct ValuePanelTab {
 struct ValuePanel {
     UiElementId id = {};
     cobot::Rectangle area = {};
+    bool showTabs = false;
     int activeTab = 0;
     float fieldSize = 0;
     float tabHeaderSize = 0;
@@ -676,10 +682,11 @@ struct ValuePanel {
     DArray<ValuePanelTab> tabs = {};
 
     ValuePanel() {}
-    ValuePanel(UiElementId ident, cobot::Rectangle area, float field_size, float tab_header_size, cobot::Direction dir)
+    ValuePanel(UiElementId ident, cobot::Rectangle area, float field_size, float tab_header_size, cobot::Direction dir, bool show_tabs = true)
         :
         id(ident),
         area(area),
+        showTabs(show_tabs),
         fieldSize(field_size),
         tabHeaderSize(tab_header_size),
         direction(dir)

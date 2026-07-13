@@ -19,6 +19,11 @@ void GameState::update(TimeInfo time)
     updateState->update(this, time);
 }
 
+void GameState::set_default_game_data()
+{
+    
+}
+
 void idleUpdate(GameState* game, TimeInfo time) {}
 void idleFixedUpdate(GameState* game) {}
 

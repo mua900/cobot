@@ -49,6 +49,9 @@ struct GameState {
 
     Vehicle* get_active_vehicle() const;
     void update(TimeInfo time);
+
+    // load the default state for planets, saves etc.
+    void set_default_game_data();
 };
 
 void idleUpdate(GameState* game, TimeInfo time);

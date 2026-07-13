@@ -207,6 +207,11 @@ private:
     void toggle_text_input();
 
     bool read_asset_catalog(String_Builder& path);
+    // save data, configuration etc.
+    bool read_game_data(String_Builder& path);
+
+    // @todo
+    bool write_game_data(String_Builder& path);
 
     void render_rectangle_outline(cobot::Rectangle rect, cobot::Color color, bool center = true) const;
     void render_rectangle(cobot::Rectangle rect, cobot::Color color, bool center = true) const;
@@ -235,6 +240,7 @@ private:
 };
 
 void get_base_path(String_Builder& builder);
+void get_pref_path(String_Builder& builder, const char *org, const char *app);
 
 void initialize_libraries();
 

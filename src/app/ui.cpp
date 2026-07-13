@@ -720,7 +720,7 @@ void ValuePanel::switch_tabs(UiState& ui, int tabIndex)
             case ValueNumber:   // fallthrough
             case ValueString:
             {
-                ui.text_field.get_ref(field.ui_element).info.visible = false;
+                ui.text_field.get_ref(field.ui_element).info.active = false;
                 break;
             }
             case ValueButton:
@@ -730,7 +730,7 @@ void ValuePanel::switch_tabs(UiState& ui, int tabIndex)
             }
             case ValueSelection:
             {
-                ui.button_group.get_ref(field.ui_element).info.visible = false;
+                ui.button_group.get_ref(field.ui_element).info.active = false;
                 break;
             }
         }
@@ -759,6 +759,9 @@ cobot::Rectangle ValuePanel::get_field_area(int tabIndex, int fieldIndex, const 
     ValueField& field = tab.fields.get_ref(fieldIndex);
 
     float width = get_field_width();
+
+    cobot::vec2 top_left = area.get_top_left();
+
     switch (field.type)
     {
         case ValueInteger: {
@@ -773,13 +776,13 @@ cobot::Rectangle ValuePanel::get_field_area(int tabIndex, int fieldIndex, const 
             float font_size = text_field.m_font_size;
             float tf_height = (line_count == 0) ? font_size : font_size * line_count;
             cobot::vec2 tf_scale = cobot::vec2(width, tf_height);
-            cobot::vec2 tf_pos = cobot::vec2(area.x, tf_height / 2);
+            cobot::vec2 tf_pos = cobot::vec2(area.x, top_left.y + tf_height / 2);
             return cobot::Rectangle(tf_pos, tf_scale);
         }
         case ValueSelection: {
             ButtonGroup& group = ui->button_group.get_ref(field.ui_element);
             cobot::vec2 scale = cobot::vec2(width, group.button_scale.y * group.buttons.size());
-            cobot::vec2 position = cobot::vec2(area.x, area.y + group.scale.y / 2);
+            cobot::vec2 position = cobot::vec2(area.x, top_left.y + group.scale.y / 2);
             return cobot::Rectangle(position, scale);
         }
         case ValueButton: {
