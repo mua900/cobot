@@ -22,6 +22,7 @@ static const auto DEBUG_COLOR = cobot::ColorF(0.6, 0.5, 0.4, 1.0);
 enum RenderStates {
     RenderStatePlanet,
     RenderStateStar,
+    RenderStatePlanetSurface,
     RenderStateCount,
 };
 

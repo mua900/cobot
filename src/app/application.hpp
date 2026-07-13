@@ -19,6 +19,7 @@ enum ApplicationMode {
     ModeMenu,
     ModeVehicleEditor,
     ModeSolarSystem,
+    ModePlanetMap,
     ModeGame,
 
     ModeCount,
@@ -156,7 +157,7 @@ private:
 
     bool load_assets();
 
-    UiState& get_active_ui();
+    UiState* get_active_ui();
 
     void timeout();
     void update_ui_state(cobot::vec2 window_size);
@@ -169,6 +170,7 @@ private:
 
     void draw_game();
     void draw_solar_system();
+    void draw_planet_map();
     void draw_vehicle_editor();
 	void draw_ui();
     void draw_messages();
@@ -191,6 +193,7 @@ private:
     bool mouse_input_settings();
     bool mouse_input_vehicle_editor();
     bool mouse_input_solar_system();
+    bool mouse_input_planet_map();
     bool mouse_input_mission_editor();
 
     void update_keyboard_state();
@@ -200,6 +203,7 @@ private:
     bool keyboard_input_down_common(KeyboardEvent keyboard);
     bool keyboard_input_down_game(KeyboardEvent keyboard);
     bool keyboard_input_down_solar_system(KeyboardEvent keyboard);
+    bool keyboard_input_planet_surface(KeyboardEvent keyboard);
     bool keyboard_input_down_vehicle_editor(KeyboardEvent keyboard);
 
     void text_input_start();

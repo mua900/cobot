@@ -230,7 +230,7 @@ bool Application::load_assets()
     return true;
 }
 
-UiState& Application::get_active_ui()
+UiState* Application::get_active_ui()
 {
     switch (m_mode)
     {
@@ -238,25 +238,29 @@ UiState& Application::get_active_ui()
             switch (m_menu)
             {
                 case MenuMain:
-                    return m_ui[UiMainMenu];
+                    return &m_ui[UiMainMenu];
                 case MenuSettings:
-                    return m_ui[UiSettings];
+                    return &m_ui[UiSettings];
                 case MenuLoad:
-                    return m_ui[UiLoad];
+                    return &m_ui[UiLoad];
                 case MenuMissionEditor:
-                    return m_ui[UiMissionEditor];
+                    return &m_ui[UiMissionEditor];
                 default:
                     panic("Invalid menu type");
             }
         }
         case ModeGame: {
-            return m_ui[UiGame];
+            return &m_ui[UiGame];
         }
         case ModeVehicleEditor: {
-            return m_ui[UiVehicleEditor];
+            return &m_ui[UiVehicleEditor];
         }
         case ModeSolarSystem: {
-            return m_ui[UiSolarSystem];
+            return &m_ui[UiSolarSystem];
+        }
+        case ModePlanetMap: {
+            // @note do we have to allocate a ui state for every mode?
+            return nullptr;
         }
         default: {
             panic("Invalid game mode");
@@ -358,8 +362,8 @@ void Application::handle_events()
                 SDL_TextInputEvent text = e.text;
                 String input_text = make_string(text.text);
 
-                UiState& ui = get_active_ui();
-                Text_Field* text_field = ui.get_selected_text_field();
+                UiState* ui = get_active_ui();
+                Text_Field* text_field = ui->get_selected_text_field();
                 if (text_field)
                 {
                     Font font = m_catalog.get_font(m_editor_font);
@@ -564,6 +568,12 @@ bool Application::keyboard_input_down_game(KeyboardEvent keyboard)
 
 bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
 {
+    UiState* ui = get_active_ui();
+    if (!ui)
+    {
+        return false;
+    }
+
     switch (keyboard.scancode)
     {
         case SDL_SCANCODE_ESCAPE:
@@ -581,7 +591,7 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
         {
             if (doing_text_input)
             {
-                auto field = get_active_ui().get_selected_text_field();
+                auto field = ui->get_selected_text_field();
                 if (field)
                 {
                     field->insert_line();
@@ -595,7 +605,7 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
         {
             if (doing_text_input)
             {
-                auto field = get_active_ui().get_selected_text_field();
+                auto field = ui->get_selected_text_field();
                 if (field)
                 {
                     field->insert_tab(4);
@@ -609,7 +619,7 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
         {
             if (doing_text_input)
             {
-                auto field = get_active_ui().get_selected_text_field();
+                auto field = ui->get_selected_text_field();
                 if (field)
                 {
                     if (field->m_cursor == field->m_selection_point)
@@ -631,7 +641,7 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
         {
             if (doing_text_input)
             {
-                auto field = get_active_ui().get_selected_text_field();
+                auto field = ui->get_selected_text_field();
                 if (field)
                 {
                     if (field->m_cursor == field->m_selection_point)
@@ -653,7 +663,7 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
         {
             if (doing_text_input)
             {
-                auto field = get_active_ui().get_selected_text_field();
+                auto field = ui->get_selected_text_field();
                 if (field) {
                     field->m_cursor = 0;
                     field->m_selection_point = 0;
@@ -670,7 +680,7 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
         {
             if (doing_text_input)
             {
-                auto field = get_active_ui().get_selected_text_field();
+                auto field = ui->get_selected_text_field();
                 if (field) {
                     field->m_cursor = field->m_buffer.length;
                     field->m_selection_point = field->m_buffer.length;
@@ -685,7 +695,7 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
         }
         case SDL_SCANCODE_LEFT: {
             if (doing_text_input) {
-                auto field = get_active_ui().get_selected_text_field();
+                auto field = ui->get_selected_text_field();
                 if (field) {
                     String s = field->get_string();
                     int step = utf8_previous(s, field->m_cursor);
@@ -712,7 +722,7 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
         }
         case SDL_SCANCODE_RIGHT: {
             if (doing_text_input) {
-                auto field = get_active_ui().get_selected_text_field();
+                auto field = ui->get_selected_text_field();
                 if (field) {
                     String s = field->get_string();
                     int step = utf8_next(s, field->m_cursor);
@@ -777,8 +787,11 @@ void Application::on_mouse_move()
         return;
     }
 
-    UiState& ui = get_active_ui();
-    mouse_move_ui(ui);
+    UiState* ui = get_active_ui();
+    if (ui)
+    {
+        mouse_move_ui(*ui);
+    }
 
     switch (m_mode)
     {
@@ -796,6 +809,8 @@ void Application::on_mouse_move()
 
 bool Application::on_mouse_down()
 {
+    UiState* ui = get_active_ui();
+
 	if (mouse_input_common())
 	{
 		return true;
@@ -804,10 +819,11 @@ bool Application::on_mouse_down()
     bool consume = false;
     switch (m_mode)
     {
-        case ModeGame: consume = mouse_input_game(); break;
-        case ModeMenu: consume = mouse_input_menu(); break;
+        case ModeGame:          consume = mouse_input_game();           break;
+        case ModeMenu:          consume = mouse_input_menu();           break;
         case ModeVehicleEditor: consume = mouse_input_vehicle_editor(); break;
-        case ModeSolarSystem: consume = mouse_input_solar_system(); break;
+        case ModeSolarSystem:   consume = mouse_input_solar_system();   break;
+        case ModePlanetMap:     consume = mouse_input_planet_map();     break;
         default: panic("Invalid application mode");
     }
 
@@ -816,7 +832,7 @@ bool Application::on_mouse_down()
         return true;
     }
 
-    if ((m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) && get_active_camera() && !get_active_ui().get_drag_info() && !get_active_ui().doing_resize())
+    if ((m_input.mouse.buttonFlags & MOUSE_LEFT_MASK) && get_active_camera() && ui && !ui->get_drag_info() && !ui->doing_resize())
     {
         m_input.mouse.dragPosition = m_input.mouse.pos;
         m_input.mouse.drag = true;
@@ -830,13 +846,17 @@ bool Application::on_mouse_down()
 
 void Application::on_mouse_up(int button)
 {
-    UiState& ui = get_active_ui();
+    UiState* ui = get_active_ui();
+    if (!ui)
+    {
+        return;
+    }
 
     if (button & MOUSE_LEFT_MASK)
     {
         // @todo maybe button interactions should be on button up
 
-        for (auto& editor : ui.editor) {
+        for (auto& editor : ui->editor) {
             if (editor.drag.drag) {
                 editor.drag.drag = false;
             }
@@ -848,7 +868,7 @@ void Application::on_mouse_up(int button)
             editor.clicked_icon = 0;
         }
 
-        for (auto& panel : ui.panel)
+        for (auto& panel : ui->panel)
         {
             if (panel.drag.drag) {
                 panel.drag.drag = false;
@@ -866,46 +886,49 @@ void Application::on_mouse_up(int button)
 bool Application::mouse_input_common()
 {
 	cobot::vec2 mouse_pos = m_input.mouse.pos;
-	UiState& ui = get_active_ui();
-	
-	for (int it = 0; it < ui.text_field.size(); it++)
-	{
-		auto& field = ui.text_field.get_ref(it);
+	UiState* ui = get_active_ui();
 
-        if (!field.editable)
-        {
-            continue;
-        }
+    if (ui)
+    {
+    	for (int it = 0; it < ui->text_field.size(); it++)
+    	{
+    		auto& field = ui->text_field.get_ref(it);
 
-        if (!field.info.active)
-        {
-            continue;
-        }
-        
-		cobot::Rectangle area = field.m_area;
-		if (area.contains_centered(mouse_pos)) {
-            cobot::vec2 relative = mouse_pos - area.get_top_left();
-            if (doing_text_input && (ui.text_input_target.flags & TEXT_INPUT_TARGET_IS_VALID) && ui.text_input_target.index == it)
+            if (!field.editable)
             {
-                // if we are already doing text input
-                field.mouse_x = relative.x;
-                field.mouse_y = relative.y;
-            }
-            else
-            {
-                text_input_start();
-
-                ui.text_input_target.index = it;
-                ui.text_input_target.flags = TEXT_INPUT_TARGET_IS_VALID;
+                continue;
             }
 
-            Font font = m_catalog.get_font(field.fontId);
-            field.m_cursor = field.calculate_cursor_from_mouse(relative, field.get_string(), font, true);
-            field.m_selection_point = field.m_cursor;
+            if (!field.info.active)
+            {
+                continue;
+            }
+            
+    		cobot::Rectangle area = field.m_area;
+    		if (area.contains_centered(mouse_pos)) {
+                cobot::vec2 relative = mouse_pos - area.get_top_left();
+                if (doing_text_input && (ui->text_input_target.flags & TEXT_INPUT_TARGET_IS_VALID) && ui->text_input_target.index == it)
+                {
+                    // if we are already doing text input
+                    field.mouse_x = relative.x;
+                    field.mouse_y = relative.y;
+                }
+                else
+                {
+                    text_input_start();
 
-			return true;
-		}
-	}
+                    ui->text_input_target.index = it;
+                    ui->text_input_target.flags = TEXT_INPUT_TARGET_IS_VALID;
+                }
+
+                Font font = m_catalog.get_font(field.fontId);
+                field.m_cursor = field.calculate_cursor_from_mouse(relative, field.get_string(), font, true);
+                field.m_selection_point = field.m_cursor;
+
+    			return true;
+    		}
+    	}
+    }
 
 	return false;
 }
@@ -960,7 +983,7 @@ bool Application::mouse_input_vehicle_editor()
                 title_area.y += height;
                 height += title_area.h;
 
-                cobot::Rectangle area = properties->get_field_area(properties->activeTab, i, &get_active_ui());
+                cobot::Rectangle area = properties->get_field_area(properties->activeTab, i, &ui);
                 area.y += height;
                 height += area.h;
 
@@ -1073,6 +1096,11 @@ bool Application::mouse_input_vehicle_editor()
     return false;
 }
 
+bool Application::mouse_input_planet_map()
+{
+    return false;
+}
+
 bool Application::mouse_input_solar_system()
 {
     cobot::vec2 mouse_pos = m_input.mouse.pos;
@@ -1161,7 +1189,7 @@ bool Application::mouse_input_solar_system()
                 title_area.y += height;
                 height += title_area.h;
 
-                cobot::Rectangle area = panel->get_field_area(panel->activeTab, i, &get_active_ui());
+                cobot::Rectangle area = panel->get_field_area(panel->activeTab, i, &ui);
                 area.y += height;
                 height += area.h;
 
@@ -1526,6 +1554,11 @@ bool Application::mouse_input_mission_editor()
                         edit_mission = {};
                         return true;
                     }
+                    case ChoseLocationButton:
+                    {
+                        switch_modes(ModePlanetMap);
+                        return true;
+                    }
                 }
             }
         }
@@ -1724,10 +1757,15 @@ void Application::update_ui_state(cobot::vec2 window_size) {
 
 void Application::update_ui_pos()
 {
+    UiState* ui = get_active_ui();
+    if (!ui)
+    {
+        return;
+    }
+
     cobot::vec2 mouse_pos = m_input.mouse.pos;
 
-    UiState& ui = get_active_ui();
-    for (auto& editor : ui.editor)
+    for (auto& editor : ui->editor)
     {
         if (editor.drag.drag)
         {
@@ -1739,7 +1777,7 @@ void Application::update_ui_pos()
         }
     }
 
-    for (auto& panel : ui.panel)
+    for (auto& panel : ui->panel)
     {
         if (panel.drag.drag)
         {
@@ -1803,6 +1841,7 @@ bool Application::init_render()
 
     const char* render_state_shader_name[RenderStateCount] = {
         "PlanetFrag",
+        "PlanetSurfaceFrag",
         "StarFrag",
     };
 
@@ -1912,6 +1951,13 @@ bool Application::init_mission_editor_ui()
         planet_list.add_option(create_text(m_render.renderer, planet.name, font, text_color), i);
     }
 
+    TextButton choseLocation = TextButton(
+        create_text(m_render.renderer, String("Chose Location"), font, cobot::Color(0x66, 0x55, 0x66)),
+        cobot::vec2(ws.x * 0.8, ws.y * 0.1),
+        cobot::vec2(ws.x * 0.2, ws.y * 0.1),
+        cobot::Color(0x70, 0x11, 0x22));
+    choseLocation.id = ChoseLocationButton;
+
     TextButton launchMission = TextButton(create_text(m_render.renderer, String("Launch Mission"), font, cobot::Color(0x66, 0x55, 0x66)), cobot::vec2(ws.x * 0.85, ws.y * 0.85), cobot::vec2(ws.x * 0.2, ws.y * 0.1), cobot::Color(0x88, 0x11, 0x22));
     launchMission.id = LaunchButton;
 
@@ -1920,6 +1966,7 @@ bool Application::init_mission_editor_ui()
     ui.drop_down.add(planet_list);
     ui.image_button.add(add_vehicle);
     ui.button.add(launchMission);
+    ui.button.add(choseLocation);
 
     return true;
 }
@@ -2088,6 +2135,10 @@ void Application::draw()
             draw_solar_system();
             break;
         }
+        case ModePlanetMap: {
+            draw_planet_map();
+            break;
+        }
         case ModeMenu: {
             break;
         }
@@ -2151,6 +2202,11 @@ void Application::draw_vehicle_editor()
     render_rectangle_outline(volume, cobot::Color(0x66, 0x33, 0x22));
 }
 
+void Application::draw_planet_map()
+{
+    // @todo
+}
+
 void Application::draw_solar_system()
 {
     draw_star_system(m_render, m_catalog, game);
@@ -2166,7 +2222,11 @@ void Application::draw_solar_system()
 
 void Application::draw_ui()
 {
-    draw_ui_state(get_active_ui());
+    auto ui = get_active_ui();
+    if (ui)
+    {
+        draw_ui_state(*ui);
+    }
 }
 
 void Application::draw_messages() {

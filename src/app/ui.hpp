@@ -36,6 +36,7 @@ enum UiElementId {
     TimeScale,
     ShowOrbits,
     LaunchButton,
+    ChoseLocationButton,
     PlanetPanel,
     AddMission,
     MissionName,

@@ -23,7 +23,7 @@ bool generate_map(Map* map, SDL_Renderer* renderer, float scale, cobot::ColorF t
     {
         for (int x = 0; x < width; x++)
         {
-            float s = (OpenSimplex2::noise2(map->seed, x * scale, y * scale) + 1.0f) / 2.0f;
+            float s = noise(cobot::vec2(x,y), map->seed, 0.1);
             int index = x + y * width;
             heightmap[index].a = u8(0xff);
             heightmap[index].b = u8(s * 255.0f);
@@ -56,4 +56,23 @@ bool generate_map(Map* map, SDL_Renderer* renderer, float scale, cobot::ColorF t
 bool load_map(const char* path, Map* map, SDL_Renderer* renderer)
 {
     return false;
+}
+
+float fbm(cobot::vec2 x, u64 seed, int numOctaves)
+{
+    float sum = 0;
+    for (int i = 0; i < numOctaves; i++)
+    {
+        float f = std::powf(2.0, float(i));
+        float a = std::powf(f, -0.5);
+        float s = a*noise(x, seed, f);
+        sum += s;
+    }
+    
+    return sum;
+}
+
+float noise(cobot::vec2 x, u64 seed, float scale)
+{
+    return (OpenSimplex2::noise2(seed, x.x * scale, x.y * scale) + 1.0f) / 2.0f;    
 }

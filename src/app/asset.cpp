@@ -387,7 +387,7 @@ AssetId get_asset(String name, AssetCatalog& catalog)
                     catalog.path.append(make_string(PathSeparator));
 
                     if (!SDL_EnumerateDirectory(catalog.path.c_string(), asset_callback, &catalog)) {
-                        log_error("Couldn't load assets in folder: %s", asset_path);
+                        log_error("Couldn't load assets in folder: %.*s", asset_path.size, asset_path.data);
                         return NullAssetId;
                     }
 
@@ -402,7 +402,7 @@ AssetId get_asset(String name, AssetCatalog& catalog)
                     bool load = load_asset(catalog.path, asset, catalog.load_context);
                     if (!load)
                     {
-                        log_error("Couldn't load asset: %s", asset_path);
+                        log_error("Couldn't load asset: %.*s", asset_path.size, asset_path.data);
                         return NullAssetId;
                     }
 
@@ -413,8 +413,7 @@ AssetId get_asset(String name, AssetCatalog& catalog)
         }
     }
 
-    SCOPE_STRING(name, asset_name);
-    log_error("Couldn't find requested asset with name: %s", asset_name);
+    log_error("Couldn't find requested asset with name: %.*s", name.size, name.data);
     return NullAssetId;
 }
 
@@ -439,7 +438,7 @@ AssetId get_asset_at_index(int index, AssetCatalog& catalog)
             catalog.path.append(make_string(PathSeparator));
 
             if (!SDL_EnumerateDirectory(catalog.path.c_string(), asset_callback, &catalog)) {
-                log_error("Couldn't load assets in folder: %s", asset_path);
+                log_error("Couldn't load assets in folder: %.*s", asset_path.size, asset_path.data);
                 return NullAssetId;
             }
 
@@ -454,7 +453,7 @@ AssetId get_asset_at_index(int index, AssetCatalog& catalog)
             bool load = load_asset(catalog.path, catalog.assets[index], catalog.load_context);
             if (!load)
             {
-                log_error("Couldn't load asset: %s", asset_path);
+                log_error("Couldn't load asset: %.*s", asset_path.size, asset_path.data);
                 return NullAssetId;
             }
 
