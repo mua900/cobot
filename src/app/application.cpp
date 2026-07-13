@@ -275,6 +275,7 @@ Camera* Application::get_active_camera()
         case ModeGame:          return &cameras[CameraGame];
         case ModeSolarSystem:   return &cameras[CameraSolarSystem];
         case ModeVehicleEditor: return &cameras[CameraVehicleEditor];
+        case ModePlanetMap:     return &cameras[CameraPlanetMap];
         default:                return nullptr;
     }
 }
@@ -2136,7 +2137,7 @@ void Application::draw()
             break;
         }
         case ModePlanetMap: {
-            draw_planet_map();
+            draw_planet_surface();
             break;
         }
         case ModeMenu: {
@@ -2202,9 +2203,12 @@ void Application::draw_vehicle_editor()
     render_rectangle_outline(volume, cobot::Color(0x66, 0x33, 0x22));
 }
 
-void Application::draw_planet_map()
+void Application::draw_planet_surface()
 {
-    // @todo
+    int selectedPlanet = m_ui[UiMissionEditor].get_drop_down(PlanetList)->selected;
+    Planet& planet = game.starSystem.planets.get_ref(selectedPlanet);
+
+    draw_planet_map(m_render, planet);
 }
 
 void Application::draw_solar_system()

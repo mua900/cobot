@@ -8,6 +8,7 @@ enum Cameras
     CameraGame,
     CameraSolarSystem,
     CameraVehicleEditor,
+    CameraPlanetMap,
     CameraCount,
 };
 

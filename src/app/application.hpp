@@ -170,7 +170,7 @@ private:
 
     void draw_game();
     void draw_solar_system();
-    void draw_planet_map();
+    void draw_planet_surface();
     void draw_vehicle_editor();
 	void draw_ui();
     void draw_messages();

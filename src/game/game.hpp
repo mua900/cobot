@@ -73,6 +73,8 @@ void draw_planet_orbit(RenderContext& context, const Planet& planet, double cent
 void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game);
 void draw_planet_outline(RenderContext& context, const GameState& game, int planet);
 
+void draw_planet_map(RenderContext& render, Planet& planet);
+
 bool initialize_game_ui(cobot::vec2 windowSize, AssetId fontId, AssetId editorFontId, UiState& ui, AssetCatalog& catalog, RenderContext& render);
 
 #endif // GAME_HPP

@@ -22,5 +22,5 @@ struct PixelShaderInput
 float4 main(PixelShaderInput input) : SV_TARGET
 {
 	// @todo
-    return float4(1, 0, 0, 1);
+    return color;
 }

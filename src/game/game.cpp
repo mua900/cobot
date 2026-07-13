@@ -231,6 +231,35 @@ void draw_planet_outline(RenderContext& context, const GameState& game, int plan
     draw_arc(context, planet.body.position.xy(), planet.body.radius + 5, planet.body.radius + 10, cobot::degree_to_radian_f(280), cobot::degree_to_radian_f(70), planet.color);
 }
 
+void draw_planet_map(RenderContext& render, Planet& planet)
+{
+    if (!SDL_SetGPURenderState(render.renderer, render.render_states[RenderStatePlanetSurface]))
+    {
+        return;
+    }
+
+    ASSERT(render.camera);
+    const Camera* camera = render.camera;
+
+    float cameraData[8] = {
+        camera->position.x, camera->position.y,
+        camera->zoom, camera->rotation,
+        camera->offset.x, camera->offset.y
+    };
+
+    // @todo
+    // SDL_SetGPURenderStateFragmentUniforms(context.render_states[RenderStatePlanetSurface], 0, nullptr, 0);
+
+    SDL_SetGPURenderStateFragmentUniforms(render.render_states[RenderStatePlanetSurface], 1, cameraData, sizeof(cameraData));
+
+    // @todo obviously don't do this
+    render.space = CoordinateSpace::Screen;
+    draw_rectangle(render, cobot::Rectangle(render.render_size / 2, render.render_size), cobot::ColorF(1,0,0));
+    render.space = CoordinateSpace::World;
+
+    SDL_SetGPURenderState(render.renderer, nullptr);
+}
+
 bool initialize_game_ui(cobot::vec2 windowSize, AssetId fontId, AssetId editorFontId, UiState& ui, AssetCatalog& catalog, RenderContext& render)
 {
     Font editor_font = catalog.get_font(editorFontId);
