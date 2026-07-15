@@ -1099,6 +1099,21 @@ bool Application::mouse_input_vehicle_editor()
 
 bool Application::mouse_input_planet_map()
 {
+    cobot::vec2 ws = get_window_size();
+    const cobot::Rectangle back(ws.x * 0.9, ws.y * 0.1, ws.x * 0.1, ws.y * 0.1);
+
+    cobot::vec2 mouse_pos = m_input.mouse.pos;
+    if (back.contains_centered(mouse_pos))
+    {
+        switch_modes(ModeMenu);
+        switch_menu(MenuMissionEditor);
+        return true;
+    }
+
+    const Camera& cam = cameras[CameraPlanetMap];
+    auto mouseWorld = cam.screen_to_world(mouse_pos);
+
+
     return false;
 }
 
@@ -1840,15 +1855,9 @@ bool Application::init_render()
         return false;
     }
 
-    const char* render_state_shader_name[RenderStateCount] = {
-        "PlanetFrag",
-        "PlanetSurfaceFrag",
-        "StarFrag",
-    };
-
     for (int i = 0; i < RenderStateCount; i++)
     {
-        AssetId shader = get_asset(String(render_state_shader_name[i]), m_catalog);
+        AssetId shader = get_asset(String(get_render_state_shader_name(RenderStateId(i))), m_catalog);
         if (!shader.is_valid())
         {
             return false;

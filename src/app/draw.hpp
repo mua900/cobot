@@ -19,12 +19,14 @@ static const auto DEBUG_COLOR = cobot::ColorF(0.6, 0.5, 0.4, 1.0);
 #endif
 #endif
 
-enum RenderStates {
+enum RenderStateId {
     RenderStatePlanet,
     RenderStateStar,
     RenderStatePlanetSurface,
     RenderStateCount,
 };
+
+const char* get_render_state_shader_name(RenderStateId state);
 
 using Texture = SDL_Texture;
 using Viewport = SDL_GPUViewport;

@@ -29,4 +29,9 @@ bool load_map(const char* path, Map* map, SDL_Renderer* renderer);
 float fbm(cobot::vec2 x, u64 seed, int numOctaves);
 float noise(cobot::vec2 x, u64 seed, float scale);
 
+struct MapState
+{
+
+};
+
 #endif // MAP_HPP

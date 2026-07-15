@@ -1,10 +1,11 @@
 import argparse
 import subprocess
+import os.path
 
 from typing import List
 from pathlib import Path
 
-def compile_shaders(shaders : List[str], shader_stage : str):
+def compile_shaders(shaders : List[str], shader_stage : str, directory : str):
     stage_argument = "" 
     if shader_stage == "vertex":
         stage_argument = "vs"
@@ -20,8 +21,8 @@ def compile_shaders(shaders : List[str], shader_stage : str):
     for s in shaders:
         path = Path(s).stem
 
-        subprocess.run(["dxc", "-T", target, "-E", "main", s, "-Fo", "binary/" + path + ".dxil"], check=True)
-        subprocess.run(["dxc", "-spirv", "-T", target, "-E", "main", s, "-Fo", "binary/" + path + ".spv"], check=True)
+        subprocess.run(["dxc", "-T", target, "-E", "main", s, "-Fo", directory + "binary/" + path + ".dxil"], check=True)
+        subprocess.run(["dxc", "-spirv", "-T", target, "-E", "main", s, "-Fo", directory + "binary/" + path + ".spv"], check=True)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -30,10 +31,12 @@ def main():
 
     args = parser.parse_args()
 
+    directory : str = os.path.dirname(os.path.normpath(__file__)) + "/"
+
     if args.vertex:
-        compile_shaders(args.vertex, "vertex")
+        compile_shaders(args.vertex, "vertex", directory)
     if args.fragment:
-        compile_shaders(args.fragment, "fragment")
+        compile_shaders(args.fragment, "fragment", directory)
 
     if not (args.vertex or args.fragment):
         print("Please provide shaders to compile")

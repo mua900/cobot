@@ -21,6 +21,6 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-	// @todo
-    return color;
+    return float4(0, 1, 0, 1);
+    // return float4(openSimplex2_Conventional(input.pos.xyz).xyz, 1);
 }

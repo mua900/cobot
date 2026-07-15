@@ -254,7 +254,7 @@ void draw_planet_map(RenderContext& render, Planet& planet)
 
     // @todo obviously don't do this
     render.space = CoordinateSpace::Screen;
-    draw_rectangle(render, cobot::Rectangle(render.render_size / 2, render.render_size), cobot::ColorF(1,0,0));
+    draw_rectangle(render, cobot::Rectangle(render.render_size / 2, render.render_size), cobot::ColorF(0,0,1));
     render.space = CoordinateSpace::World;
 
     SDL_SetGPURenderState(render.renderer, nullptr);
