@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 4.0)
 
 project(cobot)
 
+# output the executable binaries and library binaries in the run_tree folder.
+# this mimics the distribution and expected folder layout of the application.
+# also useful when working with assets on the source tree because of hotloading.
 option(USE_RUN_TREE OFF)
 set(RUN_TREE ${CMAKE_SOURCE_DIR}/run_tree)
 
@@ -16,8 +19,15 @@ endif()
 # For multi-config generators (Visual Studio, Xcode)
 foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
     string(TOUPPER ${CONFIG} CONFIG_UPPER)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER} ${CMAKE_BINARY_DIR}/bin/${CONFIG})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG_UPPER} ${CMAKE_BINARY_DIR}/lib/${CONFIG})
+	if (USE_RUN_TREE)
+		set(OUTPUT_NAME_${CONFIG_UPPER} cobot_${CONFIG})
+	
+		set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${RUN_TREE})
+		set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${RUN_TREE}/lib/${CONFIG})
+	else()
+	    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER} ${CMAKE_BINARY_DIR}/bin/${CONFIG})
+	    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG_UPPER} ${CMAKE_BINARY_DIR}/lib/${CONFIG})
+	endif()
 endforeach()
 
 set(CMAKE_CXX_STANDARD 23)
