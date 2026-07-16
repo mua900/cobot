@@ -259,8 +259,7 @@ UiState* Application::get_active_ui()
             return &m_ui[UiSolarSystem];
         }
         case ModePlanetMap: {
-            // @note do we have to allocate a ui state for every mode?
-            return nullptr;
+            return &m_ui[UiPlanetMap];
         }
         default: {
             panic("Invalid game mode");

@@ -40,6 +40,7 @@ enum UiId {
     UiMissionEditor,
     UiVehicleEditor,
     UiLoad,
+    UiPlanetMap,
     UiSolarSystem,
     UiGame,
 
