@@ -5,8 +5,11 @@
 
 #include <SDL3_image/SDL_image.h>
 
+bool load_asset(String_Builder& path, Asset& asset, AssetLoadContext& load_context);
+bool unload_asset(Asset& asset, AssetLoadContext& load_context);
+
 bool parse_image_attribute(String attribute, SDL_Texture*& texture);
-bool parse_audio_attribute(String attribute, TrackId& audio);
+bool parse_audio_attribute(String attribute, MIX_Audio*& audio);
 bool parse_font_attribute(String attribute, Font& font);
 bool parse_shader_attribute(String attribute, Shader& shader);
 
@@ -210,7 +213,7 @@ bool parse_image_attribute(String attribute, SDL_Texture*& texture)
     return false;
 }
 
-bool parse_audio_attribute(String attribute, TrackId& audio)
+bool parse_audio_attribute(String attribute, MIX_Audio*& audio)
 {
     return false;
 }
@@ -363,9 +366,45 @@ bool parse_asset_description(const char* description, AssetCatalog& catalog)
     return true;
 }
 
-SDL_EnumerationResult asset_callback(void* userdata, const char* dirname, const char* fname);
+bool reparse_asset_description(const char* description, AssetCatalog& catalog)
+{
+    // @todo
+    return false;
+}
 
-bool load_asset(String_Builder& path, Asset& asset, AssetLoadContext& load_context);
+bool reparse_assets(const char* path, AssetCatalog& catalog)
+{
+    // @todo
+    return false;
+}
+
+void AssetCatalog::reset()
+{
+    catalog.free_buffer();
+    names.free_buffer();
+    path.free_buffer();
+
+    for (auto& asset : assets)
+    {
+        unload_asset(asset, load_context);
+    }
+
+    assets.reset();
+    // load_context = {};
+}
+
+bool AssetCatalog::reload_asset(AssetId id)
+{
+    if (!id.is_valid())
+    {
+        return false;
+    }
+
+    get_to_run_tree_path_string(path, get_asset_path(id));
+    return load_asset(path, assets.get_ref(id.id), load_context);
+}
+
+SDL_EnumerationResult asset_callback(void* userdata, const char* dirname, const char* fname);
 
 AssetId get_asset(String name, AssetCatalog& catalog)
 {
@@ -480,14 +519,14 @@ bool load_asset(String_Builder& path, Asset& asset, AssetLoadContext& load_conte
             return true;
         }
         case ASSET_KIND_AUDIO: {
-            TrackId track = load_context.audio->add_track(path.c_string());
-            if (track == NullTrackId)
+            MIX_Audio* audio = MIX_LoadAudio(load_context.audio->mixer, path.c_string(), true);
+            if (audio == nullptr)
             {
                 asset.identifier.id = -1;
                 return false;
             }
 
-            asset.data.audio = track;
+            asset.data.audio = audio;
 
             return true;
         }
@@ -553,11 +592,51 @@ SDL_EnumerationResult asset_callback(void* userdata, const char* dirname, const 
     return SDL_ENUM_CONTINUE;
 }
 
+bool unload_asset(Asset& asset, AssetLoadContext& load_context)
+{
+    bool result = false;    
+    switch (asset.kind)
+    {
+        case ASSET_KIND_IMAGE: {
+            SDL_DestroyTexture(asset.data.image);
+            result = true;
+            break;
+        }
+        case ASSET_KIND_AUDIO: {
+            MIX_DestroyAudio(asset.data.audio);
+            result = true;
+            break;
+        }
+        case ASSET_KIND_FONT: {
+            TTF_CloseFont(asset.data.font.font);
+            result = true;
+            break;
+        }
+        case ASSET_KIND_SHADER: {
+            unloadShader(*load_context.render, asset.data.shader);
+            result = true;
+            break;
+        }
+        case ASSET_KIND_ZERO: // ???
+        default:
+        {
+            panic("Invalid asset kind");
+        }
+    }
+
+    asset.data = {};
+    asset.identifier.generation = 0;
+    return result;
+}
+
 AssetKind get_asset_kind(String extension) {
     if (string_compare(extension, String("svg"))) {
         return ASSET_KIND_IMAGE;
     }
     else if (string_compare(extension, String("ogg"))) {
+        return ASSET_KIND_AUDIO;
+    }
+    else if (string_compare(extension, String("mp3"))) {
         return ASSET_KIND_AUDIO;
     }
     else if (string_compare(extension, String("wav"))) {
@@ -587,6 +666,13 @@ void get_pref_path(String_Builder& builder, const char *org, const char *app)
 }
 
 void get_to_run_tree_path(String_Builder& builder, const char* path)
+{
+    get_base_path(builder);
+    builder.append_path(String("asset/"));
+    builder.append_path(String(path));
+}
+
+void get_to_run_tree_path_string(String_Builder& builder, String path)
 {
     get_base_path(builder);
     builder.append_path(String("asset/"));

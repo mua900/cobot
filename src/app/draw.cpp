@@ -1084,6 +1084,14 @@ void draw_cubic_bezier(const RenderContext& context, cobot::vec2 p0, cobot::vec2
     }
 }
 
+bool unloadShader(RenderContext& context, Shader& shader)
+{
+    SDL_ReleaseGPUShader(context.device, shader.shader);
+    shader = {};
+
+    return true;
+}
+
 bool loadShader(RenderContext& context, Shader& shader, const char* path)
 {
     SDL_GPUShaderFormat format = SDL_GPU_SHADERFORMAT_SPIRV;

@@ -28,3 +28,6 @@ shader file PlanetSurfaceFrag shader/binary/planet_surface.spv stage=fragment nU
 
 shader file StarFrag shader/binary/star.spv stage=fragment nUniforms=2
 # shader file StarFrag shader/binary/star.dxil stage=fragment nUniforms=2
+
+audio file Fantasia audio/music/Fantasia_No3.mp3
+audio file Etude audio/music/Etude_Op25_No5.mp3

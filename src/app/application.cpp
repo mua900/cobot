@@ -73,6 +73,11 @@ bool Application::initialize()
         SDL_ShowWindow(window);
     }
 
+    if (!m_audio_player.initialize())
+    {
+        return false;
+    }
+
     {
         SDL_Cursor* normal = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
         SDL_Cursor* text = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT);
@@ -116,6 +121,9 @@ bool Application::initialize()
         cam.zoom = 1;
         cam.offset = m_render.get_center();
     }
+
+    initialize_tracks();
+    m_audio_player.play_track(tracks[TrackBackground]);
 
     {
         int num_keys = 0;
@@ -226,6 +234,8 @@ bool Application::load_assets()
             }
         }
     }
+
+    m_catalog.path.free_buffer();
 
     return true;
 }
@@ -750,6 +760,12 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
         case SDL_SCANCODE_F11:
         {
             SDL_SetWindowFullscreen(m_window.window, !is_fullscreen());
+            return true;
+        }
+        SDL_SCANCODE_F4:
+        {
+            
+
             return true;
         }
     }
@@ -2076,6 +2092,14 @@ bool Application::init_solar_system_ui()
     ui.button.add(backButton);
 
     return true;
+}
+
+void Application::initialize_tracks()
+{
+    for (int i = 0; i < TrackCount; i++)
+    {
+        tracks[i] = m_audio_player.make_track();
+    }
 }
 
 bool Application::init_game_ui() {

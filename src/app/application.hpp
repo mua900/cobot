@@ -47,6 +47,11 @@ enum UiId {
     UiCount,
 };
 
+enum TrackName {
+    TrackBackground,
+    TrackCount,
+};
+
 struct Event_Timeout {
     s64 event = 0;
     bool active = false;
@@ -119,6 +124,8 @@ public:
 
     AssetId m_font = {};
     AssetId m_editor_font = {};
+
+    TrackId tracks[TrackCount];
 
     Camera cameras[CameraCount] = {};
 
@@ -220,6 +227,8 @@ private:
 
     void render_rectangle_outline(cobot::Rectangle rect, cobot::Color color, bool center = true) const;
     void render_rectangle(cobot::Rectangle rect, cobot::Color color, bool center = true) const;
+
+    void initialize_tracks();
 
     Icon create_icon(AssetId image, cobot::Color background);
 

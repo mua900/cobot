@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-bool AudioPlayer::create() {
+bool AudioPlayer::initialize() {
     SDL_AudioDeviceID playback_device = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
     SDL_AudioDeviceID sdl_device = SDL_OpenAudioDevice(playback_device, nullptr);
     if (!sdl_device)
@@ -29,23 +29,7 @@ void AudioPlayer::cleanup() {
     MIX_DestroyMixer(mixer);
 }
 
-MIX_Audio* AudioPlayer::load_audio(const char* path) const
-{
-    return MIX_LoadAudio(mixer, path, true);
-}
-
-TrackId AudioPlayer::add_track(const char* path)
-{
-    MIX_Audio* audio = MIX_LoadAudio(mixer, path, true);
-    if (!audio)
-    {
-        return NullTrackId;
-    }
-
-    return make_track(audio);
-}
-
-TrackId AudioPlayer::make_track(MIX_Audio* audio)
+TrackId AudioPlayer::make_track()
 {
     MIX_Track* track = MIX_CreateTrack(mixer);
     if (!track)
@@ -53,7 +37,52 @@ TrackId AudioPlayer::make_track(MIX_Audio* audio)
         return NullTrackId;
     }
 
-    MIX_SetTrackAudio(track, audio);
-
     return tracks.add(track);
+}
+
+bool AudioPlayer::set_track_audio(TrackId track, MIX_Audio* audio)
+{
+    return MIX_SetTrackAudio(tracks.get(track), audio);
+}
+
+void AudioPlayer::destroy_track(TrackId& track)
+{
+    MIX_DestroyTrack(tracks.get(track));
+    tracks.remove(track);
+}
+
+void AudioPlayer::play_track(TrackId track)
+{
+    MIX_Track* t = tracks.get(track);
+
+    SDL_PropertiesID options = SDL_CreateProperties();
+
+    SDL_SetNumberProperty(options, MIX_PROP_PLAY_LOOPS_NUMBER, 1);
+
+    MIX_PlayTrack(t, options);
+    SDL_DestroyProperties(options);
+}
+
+void AudioPlayer::pause_track(TrackId track)
+{
+    MIX_Track* t = tracks.get(track);
+
+    MIX_PauseTrack(t);
+}
+
+void AudioPlayer::resume_track(TrackId track)
+{
+    MIX_Track* t = tracks.get(track);
+
+    MIX_ResumeTrack(t);
+}
+
+void AudioPlayer::pause_all()
+{
+    MIX_PauseAllTracks(mixer);
+}
+
+void AudioPlayer::resume_all()
+{
+    MIX_ResumeAllTracks(mixer);
 }

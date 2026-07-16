@@ -38,6 +38,8 @@ using AssetFlags = u8;
 #define ASSET_IS_OPTIONAL    BIT(1)
 #define ASSET_IS_LAZY        BIT(2)
 #define ASSET_IS_FROM_FOLDER BIT(3)
+// @todo
+#define ASSET_SHOULD_RELOAD  BIT(4)
 
 struct Asset {
     AssetKind kind;
@@ -49,7 +51,7 @@ struct Asset {
     union {
         Font font;
         SDL_Texture* image;
-        TrackId audio;
+        MIX_Audio* audio;
         Shader shader;
     } data = {};
 
@@ -60,6 +62,7 @@ struct Asset {
 
 struct AssetCatalog {
     String_Builder catalog;
+    String_Builder names;
     AssetLoadContext load_context;
     DArray<Asset> assets;
     String_Builder path;
@@ -125,17 +128,17 @@ struct AssetCatalog {
         return asset.data.font;
     }
 
-    TrackId get_audio(AssetId id) const
+    MIX_Audio* get_audio(AssetId id) const
     {
         if (!id.is_valid())
         {
-            return NullTrackId;
+            return nullptr;
         }
 
         const Asset& asset = assets.get_ref(id.id);
         if (asset.kind != ASSET_KIND_AUDIO || asset.identifier.generation != id.generation)
         {
-            return NullTrackId;
+            return nullptr;
         }
 
         return asset.data.audio;
@@ -156,12 +159,20 @@ struct AssetCatalog {
 
         return asset.data.shader.shader;
     }
+
+    bool reload_asset(AssetId id);
+
+    void reset();
 };
 
 // parse asset catalog file and add assets listed in it to the catalog
 bool parse_asset_description(const char* description, AssetCatalog& catalog);
-// load the file pointed to by path and call parse_asset_description on it and return it's result
+// load the asset description pointed on path and parse it
 bool parse_assets(const char* path, AssetCatalog& catalog);
+
+bool reparse_asset_description(const char* description, AssetCatalog& catalog);
+bool reparse_assets(const char* path, AssetCatalog& catalog);
+
 // returns the existing handle if the asset is already loaded otherwise loads the asset on the fly and returns the handle
 // returns null id if no asset with the given name is found or the asset load fails
 AssetId get_asset(String name, AssetCatalog& catalog);
@@ -174,5 +185,6 @@ AssetKind get_asset_kind(String file_extension);
 
 void get_base_path(String_Builder& builder);
 void get_to_run_tree_path(String_Builder& builder, const char* path);
+void get_to_run_tree_path_string(String_Builder& builder, String path);
 
 #endif // ASSET_HPP
