@@ -6,3 +6,4 @@
 - rescalable ui
 - hotload code
 - use proper color palettes instead of assigning random colors to everything
+- hot reloading assets

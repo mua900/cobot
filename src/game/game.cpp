@@ -252,7 +252,7 @@ void draw_planet_map(RenderContext& render, Planet& planet)
 
     SDL_SetGPURenderStateFragmentUniforms(render.render_states[RenderStatePlanetSurface], 1, cameraData, sizeof(cameraData));
 
-    // @todo obviously don't do this
+    // @todo hack
     render.space = CoordinateSpace::Screen;
     draw_rectangle(render, cobot::Rectangle(render.render_size / 2, render.render_size), cobot::ColorF(0,0,1));
     render.space = CoordinateSpace::World;
