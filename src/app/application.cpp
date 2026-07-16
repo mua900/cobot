@@ -1421,16 +1421,7 @@ bool Application::mouse_input_game()
                     return true;
                 }
 
-                int result = luaL_dostring(script.data.lua, script.script.c_string());
-
-                if (result == LUA_OK) {
-                    log_info("Okay program");
-                }
-                else {
-                    log_info("Not okay program");
-                    display_message(editor.get_title_area().get_position() + cobot::vec2(0, 100), cobot::vec2(100, 100), "Invalid program", 2, cobot::Color(0xAA, 0x44, 0x55), cobot::Color(0x44, 0x77, 0x55));
-                }
-
+                run_script(script);
                 return true;
             }
             else if (editor.get_icon2_area().contains_centered(mouse_pos)) {

@@ -62,6 +62,6 @@ struct Script {
     bool is_valid() { return data.lua != nullptr || data.interp != nullptr; }
 };
 
-void run_script(Script& s);
+int run_script(Script& s);
 
 #endif // SCRIPT_HPP
