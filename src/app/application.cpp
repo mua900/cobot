@@ -775,21 +775,31 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             SDL_SetWindowFullscreen(m_window.window, !is_fullscreen());
             return true;
         }
-        case SDL_SCANCODE_F4:
+        case SDL_SCANCODE_F3:
         {
             auto ws = get_window_size();
-            get_to_run_tree_path(m_catalog.path, "run_tree.txt");
-            if (!reparse_assets(m_catalog.path.c_string(), m_catalog))
+
+            // re-read the asset description
+            get_to_run_tree_path(m_catalog_reload.path, "run_tree.txt");
+            if (!parse_assets(m_catalog_reload.path.c_string(), m_catalog_reload))
             {
                 display_message(ws * 0.5, ws * 0.1, "Couldn't reparse asset description", 2, cobot::Color(0x66, 0x44, 0x66), cobot::Color(0x22, 0x33, 0x22));
             }
 
-            if (!reload_assets())
-            {
-                quit = true;
-            }
-
             return true;
+        }
+        case SDL_SCANCODE_F4:
+        {
+            if (!doing_reload())
+            {
+                if (!reload_assets())
+                {
+                    log_error("Couldn't reload assets");
+                    quit = true;
+                }
+
+                return true;
+            }
         }
     }
 
@@ -808,6 +818,11 @@ bool Application::keyboard_input_down_solar_system(KeyboardEvent keyboard)
     }
 
     return false;
+}
+
+bool Application::doing_reload() const
+{
+    return !m_catalog_reload.catalog.is_empty();
 }
 
 void Application::on_mouse_move()

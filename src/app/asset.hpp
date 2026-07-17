@@ -41,8 +41,6 @@ using AssetFlags = u8;
 #define ASSET_IS_OPTIONAL    BIT(1)
 #define ASSET_IS_LAZY        BIT(2)
 #define ASSET_IS_FROM_FOLDER BIT(3)
-// @todo
-#define ASSET_SHOULD_RELOAD  BIT(4)
 
 struct Asset {
     AssetKind kind;
@@ -64,9 +62,14 @@ struct Asset {
 };
 
 struct AssetCatalog {
+    // This holds the asset description we loaded.
+    // Asset names and paths reference this buffer so don't mess with it unless you know what you are doing.
     String_Builder catalog;
+
     AssetLoadContext load_context;
     DArray<Asset> assets;
+
+    // used as scracth space to build paths
     String_Builder path;
 
     void add_asset(Asset& asset)
@@ -228,11 +231,9 @@ struct AssetCatalog {
 };
 
 // parse asset catalog file and add assets listed in it to the catalog
-bool parse_asset_description(const char* description, AssetCatalog& catalog, bool reparse);
+bool parse_asset_description(const char* description, AssetCatalog& catalog, bool check_unique);
 // load the asset description pointed on path and parse it
 bool parse_assets(const char* path, AssetCatalog& catalog);
-
-bool reparse_assets(const char* path, AssetCatalog& catalog);
 
 // returns the existing handle if the asset is already loaded otherwise loads the asset on the fly and returns the handle
 // returns null id if no asset with the given name is found or the asset load fails

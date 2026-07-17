@@ -110,6 +110,7 @@ public:
     AudioPlayer m_audio_player = {};
     Input m_input = {};
     AssetCatalog m_catalog = {};
+    AssetCatalog m_catalog_reload = {};
 
     UiState m_ui[UiCount];
     cobot::Color m_background_color = DEFAULT_BACKGROUND_COLOR;
@@ -165,6 +166,8 @@ private:
 
     bool load_assets();
     bool reload_assets();
+
+    bool doing_reload() const;
 
     UiState* get_active_ui();
 

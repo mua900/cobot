@@ -7,3 +7,4 @@
 - hotload code
 - use proper color palettes instead of assigning random colors to everything
 - hot reloading assets
+- draw a grid or something to indicate the horizontal plane on solar system view

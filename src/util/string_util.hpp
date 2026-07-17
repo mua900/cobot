@@ -199,6 +199,7 @@ struct String_Builder {
         other.clear_values();
     }
 
+    bool is_empty() const { return cursor == 0; }
     const char* get_end() const { return buffer + cursor; }
     void create(int initial_capacity);
     int append(String string);
