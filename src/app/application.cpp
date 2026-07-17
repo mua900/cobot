@@ -98,7 +98,7 @@ bool Application::initialize()
     {
         return false;
     }
-	
+
     // game state
     {
         if (!load_part_images(partImages, m_catalog))
@@ -212,7 +212,6 @@ bool Application::read_asset_catalog(String_Builder& path)
 
 bool Application::update_asset_handles()
 {
-    // This doesn't make sense if you hard code names like this but anyways.
     AssetId fontId = get_asset(String("FiraSans"), m_catalog);
     AssetId editorFontId = get_asset(String("FiraSans"), m_catalog);
 
@@ -256,7 +255,7 @@ bool Application::reload_assets()
     }
 
     update_asset_handles();
-    
+
     return true;
 }
 
@@ -586,7 +585,7 @@ bool Application::keyboard_input_down(SDL_KeyboardEvent keyboard)
 		{
 			return false;
 		}
-		
+
         switch (m_mode)
         {
             case ModeGame:
@@ -994,7 +993,7 @@ bool Application::mouse_input_common()
             {
                 continue;
             }
-            
+
     		cobot::Rectangle area = field.m_area;
     		if (area.contains_centered(mouse_pos)) {
                 cobot::vec2 relative = mouse_pos - area.get_top_left();
@@ -1147,7 +1146,7 @@ bool Application::mouse_input_vehicle_editor()
                 }
             }
         }
-		
+
 		for (auto& button : ui.button)
 		{
 			if (cobot::Rectangle(button.position, button.scale).contains_centered(mouse_pos))
@@ -1346,7 +1345,7 @@ bool Application::mouse_input_solar_system()
 			Camera& camera = cameras[CameraSolarSystem];
 
 			cobot::vec2 position = camera.world_to_screen(worldPosition);
-			
+
             if ((mouse_pos - position).magnitude() < planet.body.radius * camera.zoom)
             {
                 gameInfo.selectedPlanet = i;
@@ -1547,7 +1546,7 @@ bool Application::mouse_input_game()
                 }
             }
         }
-		
+
         auto vehicle = game.get_active_vehicle();
         if (!vehicle->volume.contains_centered(mouseWorld))
         {
@@ -1932,6 +1931,8 @@ bool Application::init_render()
 
 bool Application::init_shaders()
 {
+    m_render.render_states.discard_data();
+
     for (int i = 0; i < RenderStateCount; i++)
     {
         AssetId shader = get_asset(String(get_render_state_shader_name(RenderStateId(i))), m_catalog);
@@ -1958,7 +1959,7 @@ bool Application::init_ui()
     cobot::vec2 ws = get_window_size();
 
     for (auto& ui : m_ui) { ui.assumed_window_size = ws; }
-	
+
     cobot::vec2 button_scale = cobot::vec2(ws.x * 0.1, ws.y * 0.1);
     Font font = m_catalog.get_font(m_editor_font);
 
@@ -2130,7 +2131,7 @@ bool Application::init_solar_system_ui()
     cobot::Color valueText (0x33, 0x44, 0x88);
 
 	tabs[PlanetPanelTabProperties].fields.add(ValueField(create_text(m_render.renderer, String("Name"), font, cobot::Color(0xAA, 0x44, 0x66)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), 0, ValueString));
-	
+
     tabs[PlanetPanelTabOrbit].fields.add(ValueField(create_text(m_render.renderer, String("SemiMajorAxis"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitSemiMajorAxis, ValueNumber));
     tabs[PlanetPanelTabOrbit].fields.add(ValueField(create_text(m_render.renderer, String("Eccentricity"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitEccentricity, ValueNumber));
     tabs[PlanetPanelTabOrbit].fields.add(ValueField(create_text(m_render.renderer, String("TrueAnomaly"), font, cobot::Color(0x99, 0x66, 0x77)), ui.text_field.add(Text_Field(m_font, font.size, valueBackground, valueText, true, false)), OrbitTrueAnomaly, ValueNumber));
@@ -2162,6 +2163,10 @@ void Application::initialize_tracks()
     {
         tracks[i] = m_audio_player.make_track();
     }
+
+    // @todo
+    // m_audio_player.set_track_audio(tracks[TrackMenu]);
+    // m_audio_player.set_track_audio(tracks[TrackGame]);
 }
 
 bool Application::init_game_ui() {
@@ -2409,6 +2414,24 @@ void Application::draw_ui_state(UiState& state)
 	render_textured_rectangle(m_render, cobot::Rectangle(mouse_pos.x, mouse_pos.y, hoverWidth, hoverHeight), state.hoverText.text.texture, state.hoverText.background);
 }
 
+void Application::stop_mode_tracks()
+{
+    m_audio_player.stop_track(tracks[TrackMenu], 1000);
+    m_audio_player.stop_track(tracks[TrackGame], 1000);
+}
+
+void Application::setup_tracks()
+{
+    stop_mode_tracks();
+
+    // play the mode track we want
+    switch (m_mode)
+    {
+        case ModeMenu: m_audio_player.play_track(tracks[TrackMenu]);
+        case ModeGame: m_audio_player.play_track(tracks[TrackGame]);
+    }
+}
+
 void Application::switch_modes(ApplicationMode mode) {
     text_input_stop();
 
@@ -2437,11 +2460,13 @@ void Application::switch_modes(ApplicationMode mode) {
     m_mode = mode;
 
     m_render.camera = get_active_camera();
+
+    setup_tracks();
 }
 
 void Application::switch_menu(MenuName menu) {
 	text_input_stop();
-	
+
     m_menu = menu;
 }
 

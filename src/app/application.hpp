@@ -48,7 +48,10 @@ enum UiId {
 };
 
 enum TrackName {
+    TrackMenu,
     TrackBackground,
+    TrackGame,
+
     TrackCount,
 };
 
@@ -248,6 +251,9 @@ private:
     void render_panel(const Panel& panel) const;
     void render_value_panel(const UiState& ui, const ValuePanel& panel) const;
     void render_button_group(const ButtonGroup& group) const;
+
+    void setup_tracks();
+    void stop_mode_tracks();
 
     void switch_modes(ApplicationMode mode);
     void switch_menu(MenuName menu);

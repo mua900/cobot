@@ -51,6 +51,31 @@ void AudioPlayer::destroy_track(TrackId& track)
     tracks.remove(track);
 }
 
+void AudioPlayer::tag_track(TrackId track, const char* tag)
+{
+    MIX_TagTrack(tracks[track], tag);
+}
+
+void AudioPlayer::set_master_gain(float gain)
+{
+    MIX_SetMixerGain(mixer, gain);
+}
+
+void AudioPlayer::stop_all(s64 fade_out_ms)
+{
+    MIX_StopAllTracks(mixer, fade_out_ms);
+}
+
+void AudioPlayer::pause_all()
+{
+    MIX_PauseAllTracks(mixer);
+}
+
+void AudioPlayer::resume_all()
+{
+    MIX_ResumeAllTracks(mixer);
+}
+
 void AudioPlayer::play_track(TrackId track)
 {
     MIX_Track* t = tracks.get(track);
@@ -61,6 +86,17 @@ void AudioPlayer::play_track(TrackId track)
 
     MIX_PlayTrack(t, options);
     SDL_DestroyProperties(options);
+}
+
+void AudioPlayer::stop_track(TrackId track, s64 fade_out_ms)
+{
+    MIX_Track* t = tracks[track];
+    MIX_StopTrack(t, MIX_TrackMSToFrames(t, fade_out_ms));
+}
+
+void AudioPlayer::stop_track_frames(TrackId track, s64 fade_out_frames)
+{
+    MIX_StopTrack(tracks[track], fade_out_frames);
 }
 
 void AudioPlayer::pause_track(TrackId track)
@@ -77,12 +113,38 @@ void AudioPlayer::resume_track(TrackId track)
     MIX_ResumeTrack(t);
 }
 
-void AudioPlayer::pause_all()
+void AudioPlayer::set_track_gain(TrackId track, float gain)
 {
-    MIX_PauseAllTracks(mixer);
+    MIX_SetTrackGain(tracks[track], gain);
 }
 
-void AudioPlayer::resume_all()
+void AudioPlayer::play_tag(const char* tag)
 {
-    MIX_ResumeAllTracks(mixer);
+    SDL_PropertiesID options = SDL_CreateProperties();
+
+    SDL_SetNumberProperty(options, MIX_PROP_PLAY_LOOPS_NUMBER, 1);
+
+    MIX_PlayTag(mixer, tag, options);
+
+    SDL_DestroyProperties(options);
+}
+
+void AudioPlayer::stop_tag(const char* tag, s64 fade_out_ms)
+{
+    MIX_StopTag(mixer, tag, fade_out_ms);
+}
+
+void AudioPlayer::pause_tag(const char* tag)
+{
+    MIX_PauseTag(mixer, tag);
+}
+
+void AudioPlayer::resume_tag(const char* tag)
+{
+    MIX_ResumeTag(mixer, tag);
+}
+
+void AudioPlayer::set_tag_gain(const char* tag, float gain)
+{
+    MIX_SetTagGain(mixer, tag, gain);
 }
