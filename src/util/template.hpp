@@ -461,6 +461,11 @@ struct BucketList {
 		return false;
 	}
 
+	void reset()
+	{
+		buckets.reset();
+	}
+
 	struct Iterator {
 		BucketList<T>* list = {};
 		int bucket_index = 0;

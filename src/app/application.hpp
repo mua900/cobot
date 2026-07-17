@@ -110,7 +110,7 @@ public:
     AudioPlayer m_audio_player = {};
     Input m_input = {};
     AssetCatalog m_catalog = {};
-    AssetCatalog m_catalog_reload = {};
+    AssetCatalog m_catalog_reload = {};  // @todo
 
     UiState m_ui[UiCount];
     cobot::Color m_background_color = DEFAULT_BACKGROUND_COLOR;
@@ -152,6 +152,7 @@ private:
     bool init_game_state();
 
     bool init_render();
+    bool init_shaders();
 
     Camera* get_active_camera();
 
@@ -166,6 +167,8 @@ private:
 
     bool load_assets();
     bool reload_assets();
+
+    bool update_asset_handles();
 
     bool doing_reload() const;
 

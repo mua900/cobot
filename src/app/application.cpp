@@ -210,6 +210,41 @@ bool Application::read_asset_catalog(String_Builder& path)
     return parse_description;
 }
 
+bool Application::update_asset_handles()
+{
+    // This doesn't make sense if you hard code names like this but anyways.
+    AssetId fontId = get_asset(String("FiraSans"), m_catalog);
+    AssetId editorFontId = get_asset(String("FiraSans"), m_catalog);
+
+    m_font = fontId;
+    m_editor_font = editorFontId;
+
+    for (auto& ui : m_ui)
+    {
+        for (auto& field : ui.text_field)
+        {
+            field.fontId = fontId;
+        }
+
+        for (auto& editor : ui.editor)
+        {
+            editor.field.fontId = fontId;
+        }
+    }
+
+    if (!init_shaders())
+    {
+        return false;
+    }
+
+    if (!load_part_images(partImages, m_catalog))
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool Application::reload_assets()
 {
     for (int i = 0; i < m_catalog.catalogEntryCount; i++)
@@ -219,6 +254,8 @@ bool Application::reload_assets()
             return false;
         }
     }
+
+    update_asset_handles();
     
     return true;
 }
@@ -227,7 +264,7 @@ bool Application::load_assets()
 {
     // the size can actually change when we are trying to load assets since folder references will expand and include arbitrary amount of files
     // so save the amount we need to iterate
-    int count = m_catalog.assets.size();
+    int count = m_catalog.assets.count();
     for (int i = 0; i < count; i++)
     {
         if (!(m_catalog.assets[i].flags & ASSET_IS_LAZY))
@@ -1885,20 +1922,16 @@ bool Application::init_render()
         return false;
     }
 
-    AssetId vertex_id = get_asset(String("VertexShader"), m_catalog);
-    AssetId fragment_id = get_asset(String("FragmentShader"), m_catalog);
-    SDL_GPUShader* vertex = m_catalog.get_shader(vertex_id);
-    SDL_GPUShader* fragment = m_catalog.get_shader(fragment_id);
-    if (!(vertex && fragment))
+    if (!init_shaders())
     {
         return false;
     }
 
-    if (!init_gpu_renderer(&m_render, m_window.window, vertex, fragment)) {
-        log_error("Couldn't initialize gpu renderer");
-        return false;
-    }
+    return true;
+}
 
+bool Application::init_shaders()
+{
     for (int i = 0; i < RenderStateCount; i++)
     {
         AssetId shader = get_asset(String(get_render_state_shader_name(RenderStateId(i))), m_catalog);

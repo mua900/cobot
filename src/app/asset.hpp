@@ -71,7 +71,7 @@ struct AssetCatalog {
     int catalogEntryCount = 0;
 
     AssetLoadContext load_context;
-    DArray<Asset> assets;
+    BucketList<Asset> assets;
 
     // used as scracth space to build paths
     String_Builder path;
@@ -79,8 +79,8 @@ struct AssetCatalog {
     void add_asset(Asset& asset)
     {
         int index = assets.add(asset);
-        assets.get_ref(index).identifier.id = index;
-        assets.get_ref(index).identifier.generation = 0;
+        assets.get(index).identifier.id = index;
+        assets.get(index).identifier.generation = 0;
     }
 
     bool add_asset_unique(Asset& asset)
@@ -101,24 +101,24 @@ struct AssetCatalog {
     }
 
     String get_asset_name_at_index(int index) const {
-        return catalog.get_string(assets.get_ref(index).name);
+        return catalog.get_string(assets.get(index).name);
     }
 
     String get_asset_path_at_index(int index) const {
-        return catalog.get_string(assets.get_ref(index).path);
+        return catalog.get_string(assets.get(index).path);
     }
 
     String get_asset_name(AssetId id) const {
         if (!id.is_valid()) return String();
 
-        const Asset& asset = assets.get_ref(id.id);
+        const Asset& asset = assets.get(id.id);
         return catalog.get_string(asset.name);
     }
 
     String get_asset_path(AssetId id) const {
         if (!id.is_valid()) return String();
 
-        const Asset& asset = assets.get_ref(id.id);
+        const Asset& asset = assets.get(id.id);
         return catalog.get_string(asset.path);
     }
 
@@ -151,7 +151,7 @@ struct AssetCatalog {
             return nullptr;
         }
 
-        const Asset& asset = assets.get_ref(id.id);
+        const Asset& asset = assets.get(id.id);
         if (!compare_asset_kind(ASSET_KIND_IMAGE, asset.kind))
         {
             return nullptr;
@@ -172,7 +172,7 @@ struct AssetCatalog {
             return Font();
         }
 
-        const Asset& asset = assets.get_ref(id.id);
+        const Asset& asset = assets.get(id.id);
         if (!compare_asset_kind(ASSET_KIND_FONT, asset.kind))
         {
             return Font();
@@ -193,7 +193,7 @@ struct AssetCatalog {
             return nullptr;
         }
 
-        const Asset& asset = assets.get_ref(id.id);
+        const Asset& asset = assets.get(id.id);
         if (!compare_asset_kind(ASSET_KIND_AUDIO, asset.kind))
         {
             return nullptr;
@@ -214,7 +214,7 @@ struct AssetCatalog {
             return nullptr;
         }
 
-        const Asset& asset = assets.get_ref(id.id);
+        const Asset& asset = assets.get(id.id);
         if (!compare_asset_kind(ASSET_KIND_SHADER, asset.kind))
         {
             return nullptr;

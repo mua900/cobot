@@ -5,15 +5,14 @@
 
 #include <SDL3_image/SDL_image.h>
 
-bool load_asset(AssetId id, AssetCatalog& catalog);
-bool unload_asset(AssetId id, AssetCatalog& catalog);
+bool load_asset(int index, AssetCatalog& catalog);
+bool unload_asset(AssetId id, AssetCatalog& catalog, bool reset_generation = true);
 
 SDL_EnumerationResult load_asset_callback(void* userdata, const char* dirname, const char* fname);
 SDL_EnumerationResult unload_asset_callback(void* userdata, const char* dirname, const char* fname);
 
-
 bool load_asset_file(String_Builder& path, Asset& asset, AssetLoadContext& load_context);
-bool unload_asset_file(Asset& asset, AssetLoadContext& load_context);
+void unload_asset_file(Asset& asset, AssetLoadContext& load_context, bool reset_generation = true);
 
 bool parse_image_attribute(String attribute, SDL_Texture*& texture);
 bool parse_audio_attribute(String attribute, MIX_Audio*& audio);
@@ -365,7 +364,7 @@ bool parse_asset_description(const char* description, AssetCatalog& catalog, boo
         cursor = next_line_offset;
     }
 
-    catalog.catalogEntryCount = catalog.assets.size();
+    catalog.catalogEntryCount = catalog.assets.count();
 
     return true;
 }
@@ -405,22 +404,29 @@ bool AssetCatalog::reload_asset(AssetId id)
 
     auto asset_path = get_asset_path(id);
     log_info("%.*s", asset_path.size, asset_path.data);
+
+    unload_asset(id, *this, false);
+
     get_to_asset_path_string(path, asset_path);
-    return load_asset(id, *this);
+    return load_asset(id.id, *this);
 }
 
 bool AssetCatalog::reload_asset_at_index(int index)
 {
-    auto asset = assets.get_ref(index);
+    auto asset = assets.get(index);
     auto asset_path = catalog.get_string(asset.path);
     log_info("%.*s", asset_path.size, asset_path.data);
+
     get_to_asset_path_string(path, asset_path);
 
-    return load_asset(asset.identifier, *this);
+    unload_asset(asset.identifier, *this, false);
+
+    return load_asset(asset.identifier.id, *this);
 }
 
 AssetId get_asset(String name, AssetCatalog& catalog)
 {
+    int index = 0;
     for (auto& asset : catalog.assets)
     {
         auto asset_name = catalog.catalog.get_string(asset.name);
@@ -428,11 +434,13 @@ AssetId get_asset(String name, AssetCatalog& catalog)
         {
             if (!asset.identifier.is_valid())
             {
-                load_asset(asset.identifier, catalog);
+                load_asset(index, catalog);
             }
 
-            return asset.identifier;
+            return catalog.assets[index].identifier;
         }
+
+        index += 1;
     }
 
     log_error("Couldn't find requested asset with name: %.*s", name.size, name.data);
@@ -449,19 +457,19 @@ AssetId get_asset_at_index(int index, AssetCatalog& catalog)
 
     if (!catalog.assets[index].identifier.is_valid())
     {
-        load_asset(catalog.assets[index].identifier, catalog);
+        load_asset(index, catalog);
     }
 
     return catalog.assets[index].identifier;
 }
 
-bool load_asset(AssetId id, AssetCatalog& catalog)
+bool load_asset(int index, AssetCatalog& catalog)
 {
     AssetLoadContext& load_context = catalog.load_context;
-    auto asset_path = catalog.catalog.get_string(catalog.assets[id.id].path);
+    auto asset_path = catalog.catalog.get_string(catalog.assets[index].path);
     get_to_asset_path_string(catalog.path, asset_path);
 
-    if (catalog.assets[id.id].flags & ASSET_IS_FOLDER) {
+    if (catalog.assets[index].flags & ASSET_IS_FOLDER) {
         catalog.path.append(make_string(PathSeparator));
 
         if (!SDL_EnumerateDirectory(catalog.path.c_string(), load_asset_callback, &catalog)) {
@@ -469,18 +477,18 @@ bool load_asset(AssetId id, AssetCatalog& catalog)
             return false;
         }
 
-        catalog.assets[id.id].identifier.generation += 1;
+        catalog.assets[index].identifier.generation += 1;
         return true;
     }
     else {
-        bool load = load_asset_file(catalog.path, catalog.assets[id.id], catalog.load_context);
+        bool load = load_asset_file(catalog.path, catalog.assets[index], catalog.load_context);
         if (!load)
         {
             log_error("Couldn't load asset: %.*s", asset_path.size, asset_path.data);
             return false;
         }
 
-        catalog.assets[id.id].identifier.generation += 1;
+        catalog.assets[index].identifier.generation += 1;
         return true;
     }
 }
@@ -570,45 +578,93 @@ SDL_EnumerationResult load_asset_callback(void* userdata, const char* dirname, c
     catalog->path.remove(amount);
 
     int index = catalog->assets.add(asset);
-    catalog->assets.get_ref(index).identifier = { index, 1 };
+    catalog->assets.get(index).identifier = { index, 1 };
 
     return SDL_ENUM_CONTINUE;
 }
 
 SDL_EnumerationResult unload_asset_callback(void* userdata, const char* dirname, const char* fname)
 {
-    ASSERT(false && "Not implemented");
+    AssetCatalog* catalog = (AssetCatalog*) userdata;
+
+    String name = String(fname);
+    String file = string_get_file_name(name);
+
+    for (auto it = catalog->assets.begin(); it != catalog->assets.end(); ++it)
+    {
+        Asset& asset = *it;
+
+        if (!(asset.flags & ASSET_IS_FROM_FOLDER))
+        {
+            continue;
+        }
+
+        if (!string_compare(catalog->catalog.get_string(asset.name), file))
+        {
+            continue;
+        }
+
+        unload_asset_file(asset, catalog->load_context, false);
+        catalog->assets.remove(it.index());
+
+        return SDL_ENUM_CONTINUE;
+    }
+
+    return SDL_ENUM_CONTINUE;
 }
 
-bool unload_asset(AssetId id, AssetCatalog& catalog)
+bool unload_asset(AssetId id, AssetCatalog& catalog, bool reset_generation)
 {
-    // @todo @fixme handle folders
-    return unload_asset_file(catalog.assets.get_ref(id.id), catalog.load_context);
+    Asset& asset = catalog.assets.get(id.id);
+    if (asset.flags & ASSET_IS_FOLDER)
+    {
+        auto asset_path = catalog.catalog.get_string(asset.path);
+        get_to_asset_path_string(catalog.path, asset_path);
+        catalog.path.append(make_string(PathSeparator));
+
+        if (!SDL_EnumerateDirectory(catalog.path.c_string(), unload_asset_callback, &catalog)) {
+            log_error("Couldn't unload assets in folder: %.*s", asset_path.size, asset_path.data);
+            return false;
+        }
+
+        if (reset_generation)
+        {
+            asset.identifier.generation = 0;
+        }
+        return true;
+    }
+    else
+    {
+        unload_asset_file(catalog.assets.get(id.id), catalog.load_context, reset_generation);
+    }
+
+    return true;
 }
 
-bool unload_asset_file(Asset& asset, AssetLoadContext& load_context)
+void unload_asset_file(Asset& asset, AssetLoadContext& load_context, bool reset_generation)
 {
-    bool result = false;    
+    // we need to be careful with what information we lose.
+    // we need to clear out pointers but not lose attribute data.
     switch (asset.kind)
     {
         case ASSET_KIND_IMAGE: {
             SDL_DestroyTexture(asset.data.image);
-            result = true;
+            asset.data.image = nullptr;
             break;
         }
         case ASSET_KIND_AUDIO: {
             MIX_DestroyAudio(asset.data.audio);
-            result = true;
+            asset.data.audio = nullptr;
             break;
         }
         case ASSET_KIND_FONT: {
             TTF_CloseFont(asset.data.font.font);
-            result = true;
+            asset.data.font.font = nullptr;
             break;
         }
         case ASSET_KIND_SHADER: {
             unloadShader(*load_context.render, asset.data.shader);
-            result = true;
+            asset.data.shader.shader = nullptr;
             break;
         }
         case ASSET_KIND_ZERO: // ???
@@ -618,9 +674,10 @@ bool unload_asset_file(Asset& asset, AssetLoadContext& load_context)
         }
     }
 
-    asset.data = {};
-    asset.identifier.generation = 0;
-    return result;
+    if (reset_generation)
+    {
+        asset.identifier.generation = 0;
+    }
 }
 
 AssetKind get_asset_kind(String extension) {

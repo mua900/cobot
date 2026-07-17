@@ -85,7 +85,7 @@ cobot::vec2 get_part_scale(PartKind kind)
     switch (kind)
     {
         // @todo sensible numbers
-        case PartKindSolarPanel:    return cobot::vec2(20, 20);
+        case PartKindSolarPanel:    return cobot::vec2(50, 50);
         case PartKindBattery:       return cobot::vec2(40, 40);
         case PartKindWheel:         return cobot::vec2(25, 25);
         case PartKindChassis:       return cobot::vec2(100, 100);
