@@ -812,6 +812,8 @@ struct UiState {
     TextInputTarget text_input_target = {};
     cobot::vec2 assumed_window_size = {};
 
+    void reinit_text(RenderContext& render, Font font);
+
     void update_state(cobot::vec2 window_size, const RenderContext& render, const AssetCatalog& catalog);
 
     Text_Field* get_selected_text_field();

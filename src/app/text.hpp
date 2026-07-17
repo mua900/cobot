@@ -21,9 +21,12 @@ union UserData {
 struct Text {
     SDL_Texture* texture = NULL;
     String string = {};
+    cobot::Color color = {};
 
     Text() {}
-    Text(SDL_Texture* p_texture, String p_string) : texture(p_texture), string(p_string) {}
+    Text(SDL_Texture* p_texture, String p_string, cobot::Color col)
+        : texture(p_texture), string(p_string), color(col)
+    {}
 
     void clear()
     {
@@ -35,6 +38,8 @@ struct Text {
 
         string.data = NULL;
         string.size = 0;
+
+        color = {};
     }
 };
 

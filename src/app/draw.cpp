@@ -110,7 +110,7 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
     SDL_SetBooleanProperty(rendererProps, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, true);
     SDL_SetBooleanProperty(rendererProps, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN, true);
 	// @todo metal
-    
+
     SDL_Renderer* renderer = SDL_CreateRendererWithProperties(rendererProps);
     if (!renderer)
     {
@@ -136,7 +136,7 @@ bool initialize_render_context(RenderContext* render, SDL_Window* window)
 		}
 	}
     */
-	
+
     int render_size_x, render_size_y;
     if (!SDL_GetRenderOutputSize(renderer, &render_size_x, &render_size_y)) {
         return false;
@@ -375,7 +375,7 @@ Text create_text(SDL_Renderer* renderer, String text, Font font, cobot::Color co
 {
     SDL_Texture* texture = render_text(renderer, text, font, color);
     if (!texture) return Text();
-    return Text(texture, text);
+    return Text(texture, text, color);
 }
 
 void render_text_size(SDL_Renderer* renderer, Text text, cobot::vec2 where, cobot::vec2 absolute_scale)
@@ -544,7 +544,7 @@ void draw_arrow(const RenderContext& context, cobot::vec2 start, cobot::vec2 end
     cobot::vec2 perp = cobot::vec2(-dir.y, dir.x);
     cobot::vec2 head_start = start + dir * (1.0f - head_ratio) * length;
     float wide = thick * 1.5;
-    
+
     draw_segment(context, start, head_start, thick, color);
 
     SDL_Vertex vertices[3];

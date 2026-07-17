@@ -381,6 +381,42 @@ cobot::Rectangle ResizeInfo::calculate_new_area(cobot::vec2 mouse_position, int 
     return area;
 }
 
+void UiState::reinit_text(RenderContext& render, Font font)
+{
+    for (auto& lbl : label) {
+        SDL_DestroyTexture(lbl.text.texture);
+        lbl.text = create_text(render.renderer, lbl.text.string, font, lbl.text.color);
+    }
+
+    for (auto& but : button) {
+        SDL_DestroyTexture(but.text.texture);
+        but.text = create_text(render.renderer, but.text.string, font, but.text.color);
+    }
+
+    for (auto& drop : drop_down) {
+        for (auto& e : drop.options)
+        {
+            SDL_DestroyTexture(e.label.texture);
+            e.label = create_text(render.renderer, e.label.string, font, e.label.color);
+        }
+
+        SDL_DestroyTexture(drop.title.texture);
+        drop.title = create_text(render.renderer, drop.title.string, font, drop.title.color);
+    }
+
+    for (auto& vp : value_panel)
+    {
+        for (auto& tab : vp.tabs)
+        {
+            for (auto& field : tab.fields)
+            {
+                SDL_DestroyTexture(field.name.texture);
+                field.name = create_text(render.renderer, field.name.string, font, field.name.color);
+            }
+        }
+    }
+}
+
 bool UiState::doing_resize() const
 {
     for (auto& e : editor)

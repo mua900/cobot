@@ -210,6 +210,7 @@ bool Application::read_asset_catalog(String_Builder& path)
     return parse_description;
 }
 
+// literally reinitialize everything that touches any asset
 bool Application::update_asset_handles()
 {
     AssetId fontId = get_asset(String("FiraSans"), m_catalog);
@@ -229,6 +230,8 @@ bool Application::update_asset_handles()
         {
             editor.field.fontId = fontId;
         }
+
+        ui.reinit_text(m_render, m_catalog.get_font(m_font));
     }
 
     if (!init_shaders())
@@ -1965,7 +1968,6 @@ bool Application::init_ui()
 
     cobot::Color button_color = cobot::Color(0x77, 0x55, 0x55);
     cobot::Color background = cobot::Color(0x33, 0x55, 0x66);
-
 
     auto playButton = TextButton(create_text(m_render.renderer, String("Play"), font, button_color), cobot::vec2(ws.x * 0.5, ws.y * 0.2), button_scale, background, true);
     playButton.id = PlayButton;
