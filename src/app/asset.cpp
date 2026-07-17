@@ -365,6 +365,8 @@ bool parse_asset_description(const char* description, AssetCatalog& catalog, boo
         cursor = next_line_offset;
     }
 
+    catalog.catalogEntryCount = catalog.assets.size();
+
     return true;
 }
 

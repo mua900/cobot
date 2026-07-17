@@ -66,6 +66,10 @@ struct AssetCatalog {
     // Asset names and paths reference this buffer so don't mess with it unless you know what you are doing.
     String_Builder catalog;
 
+    // the number of original entries we read from the description file
+    // excluding the ones dynamically added from enumarating folders
+    int catalogEntryCount = 0;
+
     AssetLoadContext load_context;
     DArray<Asset> assets;
 

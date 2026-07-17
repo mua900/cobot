@@ -212,7 +212,7 @@ bool Application::read_asset_catalog(String_Builder& path)
 
 bool Application::reload_assets()
 {
-    for (int i = 0; i < m_catalog.assets.size(); i++)
+    for (int i = 0; i < m_catalog.catalogEntryCount; i++)
     {
         if (!m_catalog.reload_asset_at_index(i))
         {
