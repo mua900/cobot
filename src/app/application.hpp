@@ -164,6 +164,7 @@ private:
     void update_game_state();
 
     bool load_assets();
+    bool reload_assets();
 
     UiState* get_active_ui();
 
@@ -253,9 +254,9 @@ private:
     cobot::vec2 get_window_size() const;
 };
 
+void initialize_libraries();
+
 void get_base_path(String_Builder& builder);
 void get_pref_path(String_Builder& builder, const char *org, const char *app);
-
-void initialize_libraries();
 
 #endif // APPLICATION_HPP

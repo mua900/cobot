@@ -63,6 +63,8 @@ add_executable(cobot
 	src/app/draw.cpp
 	src/app/camera.hpp
 	src/app/camera.cpp
+	src/app/serialize.hpp
+	src/app/serialize.cpp
 
 	src/game/editor.hpp
 	src/game/editor.cpp

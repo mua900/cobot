@@ -210,6 +210,19 @@ bool Application::read_asset_catalog(String_Builder& path)
     return parse_description;
 }
 
+bool Application::reload_assets()
+{
+    for (int i = 0; i < m_catalog.assets.size(); i++)
+    {
+        if (!m_catalog.reload_asset_at_index(i))
+        {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 bool Application::load_assets()
 {
     // the size can actually change when we are trying to load assets since folder references will expand and include arbitrary amount of files
@@ -762,9 +775,19 @@ bool Application::keyboard_input_down_common(KeyboardEvent keyboard)
             SDL_SetWindowFullscreen(m_window.window, !is_fullscreen());
             return true;
         }
-        SDL_SCANCODE_F4:
+        case SDL_SCANCODE_F4:
         {
-            
+            auto ws = get_window_size();
+            get_to_run_tree_path(m_catalog.path, "run_tree.txt");
+            if (!reparse_assets(m_catalog.path.c_string(), m_catalog))
+            {
+                display_message(ws * 0.5, ws * 0.1, "Couldn't reparse asset description", 2, cobot::Color(0x66, 0x44, 0x66), cobot::Color(0x22, 0x33, 0x22));
+            }
+
+            if (!reload_assets())
+            {
+                quit = true;
+            }
 
             return true;
         }

@@ -6,6 +6,7 @@
 #include "draw.hpp"
 #include "util/common.hpp"
 #include "util/template.hpp"
+#include "util/log.hpp"
 
 enum AssetKind {
     ASSET_KIND_ZERO   = 0,
@@ -16,6 +17,8 @@ enum AssetKind {
     ASSET_KIND_COUNT,
     ASSET_KIND_SENTINEL,
 };
+
+const char* get_asset_kind_name(AssetKind kind);
 
 struct AssetId {
     int id;
@@ -62,7 +65,6 @@ struct Asset {
 
 struct AssetCatalog {
     String_Builder catalog;
-    String_Builder names;
     AssetLoadContext load_context;
     DArray<Asset> assets;
     String_Builder path;
@@ -72,6 +74,23 @@ struct AssetCatalog {
         int index = assets.add(asset);
         assets.get_ref(index).identifier.id = index;
         assets.get_ref(index).identifier.generation = 0;
+    }
+
+    bool add_asset_unique(Asset& asset)
+    {
+        for (auto x : assets)
+        {
+            if (x.kind == asset.kind &&
+                string_compare(catalog.get_string(x.path), catalog.get_string(asset.path)))
+            {
+                log_info("Asset already exists");
+                return false;
+            }
+        }
+
+        log_info("Adding new asset");
+        add_asset(asset);
+        return true;
     }
 
     String get_asset_name_at_index(int index) const {
@@ -96,6 +115,28 @@ struct AssetCatalog {
         return catalog.get_string(asset.path);
     }
 
+    bool compare_asset_kind(AssetKind expected, AssetKind got) const
+    {
+        if (expected != got)
+        {
+            log_error("Asset type mismatch: Expected %s, got %s", get_asset_kind_name(expected), get_asset_kind_name(got));
+            return false;
+        }
+
+        return true;
+    }
+
+    bool compare_asset_generation(int expected, int got) const
+    {
+        if (expected != got)
+        {
+            log_error("Stale asset handle: Expected %d, got %d", expected, got);
+            return false;
+        }
+
+        return true;
+    }
+
     SDL_Texture* get_image(AssetId id) const
     {
         if (!id.is_valid())
@@ -104,7 +145,12 @@ struct AssetCatalog {
         }
 
         const Asset& asset = assets.get_ref(id.id);
-        if (asset.kind != ASSET_KIND_IMAGE || asset.identifier.generation != id.generation)
+        if (!compare_asset_kind(ASSET_KIND_IMAGE, asset.kind))
+        {
+            return nullptr;
+        }
+
+        if (!compare_asset_generation(asset.identifier.generation, id.generation))
         {
             return nullptr;
         }
@@ -120,7 +166,12 @@ struct AssetCatalog {
         }
 
         const Asset& asset = assets.get_ref(id.id);
-        if (asset.kind != ASSET_KIND_FONT || asset.identifier.generation != id.generation)
+        if (!compare_asset_kind(ASSET_KIND_FONT, asset.kind))
+        {
+            return Font();
+        }
+
+        if (!compare_asset_generation(asset.identifier.generation, id.generation))
         {
             return Font();
         }
@@ -136,7 +187,12 @@ struct AssetCatalog {
         }
 
         const Asset& asset = assets.get_ref(id.id);
-        if (asset.kind != ASSET_KIND_AUDIO || asset.identifier.generation != id.generation)
+        if (!compare_asset_kind(ASSET_KIND_AUDIO, asset.kind))
+        {
+            return nullptr;
+        }
+
+        if (!compare_asset_generation(asset.identifier.generation, id.generation))
         {
             return nullptr;
         }
@@ -152,7 +208,12 @@ struct AssetCatalog {
         }
 
         const Asset& asset = assets.get_ref(id.id);
-        if (asset.kind != ASSET_KIND_SHADER || asset.identifier.generation != id.generation)
+        if (!compare_asset_kind(ASSET_KIND_SHADER, asset.kind))
+        {
+            return nullptr;
+        }
+
+        if (!compare_asset_generation(asset.identifier.generation, id.generation))
         {
             return nullptr;
         }
@@ -161,16 +222,16 @@ struct AssetCatalog {
     }
 
     bool reload_asset(AssetId id);
+    bool reload_asset_at_index(int index);
 
     void reset();
 };
 
 // parse asset catalog file and add assets listed in it to the catalog
-bool parse_asset_description(const char* description, AssetCatalog& catalog);
+bool parse_asset_description(const char* description, AssetCatalog& catalog, bool reparse);
 // load the asset description pointed on path and parse it
 bool parse_assets(const char* path, AssetCatalog& catalog);
 
-bool reparse_asset_description(const char* description, AssetCatalog& catalog);
 bool reparse_assets(const char* path, AssetCatalog& catalog);
 
 // returns the existing handle if the asset is already loaded otherwise loads the asset on the fly and returns the handle
@@ -180,11 +241,16 @@ AssetId get_asset(String name, AssetCatalog& catalog);
 AssetId get_asset_at_index(int index, AssetCatalog& catalog);
 
 // @todo maybe add an intermediate step that loads the file to memory but doesn't process it yet like load svg text or font but don't yet rasterize it.
+// if memory usage becomes a problem
 
 AssetKind get_asset_kind(String file_extension);
 
 void get_base_path(String_Builder& builder);
+
 void get_to_run_tree_path(String_Builder& builder, const char* path);
 void get_to_run_tree_path_string(String_Builder& builder, String path);
+
+void get_to_asset_path(String_Builder& builder, const char* path);
+void get_to_asset_path_string(String_Builder& builder, String path);
 
 #endif // ASSET_HPP

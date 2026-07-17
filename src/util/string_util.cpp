@@ -339,7 +339,10 @@ void String_Builder::free_buffer() {
 
 void String_Builder::clear() {
     cursor = 0;
-    buffer[0] = '\0';
+    if (buffer && buffer_capacity > 0)
+    {
+        buffer[0] = '\0';
+    }
 }
 
 String String_Builder::to_string()

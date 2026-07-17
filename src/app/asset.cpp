@@ -308,19 +308,7 @@ bool parse_attribute_value(String attribute, const char* key, String& out_value)
     return true;
 }
 
-bool parse_assets(const char* description, AssetCatalog& catalog)
-{
-    catalog.catalog.clear();
-    bool success = load_file_text(description, catalog.catalog);
-    if (!success)
-    {
-        return false;
-    }
-
-    return parse_asset_description(catalog.catalog.c_string(), catalog);
-}
-
-bool parse_asset_description(const char* description, AssetCatalog& catalog)
+bool parse_asset_description(const char* description, AssetCatalog& catalog, bool reparse)
 {
     int cursor = 0;
     int line_number = 0;
@@ -339,7 +327,14 @@ bool parse_asset_description(const char* description, AssetCatalog& catalog)
 
         if (result & ASSET_LINE_IS_VALID)
         {
-            catalog.add_asset(asset);
+            if (reparse)
+            {
+                catalog.add_asset_unique(asset);
+            }
+            else
+            {
+                catalog.add_asset(asset);
+            }
 
             if (result & ASSET_LINE_HAS_TRAILING_TOKENS)
             {
@@ -366,22 +361,34 @@ bool parse_asset_description(const char* description, AssetCatalog& catalog)
     return true;
 }
 
-bool reparse_asset_description(const char* description, AssetCatalog& catalog)
+bool parse_assets(const char* path, AssetCatalog& catalog)
 {
-    // @todo
-    return false;
+    catalog.reset();
+    bool success = load_file_text(path, catalog.catalog);
+    if (!success)
+    {
+        return false;
+    }
+
+    return parse_asset_description(catalog.catalog.c_string(), catalog, false);
 }
 
 bool reparse_assets(const char* path, AssetCatalog& catalog)
 {
-    // @todo
-    return false;
+    catalog.catalog.clear();
+    bool success = load_file_text(path, catalog.catalog);
+    if (!success)
+    {
+        return false;
+    }
+
+    // @todo remove old entries
+    return parse_asset_description(catalog.catalog.c_string(), catalog, true);
 }
 
 void AssetCatalog::reset()
 {
     catalog.free_buffer();
-    names.free_buffer();
     path.free_buffer();
 
     for (auto& asset : assets)
@@ -400,8 +407,16 @@ bool AssetCatalog::reload_asset(AssetId id)
         return false;
     }
 
-    get_to_run_tree_path_string(path, get_asset_path(id));
+    get_to_asset_path_string(path, get_asset_path(id));
     return load_asset(path, assets.get_ref(id.id), load_context);
+}
+
+bool AssetCatalog::reload_asset_at_index(int index)
+{
+    auto asset = assets.get_ref(index);
+    get_to_asset_path_string(path, catalog.get_string(asset.path));
+
+    return load_asset(path, asset, load_context);
 }
 
 SDL_EnumerationResult asset_callback(void* userdata, const char* dirname, const char* fname);
@@ -422,7 +437,7 @@ AssetId get_asset(String name, AssetCatalog& catalog)
                 if (asset.flags & ASSET_IS_FOLDER) {
                     auto asset_path = catalog.get_asset_path(asset.identifier);
                     SCOPE_STRING(asset_path, folder);
-                    get_to_run_tree_path(catalog.path, folder);
+                    get_to_asset_path(catalog.path, folder);
                     catalog.path.append(make_string(PathSeparator));
 
                     if (!SDL_EnumerateDirectory(catalog.path.c_string(), asset_callback, &catalog)) {
@@ -436,7 +451,7 @@ AssetId get_asset(String name, AssetCatalog& catalog)
                 else {
                     auto asset_path = catalog.catalog.get_string(asset.path);
                     SCOPE_STRING(asset_path, asset_path_c);
-                    get_to_run_tree_path(catalog.path, asset_path_c);
+                    get_to_asset_path(catalog.path, asset_path_c);
 
                     bool load = load_asset(catalog.path, asset, catalog.load_context);
                     if (!load)
@@ -473,7 +488,7 @@ AssetId get_asset_at_index(int index, AssetCatalog& catalog)
         if (catalog.assets[index].flags & ASSET_IS_FOLDER) {
             auto asset_path = catalog.get_asset_path_at_index(index);
             SCOPE_STRING(asset_path, folder);
-            get_to_run_tree_path(catalog.path, folder);
+            get_to_asset_path(catalog.path, folder);
             catalog.path.append(make_string(PathSeparator));
 
             if (!SDL_EnumerateDirectory(catalog.path.c_string(), asset_callback, &catalog)) {
@@ -487,7 +502,7 @@ AssetId get_asset_at_index(int index, AssetCatalog& catalog)
         else {
             auto asset_path = catalog.get_asset_path_at_index(index);
             SCOPE_STRING(asset_path, asset_path_c);
-            get_to_run_tree_path(catalog.path, asset_path_c);
+            get_to_asset_path(catalog.path, asset_path_c);
 
             bool load = load_asset(catalog.path, catalog.assets[index], catalog.load_context);
             if (!load)
@@ -668,13 +683,41 @@ void get_pref_path(String_Builder& builder, const char *org, const char *app)
 void get_to_run_tree_path(String_Builder& builder, const char* path)
 {
     get_base_path(builder);
-    builder.append_path(String("asset/"));
     builder.append_path(String(path));
 }
 
 void get_to_run_tree_path_string(String_Builder& builder, String path)
 {
     get_base_path(builder);
+    builder.append_path(String(path));
+}
+
+void get_to_asset_path(String_Builder& builder, const char* path)
+{
+    get_base_path(builder);
     builder.append_path(String("asset/"));
     builder.append_path(String(path));
+}
+
+void get_to_asset_path_string(String_Builder& builder, String path)
+{
+    get_base_path(builder);
+    builder.append_path(String("asset/"));
+    builder.append_path(String(path));
+}
+
+const char* get_asset_kind_name(AssetKind kind)
+{
+    switch (kind)
+    {
+        case ASSET_KIND_ZERO:       return "AssetKindZero";
+        case ASSET_KIND_IMAGE:      return "AssetKindImage";
+        case ASSET_KIND_AUDIO:      return "AssetKindAudio";
+        case ASSET_KIND_FONT:       return "AssetKindFont";
+        case ASSET_KIND_SHADER:     return "AssetKindShader";
+        case ASSET_KIND_SENTINEL:   return "AssetKindSentinel";
+        case ASSET_KIND_COUNT:  // fallthrough
+        default:
+            panic("Invalid asset kind");
+    }
 }
