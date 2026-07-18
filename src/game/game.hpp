@@ -71,7 +71,7 @@ void draw_vehicle_simulation(const RenderContext& context, const AssetCatalog& c
 void draw_star_system(const RenderContext& context, const AssetCatalog& catalog, GameState& game);
 void draw_planet_orbit(RenderContext& context, const Planet& planet, double centralBodyMass, float thick);
 void draw_orbits(RenderContext& context, const AssetCatalog& catalog, const GameState& game);
-void draw_planet_outline(RenderContext& context, const GameState& game, int planet);
+void draw_planet_outline(RenderContext& context, const GameState& game, PlanetId planetid);
 
 void draw_planet_map(RenderContext& render, Planet& planet);
 

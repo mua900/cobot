@@ -30,20 +30,26 @@ StarSystem get_default_star_system(SDL_Renderer* renderer)
     Body body = Body(1, 60, 300, 0, 0, 0, 0, 0.2);
     body.determine_state_vector(system.star.mass);
     cobot::ColorF p1color(0.5, 0.3, 0.6);
-    Planet p1 =  Planet(String("Everest"), p1color, body);
+    Planet p1 =  Planet(PlanetEverest, String("Everest"), p1color, body);
     system.planets.add(p1);
 
     body = Body(0.2, 40, 300, 0.4, 0, 0.3, 0.4, 0.6);
     body.determine_state_vector(system.star.mass);
     cobot::ColorF p2color(0.3, 0.8, 0.5);
-    Planet p2 = Planet(String("Erciyes"), p2color, body);
+    Planet p2 = Planet(PlanetErciyes, String("Erciyes"), p2color, body);
     system.planets.add(p2);
 
     body = Body(0.7, 50, 300, 0.5, 0, 0, 0, 0);
     body.determine_state_vector(system.star.mass);
     cobot::ColorF p3color(0.8, 0.5, 0.5);
-    Planet p3 = Planet(String("Illimani"), p3color, body);
+    Planet p3 = Planet(PlanetIllimani, String("Illimani"), p3color, body);
     system.planets.add(p3);
+
+    body = Body(1.3, 45, 600, 0.1, 0.3, 0.1, 0.6, 0.5);
+    body.determine_state_vector(system.star.mass);
+    cobot::ColorF p4color(0.3, 0.4, 0.7);
+    Planet p4 = Planet(PlanetTeide, String("Teide"), p4color, body);
+    system.planets.add(p4);
 
     return system;
 }

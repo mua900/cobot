@@ -1312,7 +1312,11 @@ bool Application::mouse_input_planet_map()
 
 bool Application::mouse_input_solar_system()
 {
+    Camera& camera = cameras[CameraSolarSystem];
+
+    cobot::vec2 ws = get_window_size();
     cobot::vec2 mouse_pos = m_input.mouse.pos;
+    auto mouseWorld = camera.screen_to_world(mouse_pos);
     UiState& ui = m_ui[UiSolarSystem];
 
     if (m_input.mouse.buttonFlags & MOUSE_LEFT_MASK)
@@ -1424,11 +1428,11 @@ bool Application::mouse_input_solar_system()
                                     switch_menu(MenuMissionEditor);
                                     break;
                                 }
-                            }
-                            default:
-                            {
-                                int mission = field.identifier & ~(MISSION_ID_BIT);
-                                // @todo load mission etc.
+                                default:
+                                {
+                                    int mission = field.identifier & ~(MISSION_ID_BIT);
+                                    // @todo load mission etc.
+                                }
                             }
                         }
                         break;
@@ -1439,20 +1443,17 @@ bool Application::mouse_input_solar_system()
             }
         }
 
-        cobot::vec2 ws = get_window_size();
         bool found = false;
         for (int i = 0; i < game.starSystem.planets.size(); i++)
         {
             Planet& planet = game.starSystem.planets[i];
 			cobot::vec2 worldPosition = planet.body.position.xy();
 
-			Camera& camera = cameras[CameraSolarSystem];
-
 			cobot::vec2 position = camera.world_to_screen(worldPosition);
 
             if ((mouse_pos - position).magnitude() < planet.body.radius * camera.zoom)
             {
-                gameInfo.selectedPlanet = i;
+                gameInfo.selectedPlanet = planet.id;
                 found = true;
 
                 String_Builder builder = {};
@@ -1487,7 +1488,7 @@ bool Application::mouse_input_solar_system()
 
         if (!found)
         {
-            gameInfo.selectedPlanet = -1;
+            gameInfo.selectedPlanet = PlanetZero;
         }
 
         for (auto& control : ui.control)
@@ -1520,7 +1521,7 @@ bool Application::mouse_input_solar_system()
 			Planet& planet = game.starSystem.planets[index];
 			Camera& camera = cameras[CameraSolarSystem];
 			cobot::vec2 position = camera.world_to_screen(planet.body.position.xy());
-            if ((mouse_pos - position).magnitude() < planet.body.radius)
+            if ((mouse_pos - position).magnitude() < planet.body.radius * camera.zoom)
             {
                 ControlMenu& control = ui.control.get_ref(index);
                 control.position = position;
@@ -2395,7 +2396,7 @@ void Application::draw_solar_system()
     {
         draw_orbits(m_render, m_catalog, game);
     }
-    if (gameInfo.selectedPlanet != -1)
+    if (gameInfo.selectedPlanet != PlanetZero)
     {
         draw_planet_outline(m_render, game, gameInfo.selectedPlanet);
     }

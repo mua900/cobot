@@ -90,7 +90,7 @@ enum UpdateStateId {
 struct GameInfo {
     bool wantPause = false;
     double selectedTimescale = 0;
-    int selectedPlanet = -1;
+    PlanetId selectedPlanet = PlanetZero;
     bool showOrbits = true;
 };
 

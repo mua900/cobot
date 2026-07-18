@@ -92,7 +92,15 @@ struct Planet {
     PlanetMap map = {};
 
     Planet() {}
-    Planet(String name, cobot::ColorF color, const Body &body) : name(name), color(color), body(body) {}
+    Planet(PlanetId id, String name, cobot::ColorF color, const Body &body) : id(id), name(name), color(color), body(body) {}
+};
+
+enum DefaultPlanets {
+    PlanetZero          = 0,  // invalid
+    PlanetEverest,
+    PlanetErciyes,
+    PlanetTeide,
+    PlanetIllimani,
 };
 
 struct Star {
