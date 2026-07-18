@@ -211,7 +211,7 @@ bool Application::read_asset_catalog(String_Builder& path)
 }
 
 // literally reinitialize everything that touches any asset
-bool Application::update_asset_handles()
+bool Application::update_assets()
 {
     AssetId fontId = get_asset(String("FiraSans"), m_catalog);
     AssetId editorFontId = get_asset(String("FiraSans"), m_catalog);
@@ -234,6 +234,23 @@ bool Application::update_asset_handles()
         ui.reinit_text(m_render, m_catalog.get_font(m_font));
     }
 
+    if (!update_assets_game())
+    {
+        return false;        
+    }
+    if (!update_assets_solar_system())
+    {
+        return false;        
+    }
+    if (!update_assets_vehicle_editor())
+    {
+        return false;        
+    }
+    if (!update_assets_mission_editor())
+    {
+        return false;        
+    }
+
     if (!init_shaders())
     {
         return false;
@@ -247,6 +264,90 @@ bool Application::update_asset_handles()
     return true;
 }
 
+bool Application::update_assets_game()
+{
+    UiState& ui = m_ui[UiGame];
+
+    AssetId buildIcon = get_asset(String("buildIcon"), m_catalog);
+    AssetId debugIcon = get_asset(String("debugIcon"), m_catalog);
+    AssetId runIcon = get_asset(String("runIcon"), m_catalog);
+
+    auto editor = ui.get_editor(MainEditor);
+    ASSERT(editor);
+    editor->icon1.texture = m_catalog.get_image(runIcon);
+    editor->icon2.texture = m_catalog.get_image(buildIcon);
+    editor->icon3.texture = m_catalog.get_image(debugIcon);
+
+    return true;
+}
+
+bool Application::update_assets_solar_system()
+{
+    UiState& ui = m_ui[UiSolarSystem];
+
+    AssetId tsIconId = get_asset(String("timescaleIcon"), m_catalog);
+    if (!tsIconId.is_valid())
+    {
+        return false;
+    }
+
+    SDL_Texture* texture = m_catalog.get_image(tsIconId);
+
+    auto timescaleControl = ui.get_discrete_slider(TimeScale);
+    ASSERT(timescaleControl);
+
+    float w, h = {};
+    SDL_GetTextureSize(texture, &w, &h);
+    float aspectRatio = w / h;
+
+    timescaleControl->texture = texture;
+    timescaleControl->element_scale = 50 * cobot::vec2(aspectRatio, 1.0f);
+
+
+    AssetId orbitalTabId = get_asset(String("orbit"), m_catalog);
+    AssetId missionTabId = get_asset(String("mission"), m_catalog);
+    // @todo a proper icon for planet properties
+    AssetId propertiesTabId = get_asset(String("planetProperties"), m_catalog);
+    if (!(orbitalTabId.is_valid() && missionTabId.is_valid() && propertiesTabId.is_valid()))
+    {
+        return false;
+    }
+
+    auto panel = ui.get_value_panel(PlanetPanel);
+    ASSERT(panel);
+
+    auto tabs = panel->tabs;
+
+    tabs[PlanetPanelTabMissions].tabIcon.texture = m_catalog.get_image(missionTabId);
+    tabs[PlanetPanelTabOrbit].tabIcon.texture = m_catalog.get_image(orbitalTabId);
+    tabs[PlanetPanelTabProperties].tabIcon.texture = m_catalog.get_image(propertiesTabId);
+
+    return true;
+}
+
+bool Application::update_assets_vehicle_editor()
+{
+    auto ui = m_ui[UiVehicleEditor];
+    if (!update_vehicle_editor_assets(ui, m_catalog))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool Application::update_assets_mission_editor()
+{
+    UiState& ui = m_ui[UiMissionEditor];
+
+    AssetId plusId = get_asset(String("plus"), m_catalog);
+    SDL_Texture* plus = m_catalog.get_image(plusId);
+    ui.get_image_button(AddVehicle)->image = plus;
+
+    return true;
+}
+
+
 bool Application::reload_assets()
 {
     for (int i = 0; i < m_catalog.catalogEntryCount; i++)
@@ -257,7 +358,7 @@ bool Application::reload_assets()
         }
     }
 
-    update_asset_handles();
+    update_assets();
 
     return true;
 }
@@ -1985,11 +2086,11 @@ bool Application::init_ui()
 
     m_ui[UiSettings].button.add(backButton);
 
-    if (!init_game_ui()) return false;
-    if (!init_load_ui()) return false;
-    if (!init_vehicle_editor_ui()) return false;
-    if (!init_solar_system_ui()) return false;
-    if (!init_mission_editor_ui()) return false;
+    if (!init_game_ui())            return false;
+    if (!init_load_ui())            return false;
+    if (!init_vehicle_editor_ui())  return false;
+    if (!init_solar_system_ui())    return false;
+    if (!init_mission_editor_ui())  return false;
 
     return true;
 }
@@ -2076,17 +2177,6 @@ bool Application::init_solar_system_ui()
     DiscreteSlider timescaleControl (TimeScale, cobot::vec2(ws.x / 2, 50), cobot::vec2(40, 50), 3,
         50, false, cobot::ColorF(0.3, 0.7, 0.3), cobot::ColorF(0.8, 0.3, 0.2), cobot::ColorF(0.6, 0.3, 0.2), cobot::ColorF(0.4, 0.7, 0.3), cobot::ColorF(0.7, 0.4, 0.2));
 
-    AssetId tsIconId = get_asset(String("timescaleIcon"), m_catalog);
-    if (tsIconId.is_valid())
-    {
-        SDL_Texture* texture = m_catalog.get_image(tsIconId);
-        float w, h = {};
-        SDL_GetTextureSize(texture, &w, &h);
-        float aspectRatio = w / h;
-        timescaleControl.texture = texture;
-        timescaleControl.element_scale = 50 * cobot::vec2(aspectRatio, 1.0f);
-    }
-
     int planetIndex = 0;
     for (auto& planet : game.starSystem.planets)
     {
@@ -2098,36 +2188,20 @@ bool Application::init_solar_system_ui()
         planetIndex += 1;
     }
 
-    AssetId orbitalTabId = get_asset(String("orbit"), m_catalog);
-    AssetId missionTabId = get_asset(String("mission"), m_catalog);
-	// @todo a proper icon for planet properties
-	AssetId propertiesTabId = get_asset(String("planetProperties"), m_catalog);
-	if (!(orbitalTabId.is_valid() && missionTabId.is_valid() && propertiesTabId.is_valid()))
-    {
-        return false;
-    }
-    SDL_Texture* orbitalParameterTab = m_catalog.get_image(orbitalTabId);
-    SDL_Texture* missionTab = m_catalog.get_image(missionTabId);
-	SDL_Texture* propertiesTab = m_catalog.get_image(propertiesTabId);
-    if (!(orbitalParameterTab && missionTab))
-    {
-        return false;
-    }
-
     ValuePanel planet_panel (PlanetPanel, cobot::Rectangle(ws.x * 0.9, ws.y * 0.5, ws.x * 0.2, ws.y), 25, 50, cobot::DirWest);
     ValuePanelTab tabs[PlanetPanelTabCount];
 
     tabs[PlanetPanelTabProperties].field_height = 20;
     tabs[PlanetPanelTabProperties].color = cobot::Color(0x33, 0x44, 0x33);
-    tabs[PlanetPanelTabProperties].tabIcon = Icon(propertiesTab, cobot::Color(0x99, 0x55, 0x33));
+    tabs[PlanetPanelTabProperties].tabIcon.background = cobot::Color(0x99, 0x55, 0x33);
 
     tabs[PlanetPanelTabOrbit].field_height = 20;
     tabs[PlanetPanelTabOrbit].color = cobot::Color(0x44, 0x55, 0x33);
-    tabs[PlanetPanelTabOrbit].tabIcon = Icon(orbitalParameterTab, cobot::Color(0x99, 0x55, 0x33));
+    tabs[PlanetPanelTabOrbit].tabIcon.background = cobot::Color(0x99, 0x55, 0x33);
 
     tabs[PlanetPanelTabMissions].field_height = 20;
     tabs[PlanetPanelTabMissions].color = cobot::Color(0x88, 0x66, 0x77);
-    tabs[PlanetPanelTabMissions].tabIcon = Icon(missionTab, cobot::Color(0x88, 0x33, 0x22));
+    tabs[PlanetPanelTabMissions].tabIcon.background = cobot::Color(0x88, 0x33, 0x22);
 
     cobot::Color valueBackground (0x77, 0x66, 0x44);
     cobot::Color valueText (0x33, 0x44, 0x88);
@@ -2155,6 +2229,8 @@ bool Application::init_solar_system_ui()
     ui.value_panel.add(planet_panel);
     ui.button.add(showOrbits);
     ui.button.add(backButton);
+
+    update_assets_solar_system();
 
     return true;
 }

@@ -213,19 +213,13 @@ void draw_vehicle_editor_background(RenderContext& render, AssetCatalog& catalog
 	draw_arc(render, cobot::vec2(0,0), 300, 320, 190 * cobot::DEGREE_TO_RADIAN_F, 160 * cobot::DEGREE_TO_RADIAN_F, cobot::ColorF(0.8,0.8,0.8));
 }
 
-bool initialize_vehicle_editor_ui(cobot::vec2 windowSize, AssetId fontId, UiState& ui, AssetCatalog& catalog, RenderContext& render)
+bool update_vehicle_editor_assets(UiState& ui, AssetCatalog& catalog)
 {
-    Font font = catalog.get_font(fontId);
-
-    float panelTitleHeight = 10;
-    cobot::Rectangle panel_area = { 0, panelTitleHeight, windowSize.x * 0.3f, windowSize.y * 0.9f };
-    cobot::Color panel_color = cobot::Color(0x33, 0x44, 0x44);
-    Panel partsPanel (PartsPanel, panel_area.to_center(), 32, 48, 16);
-    partsPanel.title_height = panelTitleHeight;
-    partsPanel.title_bar_color = cobot::Color(0x44, 0x66, 0x77);
+    auto partsPanel = ui.get_panel(PartsPanel);
+    ASSERT(partsPanel);
 
     cobot::Color iconColor = cobot::Color(0x77, 0x33, 0x44);
-    cobot::Color tabIconColor = cobot::Color(0x33, 0x66, 0x44);
+    cobot::Color tabIconColor = partsPanel->tabs[0].color;
 
     // @todo we can delegate categorization to to load_part_icons which would be better
     DArray<IconButton> partIcons;
@@ -234,7 +228,7 @@ bool initialize_vehicle_editor_ui(cobot::vec2 windowSize, AssetId fontId, UiStat
         return false;
     }
 
-    DArray <IconButton> groundTabIcons;
+    DArray<IconButton> groundTabIcons;
     DArray<IconButton> structureTabIcons;
     DArray<IconButton> computerTabIcons;
     DArray<IconButton> powerTabIcons;
@@ -257,31 +251,53 @@ bool initialize_vehicle_editor_ui(cobot::vec2 windowSize, AssetId fontId, UiStat
 
     partIcons.reset();
 
-    AssetId groundIconId = get_asset(String("groundTabIcon"), catalog);
-    if (!groundIconId.is_valid()) return false;
-    Icon groundIcon = Icon(catalog.get_image(groundIconId), tabIconColor);
+    String names [] = {
+        String("groundTabIcon"),
+        String("structuralTabIcon"),
+        String("computerTabIcon"),
+        String("powerTabIcon"),
+        String("instrumentTabIcon"),
+    };
 
-    AssetId structureIconId = get_asset(String("structuralTabIcon"), catalog);
-    if (!structureIconId.is_valid()) return false;
-    Icon structureIcon = Icon(catalog.get_image(structureIconId), tabIconColor);
-    
-    AssetId computerIconId = get_asset(String("computerTabIcon"), catalog);
-    if (!computerIconId.is_valid()) return false;
-    Icon computerIcon = Icon(catalog.get_image(computerIconId), tabIconColor);
-    
-    AssetId powerIconId = get_asset(String("powerTabIcon"), catalog);
-    if (!powerIconId.is_valid()) return false;
-    Icon powerIcon = Icon(catalog.get_image(powerIconId), tabIconColor);
+    ASSERT(ARRAY_SIZE(names) == partsPanel->tabs.size());
+    int count = partsPanel->tabs.size();
 
-    AssetId instrumentIconId = get_asset(String("instrumentTabIcon"), catalog);
-    if (!instrumentIconId.is_valid()) return false;
-    Icon instrumentIcon = Icon(catalog.get_image(instrumentIconId), tabIconColor);
+    for (int i = 0; i < count; i++)
+    {
+        AssetId iconId = get_asset(names[i], catalog);
+        if (!iconId.is_valid()) return false;
+        Icon icon = Icon(catalog.get_image(iconId), tabIconColor);
 
-    partsPanel.tabs.add(PanelTab(groundIcon, groundTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(structureIcon, structureTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(computerIcon, computerTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(powerIcon, powerTabIcons, panel_color));
-    partsPanel.tabs.add(PanelTab(instrumentIcon, instrumentTabIcons, panel_color));
+        partsPanel->tabs[i].tabIcon = icon;
+    }
+
+    partsPanel->tabs[0].icons = groundTabIcons;
+    partsPanel->tabs[1].icons = structureTabIcons;
+    partsPanel->tabs[2].icons = computerTabIcons;
+    partsPanel->tabs[3].icons = powerTabIcons;
+    partsPanel->tabs[4].icons = instrumentTabIcons;
+
+    return true;
+}
+
+bool initialize_vehicle_editor_ui(cobot::vec2 windowSize, AssetId fontId, UiState& ui, AssetCatalog& catalog, RenderContext& render)
+{
+    Font font = catalog.get_font(fontId);
+
+    float panelTitleHeight = 10;
+    cobot::Rectangle panel_area = { 0, panelTitleHeight, windowSize.x * 0.3f, windowSize.y * 0.9f };
+    Panel partsPanel (PartsPanel, panel_area.to_center(), 32, 48, 16);
+    partsPanel.title_height = panelTitleHeight;
+    partsPanel.title_bar_color = cobot::Color(0x44, 0x66, 0x77);
+
+    cobot::Color panel_color = cobot::Color(0x33, 0x44, 0x44);  // all the tabs are the same
+    auto tabIconColor = cobot::Color(0x33, 0x66, 0x44);
+
+    partsPanel.tabs.add(PanelTab(Icon(nullptr, tabIconColor), DArray<IconButton>(), panel_color));
+    partsPanel.tabs.add(PanelTab(Icon(nullptr, tabIconColor), DArray<IconButton>(), panel_color));
+    partsPanel.tabs.add(PanelTab(Icon(nullptr, tabIconColor), DArray<IconButton>(), panel_color));
+    partsPanel.tabs.add(PanelTab(Icon(nullptr, tabIconColor), DArray<IconButton>(), panel_color));
+    partsPanel.tabs.add(PanelTab(Icon(nullptr, tabIconColor), DArray<IconButton>(), panel_color));
 
     cobot::Rectangle propertiesPanelArea = {
         windowSize.x * 0.9f, windowSize.y * 0.5f,
@@ -333,6 +349,11 @@ bool initialize_vehicle_editor_ui(cobot::vec2 windowSize, AssetId fontId, UiStat
         ui.button.add(saveVehicle);
         ui.button.add(backButton);
         ui.text_field.add(Text_Field(cobot::Rectangle(windowSize.x * 0.5, nameFieldHeight / 2, nameFieldWidth, nameFieldHeight), fontId, cobot::Color(0x55, 0x33, 0x44), cobot::Color(0x99, 0xAA, 0xBB), VehicleName));
+    }
+
+    if (!update_vehicle_editor_assets(ui, catalog))
+    {
+        return false;
     }
 
     return true;

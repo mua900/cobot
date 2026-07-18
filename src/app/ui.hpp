@@ -825,8 +825,11 @@ struct UiState {
     Text_Field* get_text_field(UiElementId id);
     Drop_Down_List* get_drop_down(UiElementId id);
     TextButton* get_button(UiElementId id);
+    ImageButton* get_image_button(UiElementId id);
     Label* get_label(UiElementId id);
     ValuePanel* get_value_panel(UiElementId id);
+    Panel* get_panel(UiElementId id);
+    DiscreteSlider* get_discrete_slider(UiElementId id);
 
     ~UiState();
 };

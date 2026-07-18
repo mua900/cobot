@@ -38,5 +38,6 @@ void draw_veditor(RenderContext& render, AssetCatalog& catalog, Input& input, Ve
 void draw_vehicle_editor_background(RenderContext& render, AssetCatalog& catalog, Input& input, VehicleEditor& editor);
 
 bool initialize_vehicle_editor_ui(cobot::vec2 windowSize, AssetId fontId, UiState& ui, AssetCatalog& catalog, RenderContext& render);
+bool update_vehicle_editor_assets(UiState& ui, AssetCatalog& catalog);
 
 #endif // EDITOR_HPP

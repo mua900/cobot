@@ -184,10 +184,10 @@ struct VPartImages {
 };
 
 bool load_part_images(VPartImages& images, AssetCatalog& catalog);
+bool load_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
 const char* get_part_name(PartKind kind);
 cobot::vec2 get_part_scale(PartKind id);
 SDL_Texture* get_part_texture(PartKind partKind, AssetCatalog& catalog);
-bool load_part_icons(DArray<IconButton>& icons, cobot::Color background, AssetCatalog& catalog);
 
 PartCategory getPartCategory(PartKind kind);
 

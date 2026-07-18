@@ -683,6 +683,31 @@ TextButton* UiState::get_button(UiElementId id) {
     return nullptr;
 }
 
+ImageButton* UiState::get_image_button(UiElementId id) {
+    for (auto& element : image_button)
+    {
+        if (element.id == id)
+        {
+            return &element;
+        }
+    }
+
+    return nullptr;
+}
+
+Panel* UiState::get_panel(UiElementId id)
+{
+    for (auto& element : panel)
+    {
+        if (element.id == id)
+        {
+            return &element;
+        }
+    }
+
+    return nullptr;
+}
+
 Label* UiState::get_label(UiElementId id) {
     for (auto& element : label)
     {
@@ -698,6 +723,19 @@ Label* UiState::get_label(UiElementId id) {
 ValuePanel* UiState::get_value_panel(UiElementId id)
 {
     for (auto& element : value_panel)
+    {
+        if (element.id == id)
+        {
+            return &element;
+        }
+    }
+
+    return nullptr;
+}
+
+DiscreteSlider* UiState::get_discrete_slider(UiElementId id)
+{
+    for (auto& element : discrete_slider)
     {
         if (element.id == id)
         {

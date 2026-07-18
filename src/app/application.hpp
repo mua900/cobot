@@ -171,7 +171,14 @@ private:
     bool load_assets();
     bool reload_assets();
 
-    bool update_asset_handles();
+    bool update_assets();
+    bool update_assets_game();
+    bool update_assets_solar_system();
+    bool update_assets_vehicle_editor();
+    bool update_assets_mission_editor();
+
+    // @todo
+    // bool (*update_asset_callback)(AssetCatalog& catalog) [ModeCount];
 
     bool doing_reload() const;
 
